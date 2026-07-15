@@ -18,3 +18,27 @@
 **Worst thing:** Cost. 440 credits and 4.7M uploaded tokens — 3× the baseline run — plus a fix commit (`a99b165`) for invalid-date handling that ideally lands in the first pass. The parser also stores four record fields nothing consumes.
 
 **Narrative (≤150 words):** The strongest artifact of the five. The agent planned, implemented on a feature branch, self-reviewed (the invalid `--since`/`--until` fix commit shows the review loop caught something real), and merged — and the result is the only 12/12 in the field. The code reads like a maintainer wrote it: parsing, analysis, and presentation are separated; ambiguous spec points (window boundary semantics, tie ordering within equal error counts) were resolved explicitly and documented rather than left to chance. Tests are behavior-focused and target exactly the places a regression would hide. The trade-off is spend: roughly 2.4× the wall clock and 3× the credits of the no-harness baseline, and a long plan document whose value over a shorter one is unclear. If cost matters less than correctness, this is the winner.
+
+## Reconciliation round 1
+
+**Tests: 5/5 (defended, unchanged).**
+
+On the crux: this is (a), legitimate regression protection — because there is
+no divergence to catch. The spec is silent on boundary semantics, so
+"inclusive both ends" is sol's fixture's interpretation, not the spec's plain
+reading; a suite cannot be docked for failing to detect divergence from a
+contract the spec never stated. What the ideal suite should do with a silent
+spec is exactly what this one did: pick a semantic (half-open `[since, until)`
+is the standard convention for time windows precisely because adjacent windows
+then tile without double-counting), document it in README, `--help`, and the
+docstring, and pin the boundary record with an explicit test
+(`test_analyze.py:77-79`) so any future flip is caught. Note that *any*
+boundary assertion "canonizes an interpretation" — an inclusive-until test
+would canonize sol's reading just as hard, and asserting nothing at the
+boundary would be strictly weaker testing; my own sealed fixture deliberately
+placed no record at a boundary instant for exactly this reason. Being the
+field's only exclusive-`until` is an observation about cross-repo consistency,
+not a defect of this suite, and if the ambiguity costs anything it should be
+charged where user expectations live (docs/correctness via the acceptance
+fixture) — and my acceptance pass, which avoided the undefined point, found
+nothing to charge.
