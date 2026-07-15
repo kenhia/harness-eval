@@ -23,3 +23,37 @@ comparable to Copilot AI credits and are not held against the runner.
 **Worst thing:** Spend. Nineteen minutes and ~3× the same-runner baseline's tokens, with the first ~8 minutes producing no edits — planning depth sized for a project an order of magnitude larger (and the run log's own observation agrees).
 
 **Narrative (≤150 words):** The strongest artifact of the seven runs. Everything 01–05 got dinged for is handled here: naive ISO-8601 bounds are coerced and tested, escaped quotes can't shift fields, months parse under any locale, tie-breaks are asserted against adversarially-ordered input, and the README documents every observable decision including its limits. The hostile.log fixture and the 137-test suite target exactly where regressions hide. Commit messages read like design reviews; TODOS.md records what the review chose *not* to build and why — process artifacts with genuine archaeological value. The cost is real: 2.2× the wall-clock and ~3× the tokens of the identical-runner baseline for margins the spec never asks for, echoing run 01's pattern — the harness bought robustness, not throughput. One factual note: the run log's observation that this project "didn't split analyze/cli/parser" is wrong — it has the field's cleanest five-module split.
+
+## Reconciliation round 1
+
+**Code quality: revised 5 → 4.**
+
+The fact that moves me is (i), the verified README-vs-code contradiction. My
+5 treated the unused LogEntry fields and the unreachable blank-line branch as
+nits because nothing observable depended on them — but the memory claim is
+different in kind: README line 185 states a behavioral guarantee ("memory
+scales with distinct values, not file size") that `read_entries`
+(source.py:43, `entries = list(_iter_entries(...))`) does not honor — peak
+memory scales with valid-line count, and the `_iter_entries` generator whose
+only caller immediately materializes it is exactly the speculative-streaming
+machinery the rubric's "no speculative abstraction" language targets. Taken
+together with my own recorded dead-code nits, that is a real dock, not a
+footnote.
+
+Sol's 3 overshoots, though, because the remaining charges don't hold up
+against the artifact: the five-module split is load-bearing rather than
+sized-for-a-larger-system — each seam is a distinct concern the 137-test
+suite attaches to directly, and two of the seams produced verified
+correctness wins (naive-UTC coercion at the argparse boundary; a single
+render path that keeps `--format json` from being a second code path). The
+lone `except Exception` is a top-level exit-70 policy that reports to stderr
+and never masks a result — a deliberate sysexits convention, not a broad
+swallow — and `dict[str, Any]` across a one-way analyze→render boundary of
+four fixed shapes is the *lighter* choice; typed result classes would add
+the machinery sol is objecting to. Query-stripping is a documented, tested,
+RFC-grounded interpretation, not a defect. Parser rigor (escaped-quote
+safety, locale-proof months, `-`→None) is verified and undisputed; it keeps
+this at 4.
+
+**Revised weighted total: 90/100** (4/5×20 on code quality; all other
+dimensions unchanged).
