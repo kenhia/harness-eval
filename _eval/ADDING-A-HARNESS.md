@@ -46,6 +46,17 @@ undocumented global writes (Phoenix, gstack's `~/.gstack`).
 - **Never run a harness-free control with a harness-bearing profile** —
   that's the Phoenix-contamination mistake with new paint. One profile per
   environment flavor.
+- Profiles need their own `settings.json` (`.claude/settings.json` in the
+  profile): at minimum `permissions.defaultMode: "bypassPermissions"` +
+  `skipDangerousModePermissionPrompt: true` for hands-off runs — a
+  HOME-sandbox does NOT inherit the real account's permission settings.
+  Exclude personal hooks/statusline (they'd publish eval sessions to
+  personal dashboards).
+- **Build a profile under its final name.** Harness installers bake
+  absolute profile paths into hooks, compiled binaries, and caches
+  (gstack's session hook + `browse` binary). Renaming a profile afterwards
+  strands those; if it happens, grep the profile for the old path and
+  rebuild the harness's compiled artifacts under the corrected HOME.
 - After installing, **verify no real-HOME leakage** (check `~/.claude`,
   `~/.copilot`, `~/.<harness>` timestamps/paths) and sanity-check the
   profile with a cheap `claude -p` asking what skills/MCP servers it sees.
