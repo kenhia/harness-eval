@@ -88,3 +88,12 @@ and available to every contender equally.
 - Infographic: headline scores, cost/efficiency, one-line verdicts.
 - Lessons learned → design for the real evaluation harness (see
   `notes/lessons.md`, seeded during setup).
+
+## Expanding the field (run 1.5+)
+
+New contenders are added incrementally — one run + a delta grading pass +
+a short delta consensus; prior grades are frozen, never re-derived. Process:
+[ADDING-A-HARNESS.md](ADDING-A-HARNESS.md). First expansion: 
+(garrytan/gstack, Claude-Code-native — introducing the runner covariate;
+go command: ; global piece sandboxed in the 
+HOME-profile, staging repo at ).
