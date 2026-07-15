@@ -33,7 +33,7 @@ undocumented global writes (Phoenix, gstack's `~/.gstack`).
   - Copilot CLI: `_eval/profiles/<name>/.copilot`, swapped with
     `_eval/bin/use-profile.sh` (symlink on `~/.copilot`).
   - Claude Code: profiles used as a **fake HOME**
-    (`env HOME=<profile> PATH=$PATH claude …`). Naming mirrors the Copilot
+    (`env HOME=<profile> claude …`). Naming mirrors the Copilot
     side: `claude-clean` is the harness-free base (credentials + klams/korg
     MCP only, no skills); a harness with global pieces gets its own copy,
     `claude-<harness>` (e.g. `claude-gstack`), with the global piece in the
