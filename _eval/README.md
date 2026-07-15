@@ -1,5 +1,12 @@
 # Comparative Harness Evaluation — POC run 1
 
+> [!IMPORTANT]
+> **Results from this POC are an initial exploration.** One run per harness
+> (n = 1), a single command each, a single small greenfield project. Expect
+> higher separation as the eval harness improves and covers a wider scope of
+> tasks. See the repo-root README for the results and caveats.
+
+
 Five identical greenfield tasks, one per harness, same model, same prompt body.
 Graded blind-ish by two independent LLM reviewers plus an objective acceptance
 checklist. Output of run 1: a white paper, an infographic, and a
