@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from datetime import datetime
 from typing import Any
 
 from .analyze import Summary
@@ -10,7 +11,7 @@ from .analyze import Summary
 BAR_WIDTH = 40
 
 
-def _iso(value: Any) -> str:
+def _iso(value: datetime) -> str:
     return value.isoformat()
 
 
@@ -47,9 +48,12 @@ def top_text(rows: list[tuple[str, int]], by: str) -> str:
 
 
 def top_json(rows: list[tuple[str, int]], by: str) -> dict[str, Any]:
+    # Statuses are grouped as strings so ranking stays uniform, but JSON
+    # consumers expect the same int type that `errors` output uses.
+    cast = int if by == "status" else str
     return {
         "by": by,
-        "results": [{"value": value, "count": count} for value, count in rows],
+        "results": [{"value": cast(value), "count": count} for value, count in rows],
     }
 
 
@@ -75,7 +79,9 @@ def hourly_text(buckets: list[int]) -> str:
     width = max(len(str(count)) for count in buckets)
     lines = []
     for hour, count in enumerate(buckets):
-        filled = 0 if peak == 0 else round(BAR_WIDTH * count / peak)
+        # Any nonzero count gets at least one block: rounding a small count down
+        # to an empty bar would make a busy hour look identical to an idle one.
+        filled = 0 if count == 0 else max(1, round(BAR_WIDTH * count / peak))
         lines.append(f"{hour:02d}  {count:>{width}}  {'#' * filled}".rstrip())
     return "\n".join(lines)
 

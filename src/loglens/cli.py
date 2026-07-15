@@ -8,7 +8,7 @@ from collections.abc import Sequence
 from datetime import datetime
 
 from . import analyze, render
-from .parser import ParseResult, iter_file, parse_lines
+from .parser import Entry, ParseResult, iter_file, parse_lines
 
 EXIT_OK = 0
 EXIT_NO_VALID_LINES = 1
@@ -82,7 +82,7 @@ def _load(path: str) -> ParseResult | None:
         return None
 
 
-def _render(args: argparse.Namespace, entries: Sequence) -> str:
+def _render(args: argparse.Namespace, entries: Sequence[Entry]) -> str:
     as_json = args.format == "json"
     match args.command:
         case "summary":

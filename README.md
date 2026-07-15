@@ -156,6 +156,12 @@ $ loglens --format json top tests/fixtures/sample.log --by ip -n 2 | jq '.result
   so it never contaminates `text` or `json` output on stdout. Blank lines are
   ignored and not counted as malformed.
 - **Timestamps** keep the timezone offset recorded in the log.
+- **JSON types** are stable across subcommands: an HTTP status is always a
+  number (`"value": 200` from `top --by status`, `"status": 404` from
+  `errors`), while IPs and paths are strings.
+- **Histogram bars** are scaled to the busiest hour, and any hour with at least
+  one request always gets at least one block, so a quiet hour is never rendered
+  as an empty one.
 
 ### Exit codes
 

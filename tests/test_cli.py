@@ -1,4 +1,5 @@
 import json
+import os
 
 import pytest
 
@@ -30,6 +31,7 @@ def test_missing_file_exits_two(capsys, tmp_path):
     assert "cannot read" in err
 
 
+@pytest.mark.skipif(os.geteuid() == 0, reason="root bypasses file permission bits")
 def test_unreadable_file_exits_two(capsys, tmp_path):
     log = tmp_path / "denied.log"
     log.write_text(VALID + "\n")
@@ -139,10 +141,17 @@ def test_top_respects_n(capsys, sample_log):
     assert len(json.loads(out)["results"]) == 2
 
 
-def test_top_defaults_to_ten(capsys, sample_log):
+def test_top_defaults_to_ten(capsys, tmp_path):
+    log = tmp_path / "many_paths.log"
+    log.write_text("".join(VALID.replace("/index.html", f"/p{i:02d}") + "\n" for i in range(15)))
+    _, out, _ = run(capsys, "--format", "json", "top", str(log), "--by", "path")
+    assert len(json.loads(out)["results"]) == 10
+
+
+def test_top_returns_all_when_fewer_than_n_exist(capsys, sample_log):
     _, out, _ = run(capsys, "--format", "json", "top", sample_log, "--by", "ip")
     payload = json.loads(out)
-    assert len(payload["results"]) == 5  # fewer than 10 distinct IPs exist
+    assert len(payload["results"]) == 5  # the fixture only has 5 distinct IPs
     assert payload["by"] == "ip"
 
 
@@ -169,6 +178,18 @@ def test_top_rejects_non_positive_n(capsys, sample_log):
     with pytest.raises(SystemExit) as exc:
         main(["top", sample_log, "--by", "ip", "-n", "0"])
     assert exc.value.code == 2
+
+
+def test_top_status_json_is_int_like_errors_json(capsys, sample_log):
+    _, top_out, _ = run(capsys, "--format", "json", "top", sample_log, "--by", "status", "-n", "1")
+    _, err_out, _ = run(capsys, "--format", "json", "errors", sample_log)
+    assert json.loads(top_out)["results"][0]["value"] == 200
+    assert isinstance(json.loads(err_out)["results"][0]["status"], int)
+
+
+def test_top_ip_json_stays_a_string(capsys, sample_log):
+    _, out, _ = run(capsys, "--format", "json", "top", sample_log, "--by", "ip", "-n", "1")
+    assert json.loads(out)["results"][0]["value"] == "203.0.113.7"
 
 
 def test_errors_json_sorted_by_count(capsys, sample_log):
