@@ -106,3 +106,11 @@ def test_no_valid_lines_exit_1(tmp_path, capsys):
 def test_top_requires_by():
     with pytest.raises(SystemExit):
         main(["top", FIXTURE])
+
+
+def test_invalid_since_exit_2(capsys):
+    code = main(["errors", FIXTURE, "--since", "not-a-date"])
+    out = capsys.readouterr()
+    assert code == 2
+    assert out.out == ""
+    assert "invalid ISO 8601 timestamp" in out.err

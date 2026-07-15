@@ -162,8 +162,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     elif args.command == "top":
         output = _render_top(records, args.by, args.n, fmt)
     elif args.command == "errors":
-        since = _parse_iso(args.since) if args.since else None
-        until = _parse_iso(args.until) if args.until else None
+        try:
+            since = _parse_iso(args.since) if args.since else None
+            until = _parse_iso(args.until) if args.until else None
+        except ValueError as exc:
+            print(f"loglens: invalid ISO 8601 timestamp: {exc}", file=sys.stderr)
+            return 2
         output = _render_errors(records, since, until, fmt)
     elif args.command == "hourly":
         output = _render_hourly(records, fmt)
