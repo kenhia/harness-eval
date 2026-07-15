@@ -1,0 +1,14 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+build/
+dist/
+
+# uv
+.venv/
+
+# ATV ephemeral observation log
+.atv/observations.jsonl
