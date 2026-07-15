@@ -94,3 +94,37 @@ New lessons from the grading phase:
 10. **Ambient MCP services are part of the environment definition.** korg
     being available let run 04 file a work item — a process artifact other
     harnesses don't produce. Decide in/out per cell and record it.
+
+## Filled in after run 1.5 — expansion: 06-gstack + 07-baseline-claude (2026-07-15)
+
+First use of the ADDING-A-HARNESS.md process (staging repos, HOME-sandbox
+profiles, delta grading with frozen priors, precedent-based adjudication).
+Full analysis in `_eval/report/lessons-learned.md` §run 1.5; headlines:
+
+- **The runner is the biggest effect measured so far.** The bare Claude
+  Code control (07) scored 95 and topped the seven-entry field; 05-vs-07
+  (same bare model, different CLI) is +3 points, more than any harness's
+  margin over its own baseline. gstack (06) landed 8 points *below* its
+  same-runner control at ~3× the cost — run 01's robustness-for-spend
+  trade replayed, unsurprising given 01 bundles gstack.
+- **Claude Code HOME-sandboxes: three sharp edges** now codified in
+  ADDING-A-HARNESS.md §2 — profiles need their own `settings.json`
+  (permissions don't inherit), `.claude.json` lives at the profile root,
+  and profiles must be built under their final name (gstack bakes absolute
+  paths into hooks/binaries).
+- **Near-miss: gstack's global piece initially landed in `claude-clean`** —
+  the control's profile — before being split out to `claude-gstack`. The
+  Phoenix contamination lesson generalizes to every new runner: one profile
+  per environment flavor, controls never share.
+- **The A5 boundary dispute recurred identically on 06** (sol's fixture
+  probes the boundary; repo documents half-open; adjudicated PASS by run-1
+  precedent). Frozen-delta graders can't see prior adjudications, so
+  ambiguity gets re-litigated every expansion until the acceptance suite is
+  executable with pinned semantics.
+- **Run logs left `claude-code version` unfilled** — with auto-updating
+  CLIs that's a lost covariate; v2 preflight captures versions
+  mechanically.
+- **Delta-grading calibration from written sheets held** (07: 96/94; the
+  one ≥2 gap closed in one round with both graders converging on 4).
+- **Objective checklist: 7/7 repos at 12/12** — still zero discrimination;
+  the hard tier remains v2's highest-value change.

@@ -1,6 +1,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>harness-eval · run 1 — results</title>
+<title>harness-eval · runs 1 + 1.5 — results</title>
 <style>
   :root {
     color-scheme: light;
@@ -106,6 +106,12 @@
   section .sub { margin: 0 0 18px; font-size: 14px; color: var(--ink-muted); max-width: 68ch; }
 
   .chart { background: var(--surface); border: 1px solid var(--ring); border-radius: 8px; padding: 20px 22px 14px; }
+  .chart + .chart { margin-top: 12px; }
+  .chart .chart-label {
+    font-family: ui-monospace, Consolas, monospace; font-size: 11.5px;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-muted);
+    margin: 0 0 8px;
+  }
   .row {
     display: grid; grid-template-columns: 168px 1fr 84px; align-items: center;
     gap: 12px; padding: 7px 0;
@@ -142,6 +148,8 @@
     color: var(--ink-muted); vertical-align: 1px;
   }
 
+  .duo { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
+
   .verdicts { display: flex; flex-direction: column; gap: 8px; }
   .verdict {
     display: grid; grid-template-columns: 44px 200px 1fr; gap: 14px; align-items: baseline;
@@ -165,6 +173,10 @@
     font-family: ui-monospace, Consolas, monospace; font-size: 13px;
     background: var(--track); border-radius: 4px; padding: 1px 5px;
   }
+  .callout .delta {
+    font-family: ui-monospace, Consolas, monospace; font-size: 24px; font-weight: 700;
+    color: var(--ink); display: block; margin-bottom: 6px; font-variant-numeric: tabular-nums;
+  }
 
   details { border: 1px solid var(--ring); border-radius: 8px; background: var(--surface); }
   details summary {
@@ -172,7 +184,7 @@
   }
   details[open] summary { border-bottom: 1px solid var(--grid); }
   .tblwrap { overflow-x: auto; padding: 6px 12px 12px; }
-  table { border-collapse: collapse; font-size: 13.5px; width: 100%; min-width: 640px; }
+  table { border-collapse: collapse; font-size: 13.5px; width: 100%; min-width: 760px; }
   th, td { padding: 7px 10px; text-align: right; font-variant-numeric: tabular-nums; }
   th:first-child, td:first-child { text-align: left; }
   thead th { color: var(--ink-muted); font-weight: 600; font-size: 12px; border-bottom: 1px solid var(--grid); }
@@ -186,39 +198,64 @@
 <div class="wrap">
 
   <header>
-    <div class="eyebrow">harness-eval · POC run 1 · 2026-07-15 · kai / Copilot CLI / Claude Opus 4.8</div>
-    <h1>Four agent harnesses, one bare model, the same task. The bare model tied for second.</h1>
-    <p class="thesis">Five identical greenfield builds of a log-analysis CLI, one per harness. After
-    adjudication, <strong>every run passed all 12 sealed acceptance checks</strong> — the harnesses
-    changed the cost of shipping, not what shipped. The 4.5-point spread is inside the noise floor of n=1.</p>
+    <div class="eyebrow">harness-eval · POC runs 1 + 1.5 · 2026-07-15 · kai · Copilot CLI + Claude Code · Claude Opus 4.8</div>
+    <h1>Five agent harnesses, two bare controls, two runners. A bare control won.</h1>
+    <p class="thesis">Seven identical greenfield builds of a log-analysis CLI. After adjudication,
+    <strong>every run passed all 12 sealed acceptance checks</strong> — harnesses changed the cost of
+    shipping, not what shipped. Run 1.5's twist: the biggest quality delta came from the
+    <strong>runner</strong>, not any harness. Spreads are inside the noise floor of n=1.</p>
   </header>
 
   <div class="tiles">
-    <div class="tile"><div class="k">5 × 12/12</div><div class="l">acceptance checks passed — every run, after consensus adjudication</div></div>
-    <div class="tile"><div class="k">0</div><div class="l">human interventions across all five runs</div></div>
-    <div class="tile"><div class="k">4.5 <small>pts</small></div><div class="l">total spread on a 100-point weighted rubric</div></div>
-    <div class="tile"><div class="k">3.1×</div><div class="l">cost of the priciest harness vs the no-harness baseline</div></div>
+    <div class="tile"><div class="k">7 × 12/12</div><div class="l">acceptance checks passed — every run, after consensus adjudication</div></div>
+    <div class="tile"><div class="k">0</div><div class="l">human interventions across all seven runs</div></div>
+    <div class="tile"><div class="k">+3 <small>pts</small></div><div class="l">runner effect: same bare model, Copilot CLI → Claude Code (05 vs 07)</div></div>
+    <div class="tile"><div class="k">−8 <small>pts</small></div><div class="l">gstack vs its own same-runner baseline, at 3× the cost (06 vs 07)</div></div>
   </div>
 
   <section>
     <h2>Consensus weighted score</h2>
     <p class="sub">Two independent graders (Fable, GPT Sol), 7 weighted dimensions, one reconciliation
-    round. Full 0–100 axis — the field is tightly bunched.</p>
+    round per run. Full 0–100 axis — the field is tightly bunched; both extremes are Claude-runner entries.</p>
     <div class="chart">
+      <div class="row"><span class="name">baseline-claude <span class="chip">control · claude</span><span class="h">07 · raw prompt, no harness</span></span><span class="track"><span class="fill control" style="width:95%"></span></span><span class="val">95.0</span></div>
       <div class="row"><span class="name">kprojects<span class="h">04 · sprint record + instructions</span></span><span class="track"><span class="fill" style="width:92.5%"></span></span><span class="val">92.5</span></div>
       <div class="row"><span class="name">working-skill-repo<span class="h">03 · KB skills</span></span><span class="track"><span class="fill" style="width:92%"></span></span><span class="val">92.0</span></div>
       <div class="row"><span class="name">baseline <span class="chip">control</span><span class="h">05 · raw prompt, no harness</span></span><span class="track"><span class="fill control" style="width:92%"></span></span><span class="val">92.0</span></div>
       <div class="row"><span class="name">ATV-Phoenix<span class="h">02 · global Copilot plugin</span></span><span class="track"><span class="fill" style="width:89%"></span></span><span class="val">89.0</span></div>
       <div class="row"><span class="name">ATV-StarterKit<span class="h">01 · /lfg pipeline</span></span><span class="track"><span class="fill" style="width:88%"></span></span><span class="val">88.0</span></div>
+      <div class="row"><span class="name">gstack <span class="chip">claude</span><span class="h">06 · /autoplan + skills</span></span><span class="track"><span class="fill" style="width:87%"></span></span><span class="val">87.0</span></div>
       <div class="axis"><span></span><span class="ticks"><span>0</span><span>25</span><span>50</span><span>75</span><span>100</span></span><span></span></div>
     </div>
   </section>
 
   <section>
+    <h2>The two readouts run 1.5 was built for</h2>
+    <p class="sub">A new runner requires a new control: 07 anchors Claude Code the way 05 anchors
+    Copilot CLI. That pairing isolates two effects run 1 couldn't see.</p>
+    <div class="duo">
+      <div class="callout"><span class="delta">05 → 07 · +3.0 pts</span>
+        <strong>Runner effect, no harness anywhere.</strong> The Claude Code control wrote 77 tests to
+        05's 23, added an unprompted self-review commit that fixed two real bugs, and handled the
+        naive-timestamp edge that crashes 05 — for +4 minutes of wall-clock (tests +1, process +0.5,
+        efficiency −0.5).
+      </div>
+      <div class="callout"><span class="delta">07 → 06 · −8.0 pts</span>
+        <strong>gstack vs its own baseline, same runner.</strong> The harness improved no dimension.
+        It bought the field's most hardened parser and 137 tests at 2.2× the control's wall-clock and
+        ~3× its cost (docs −0.5, process −0.5, efficiency −3) — run 01's robustness-for-spend trade,
+        replayed. Not a coincidence: ATV-StarterKit bundles gstack.
+      </div>
+    </div>
+  </section>
+
+  <section>
     <h2>What each result cost</h2>
-    <p class="sub">AI credits per run (bar), with wall-clock and uploaded tokens alongside.
+    <p class="sub">Cost per run within each runner. Copilot AI credits and Claude Code
+    <code>/cost</code> dollars are different currencies — compare bars only within a chart.
     Every run delivered the same 12/12 acceptance result.</p>
     <div class="chart">
+      <p class="chart-label">Run 1 · Copilot CLI · AI credits</p>
       <div class="row"><span class="name">ATV-StarterKit<span class="h">10m 54s · 4.7M tokens</span></span><span class="track"><span class="fill cost" style="width:97.8%"></span></span><span class="val">440 <small>3.08×</small></span></div>
       <div class="row"><span class="name">ATV-Phoenix<span class="h">7m 12s · 2.9M tokens</span></span><span class="track"><span class="fill cost" style="width:58.9%"></span></span><span class="val">265 <small>1.85×</small></span></div>
       <div class="row"><span class="name">kprojects<span class="h">6m 52s · 2.8M tokens</span></span><span class="track"><span class="fill cost" style="width:56%"></span></span><span class="val">252 <small>1.76×</small></span></div>
@@ -226,25 +263,34 @@
       <div class="row"><span class="name">baseline <span class="chip">control</span><span class="h">4m 32s · 1.3M tokens</span></span><span class="track"><span class="fill control cost" style="width:31.8%"></span></span><span class="val">143 <small>1×</small></span></div>
       <div class="axis"><span></span><span class="ticks"><span>0</span><span>150</span><span>300</span><span>450</span></span><span></span></div>
     </div>
+    <div class="chart">
+      <p class="chart-label">Run 1.5 · Claude Code · /cost dollars</p>
+      <div class="row"><span class="name">gstack<span class="h">19m 05s · 122.7k tokens out</span></span><span class="track"><span class="fill cost" style="width:90.3%"></span></span><span class="val">$10.84 <small>3.00×</small></span></div>
+      <div class="row"><span class="name">baseline-claude <span class="chip">control</span><span class="h">8m 38s · 43.5k tokens out</span></span><span class="track"><span class="fill control cost" style="width:30.1%"></span></span><span class="val">$3.61 <small>1×</small></span></div>
+      <div class="axis"><span></span><span class="ticks"><span>0</span><span>$4</span><span>$8</span><span>$12</span></span><span></span></div>
+    </div>
   </section>
 
   <div class="callout">
     <strong>The only real quality signal sat outside the checklist.</strong> An offset-less ISO 8601
     window bound (<code>--since 2026-07-14T07:00:00</code>) crashes Phoenix, working-skill-repo, and
-    the baseline with a raw <code>TypeError</code> — in Phoenix&rsquo;s case the README&rsquo;s own example is the
-    crashing form. kprojects is the only repo that handles, documents, <em>and tests</em> that edge;
-    StarterKit documents explicit boundary semantics end to end. That robustness — not acceptance —
-    is what the extra tokens bought, where they bought anything at all.
+    the Copilot baseline with a raw <code>TypeError</code> — in Phoenix&rsquo;s case the README&rsquo;s own example is
+    the crashing form. In run 1 only kprojects handled, documented, <em>and tested</em> that edge. Run 1.5
+    sharpened the signal: <strong>both Claude-runner runs handle it — including the bare control</strong>, which
+    also self-reviewed and fixed two real bugs unprompted. The robustness that harnesses spent 2–3×
+    baseline cost to obtain showed up on the second runner for free.
   </div>
 
   <section>
     <h2>One-line verdicts</h2>
     <div class="verdicts">
-      <div class="verdict"><span class="rank">1</span><span class="who">kprojects<span class="h">92.5 · 252 credits</span></span><p class="line">Wins on substance: a decision record that isn&rsquo;t ceremony and the field&rsquo;s only tested timezone edge — at mid-field cost.</p></div>
-      <div class="verdict"><span class="rank">2=</span><span class="who">working-skill-repo<span class="h">92.0 · 216 credits</span></span><p class="line">The efficiency frontier of the harnesses: 12/12 at 1.5× baseline, plus the field&rsquo;s best judgment call.</p></div>
-      <div class="verdict"><span class="rank">2=</span><span class="who">baseline<span class="h">92.0 · 143 credits</span></span><p class="line">The control that embarrassed the field: matched every sealed check at a third of the price.</p></div>
-      <div class="verdict"><span class="rank">4</span><span class="who">ATV-Phoenix<span class="h">89.0 · 265 credits</span></span><p class="line">Clean, correct, textbook commits — but the machinery left no fingerprints on the artifact.</p></div>
-      <div class="verdict"><span class="rank">5</span><span class="who">ATV-StarterKit<span class="h">88.0 · 440 credits</span></span><p class="line">Deepest process, best tests, priciest ticket — the 220-line plan never repaid its 3× token bill.</p></div>
+      <div class="verdict"><span class="rank">1</span><span class="who">baseline-claude<span class="h">95.0 · $3.61 · control</span></span><p class="line">The control that won the eval: 77 tests, an unprompted self-review that caught real bugs, the timezone edge handled — no harness in sight.</p></div>
+      <div class="verdict"><span class="rank">2</span><span class="who">kprojects<span class="h">92.5 · 252 credits</span></span><p class="line">Run 1&rsquo;s winner on substance: a decision record that isn&rsquo;t ceremony and the Copilot field&rsquo;s only tested timezone edge — at mid-field cost.</p></div>
+      <div class="verdict"><span class="rank">3=</span><span class="who">working-skill-repo<span class="h">92.0 · 216 credits</span></span><p class="line">The efficiency frontier of the harnesses: 12/12 at 1.5× baseline, plus the field&rsquo;s best judgment call.</p></div>
+      <div class="verdict"><span class="rank">3=</span><span class="who">baseline<span class="h">92.0 · 143 credits · control</span></span><p class="line">The control that embarrassed run 1&rsquo;s field: matched every sealed check at a third of the price.</p></div>
+      <div class="verdict"><span class="rank">5</span><span class="who">ATV-Phoenix<span class="h">89.0 · 265 credits</span></span><p class="line">Clean, correct, textbook commits — but the machinery left no fingerprints on the artifact.</p></div>
+      <div class="verdict"><span class="rank">6</span><span class="who">ATV-StarterKit<span class="h">88.0 · 440 credits</span></span><p class="line">Deepest process, best run-1 tests, priciest ticket — the 220-line plan never repaid its 3× token bill.</p></div>
+      <div class="verdict"><span class="rank">7</span><span class="who">gstack<span class="h">87.0 · $10.84</span></span><p class="line">The strongest artifact at the worst exchange rate: a hardened parser and 137 tests, 8 points below its own baseline at 3× the cost.</p></div>
     </div>
   </section>
 
@@ -253,16 +299,16 @@
       <summary>Full consensus scores by dimension</summary>
       <div class="tblwrap">
         <table>
-          <thead><tr><th>dimension (weight)</th><th>kprojects</th><th>working-skill</th><th>baseline</th><th>Phoenix</th><th>StarterKit</th></tr></thead>
+          <thead><tr><th>dimension (weight)</th><th>baseline-claude</th><th>kprojects</th><th>working-skill</th><th>baseline</th><th>Phoenix</th><th>StarterKit</th><th>gstack</th></tr></thead>
           <tbody>
-            <tr><td>correctness (30)</td><td>5</td><td>5</td><td>5</td><td>5</td><td>5</td></tr>
-            <tr><td>code quality (20)</td><td>4.5</td><td>4</td><td>4</td><td>4</td><td>4.5</td></tr>
-            <tr><td>tests (15)</td><td>4.5</td><td>4</td><td>4</td><td>4</td><td>5</td></tr>
-            <tr><td>docs (10)</td><td>5</td><td>5</td><td>5</td><td>4.5</td><td>4.5</td></tr>
-            <tr><td>process (10)</td><td>4.5</td><td>5</td><td>4.5</td><td>5</td><td>3.5</td></tr>
-            <tr><td>efficiency (10)</td><td>3.5</td><td>4.5</td><td>5</td><td>3.5</td><td>2</td></tr>
-            <tr><td>autonomy (5)</td><td>5</td><td>5</td><td>5</td><td>5</td><td>5</td></tr>
-            <tr><td><strong>weighted total</strong></td><td class="win">92.5</td><td>92.0</td><td>92.0</td><td>89.0</td><td>88.0</td></tr>
+            <tr><td>correctness (30)</td><td>5</td><td>5</td><td>5</td><td>5</td><td>5</td><td>5</td><td>5</td></tr>
+            <tr><td>code quality (20)</td><td>4</td><td>4.5</td><td>4</td><td>4</td><td>4</td><td>4.5</td><td>4</td></tr>
+            <tr><td>tests (15)</td><td>5</td><td>4.5</td><td>4</td><td>4</td><td>4</td><td>5</td><td>5</td></tr>
+            <tr><td>docs (10)</td><td>5</td><td>5</td><td>5</td><td>5</td><td>4.5</td><td>4.5</td><td>4.5</td></tr>
+            <tr><td>process (10)</td><td>5</td><td>4.5</td><td>5</td><td>4.5</td><td>5</td><td>3.5</td><td>4.5</td></tr>
+            <tr><td>efficiency (10)</td><td>4.5</td><td>3.5</td><td>4.5</td><td>5</td><td>3.5</td><td>2</td><td>1.5</td></tr>
+            <tr><td>autonomy (5)</td><td>5</td><td>5</td><td>5</td><td>5</td><td>5</td><td>5</td><td>5</td></tr>
+            <tr><td><strong>weighted total</strong></td><td class="win">95.0</td><td>92.5</td><td>92.0</td><td>92.0</td><td>89.0</td><td>88.0</td><td>87.0</td></tr>
           </tbody>
         </table>
       </div>
@@ -270,10 +316,12 @@
   </section>
 
   <footer>
-    <p><strong>Read with care:</strong> n=1 per harness; the spec, the eval, and the winning harness
-    (kprojects) share an author; harness artifacts self-identify to graders; all runs used the
-    Copilot CLI runner that three of four harnesses require. One acceptance dispute (a window-boundary
-    record) was adjudicated in a fresh clone — the spec was silent on boundary semantics, and both
+    <p><strong>Read with care:</strong> n=1 per harness; the spec, the eval, and the top-ranked harness
+    (kprojects) share an author; harness artifacts self-identify to graders; runs 01–05 used Copilot CLI,
+    06–07 Claude Code — cost units aren&rsquo;t comparable across runners, and cross-runner score gaps carry
+    the measured runner effect. ATV-StarterKit bundles gstack, so 01 and 06 share DNA. The Claude runs&rsquo;
+    exact tool build went unrecorded. The window-boundary acceptance dispute recurred on gstack and was
+    adjudicated in a fresh clone by run 1&rsquo;s precedent — the spec is silent on boundary semantics, and both
     interpretations were ruled permissible.</p>
     <p class="mono">method &amp; caveats: _eval/report/whitepaper.md · grades: _eval/grades/final.md</p>
   </footer>

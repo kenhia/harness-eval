@@ -59,3 +59,57 @@ boundary semantics in the spec or test both conventions as acceptable.
 | 03-working-skill-repo | 12/12 | 5 |
 | 04-kprojects | 12/12 | 5 |
 | 05-baseline | 12/12 | 5 |
+
+## Run 1.5 — delta pass (06-gstack, 07-baseline-claude)
+
+Graders agreed on 23 of 24 acceptance checks (2 repos × 12). Run 07 had no
+disputes (both graders: 12/12, all PASS). One factual dispute on run 06,
+adjudicated below in a fresh clone per protocol. Clone:
+`/tmp/grade-consensus/06-gstack` @ HEAD (0886dc4).
+
+### Dispute — repo 06, check A5 (errors + time window)
+
+**fable1 claimed PASS:** window 07:00→14:00 UTC filtered correctly against
+`sealed-fixture-fable1` — which, as in run 1, has no record exactly on a
+window boundary, so the check could not distinguish inclusive from exclusive
+`--until`.
+
+**sol claimed FAIL:** "The window returned `(404,/alpha,2)` and 8 total
+errors because `filter_entries` applies an exclusive upper bound and drops
+the record exactly at `11:00:00`" (`sealed-fixture-sol`, whose ground truth
+is defined "with both endpoints included" and places a 404 `/alpha` record
+at exactly `2026-07-12T11:00:00`).
+
+**What I ran:** fresh clone, `uv sync`, then `uv run loglens errors
+sealed-fixture-sol/sealed.log --since 2026-07-12T10:00:00+00:00 --until
+2026-07-12T11:00:00+00:00`. Output: alpha 2, beta 2, charlie 2, delta 1,
+epsilon 1 — total 8; the 11:00:00 record is excluded. Sol's factual
+observation **reproduces exactly**; the graders' raw observations do not
+conflict (fable1's fixture was again blind to the boundary).
+
+**Verdict: PASS — by direct application of run 1's Dispute 1 precedent.**
+The situation is point-for-point the one adjudicated for repo 01: the spec
+and `acceptance.md` are silent on boundary semantics, and repo 06's
+half-open choice is deliberate, documented, and internally consistent —
+README line 93 ("Bounds are **half-open** (`since <= t < until`)", with a
+seam-chaining rationale), `--help` ("only requests strictly before this
+time"), the `analyze.py` window docstring, and a dedicated test
+(`tests/test_analyze.py:189` `test_bounds_are_half_open`). A documented,
+tested, spec-permissible interpretation cannot fail an objective acceptance
+check; ruling otherwise would also retroactively contradict the frozen
+run-1 verdict that passed repo 01 for the identical choice. (Delta graders
+correctly could not read `final.md`/`reconcile/`, so sol had no access to
+that precedent — the disagreement is a protocol artifact, not a grading
+error.)
+
+**Eval-design lesson (again):** this is the second occurrence of the exact
+failure mode run 1 predicted — A5 is decidable only by accident of fixture
+design. v2's sealed acceptance must pin boundary semantics in the spec or
+accept both conventions explicitly.
+
+### Adjudicated correctness scores, run 1.5 (final — not returned to graders)
+
+| repo | adjudicated passes | correctness /5 |
+|---|---|---|
+| 06-gstack | 12/12 | 5 |
+| 07-baseline-claude | 12/12 | 5 |

@@ -108,3 +108,68 @@ analysis into the design input for evaluation harness v2.
 - **Keep**: commit-boundary protocol (5), two-grader consensus protocol
   (12), the rubric's weights and anti-ceremony framing — all earned their
   keep in run 1.
+
+## From the run 1.5 expansion (06-gstack + 07-baseline-claude, 2026-07-15)
+
+The first exercise of the ADDING-A-HARNESS.md incremental process: one new
+harness, one new runner, one new control, delta grading, frozen priors.
+What it revealed:
+
+15. **The runner-covariate rule worked — and the covariate turned out to be
+    the biggest effect in the eval.** Pairing the native-runner harness with
+    a same-runner control (07) made 06 scoreable at all: efficiency was
+    judged against 07 plus wall-clock instead of incomparable cost units.
+    But the control itself then topped the whole field (95), beating every
+    harness on either runner — the runner (system prompt, review habits,
+    tool loop) is a quality intervention of the same order as the harnesses
+    being measured. v2's harness × runner matrix is not optional; a
+    harness ranking that doesn't control for runner is measuring the wrong
+    variable.
+16. **HOME-sandbox profiles work for Claude Code but have sharp edges.**
+    Three found during setup: (a) a sandbox does NOT inherit the real
+    account's permission settings — each profile needs its own
+    `settings.json` with bypass-permissions for hands-off runs; (b) with a
+    HOME override, Claude Code reads `$HOME/.claude.json` at the profile
+    ROOT, not `.claude/.claude.json`; (c) **build a profile under its final
+    name** — gstack's installer baked absolute profile paths into its
+    session hook and compiled `browse` binary, so renaming a profile
+    strands them. All three are now codified in ADDING-A-HARNESS.md §2.
+17. **The Phoenix-contamination mistake almost repeated with new paint.**
+    gstack's global piece initially landed in the harness-free
+    `claude-clean` profile — which would have made the control run a gstack
+    run, invalidating exactly the 06-vs-07 comparison the expansion existed
+    to make. Caught at setup and split into `claude-clean`/`claude-gstack`
+    (the staging repo's install commit still records the near-miss). The
+    generalized rule: one profile per environment flavor, and a
+    harness-free control may never share a profile with anything. Lesson 1's
+    "automated preflight that proves the environment" applies to every new
+    runner, not just Copilot.
+18. **Frozen-prior delta grading re-litigates adjudicated questions.** The
+    A5 window-boundary dispute recurred *identically* on repo 06: sol's
+    fixture probes the boundary, the repo documents half-open bounds, sol
+    scored FAIL — and, correctly barred from reading `final.md` and
+    `reconcile/`, had no way to know run 1 had already adjudicated the
+    exact question. The adjudication was a copy-paste of precedent; the
+    grader tokens were wasted. v2: adjudicated *interpretations* (not
+    scores) belong in a sealed addendum future graders DO read — or better,
+    in the executable acceptance suite where the question can't arise.
+19. **Run-log discipline decays without automation.** Both 1.5 run logs
+    left the `claude-code version` field unfilled even though the template
+    asked for it (kai's binary reported 2.1.209 at consensus time the same
+    day, so the build is *probably* known — but "probably" is the point).
+    With auto-updating CLIs, tool version is a real covariate. v2 preflight
+    must capture `<runner> --version`, model ID, and profile name
+    mechanically, not as a checklist item.
+20. **Calibration-from-sheets held up.** The delta graders' scores on 07
+    landed within 2 points of each other (96/94) and their 06 disagreement
+    traced to run 1's two known fault lines (boundary semantics, sol's
+    stricter machinery prior) rather than to scale drift. One
+    reconciliation round closed the only ≥2 gap with both graders moving
+    to the same score from opposite directions. Two-grader + mean-on-≤1 +
+    reconcile-on-≥2 survives the frozen-delta regime; keep it for v2.
+21. **The checklist still doesn't discriminate — now 7 for 7.** Both new
+    runs passed 12/12 (after the precedent adjudication). Two runs, two
+    graders, and a consensus pass added zero information via the objective
+    tier; all signal again came from robustness edges and cost. This
+    hardens lesson 9: v2's hard acceptance tier is the single
+    highest-value change to the eval.
