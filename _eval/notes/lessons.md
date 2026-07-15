@@ -55,3 +55,42 @@ input.
   interprets.
 - **Cross-model axis** later: same harness × {Opus, Sonnet, GPT-x} to test
   the "harnesses matter less as models improve" hypothesis explicitly.
+
+## Filled in after run 1 — grading + consensus (2026-07-15)
+
+Answers to the "to evaluate after run 1" questions above; full analysis in
+`_eval/report/lessons-learned.md`.
+
+- **Did ceremony change the outcome?** No — all five runs passed all 12
+  acceptance checks (after one adjudication), zero interventions everywhere.
+  Ceremony changed *cost*, and in two cases bought robustness outside the
+  checklist (kprojects' tested tz-normalization; StarterKit's review loop
+  catching a real bug pre-done). Baseline tied for 2nd on the weighted rubric.
+- **Token burn / harness overhead** (credits, × baseline 143): KB 216
+  (1.51×), kprojects 252 (1.76×), Phoenix 265 (1.85×), StarterKit 440
+  (3.08×). Wall-clock overhead tracked credits (1.47×–2.40×).
+- **Intervention count:** zero, all runs — this dimension didn't
+  discriminate either.
+- **Grader agreement:** 33 of 35 non-correctness dimension cells within 1
+  point. The exception was a 20-point pre-consensus swing on repo 01, root
+  cause: the spec never pinned `--until` boundary semantics and the two
+  graders' independently generated fixtures differed in whether they probed
+  the boundary (honest PASS and FAIL on the same check). Reconciliation
+  closed it in one round.
+
+New lessons from the grading phase:
+
+7. **The acceptance checklist did not discriminate at frontier capability.**
+   All discriminating signal came from edges *outside* it (offset-less ISO
+   8601 bounds crash 3 of 5 repos with a raw `TypeError`). v2 acceptance
+   needs a hard tier designed to spread the field.
+8. **Sealed acceptance must be one shared executable suite with pinned edge
+   semantics.** Grader-interpreted checklists + per-grader fixtures produced
+   the run's only dispute; "filter correctly" is not a pass criterion.
+   Corollary: spec-pinned edges work — the tie-break rule was pinned and got
+   five identical correct implementations.
+9. **Efficiency scoring was circular** (anchored to the observed field's
+   best/worst). v2: anchor bands to the baseline cell's median across reps.
+10. **Ambient MCP services are part of the environment definition.** korg
+    being available let run 04 file a work item — a process artifact other
+    harnesses don't produce. Decide in/out per cell and record it.

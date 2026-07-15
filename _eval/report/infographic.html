@@ -1,0 +1,281 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>harness-eval · run 1 — results</title>
+<style>
+  :root {
+    color-scheme: light;
+    --page:        #f9f9f7;
+    --surface:     #fcfcfb;
+    --ink:         #0b0b0b;
+    --ink-2:       #52514e;
+    --ink-muted:   #898781;
+    --grid:        #e1e0d9;
+    --baseline:    #c3c2b7;
+    --ring:        rgba(11,11,11,0.10);
+    --score:       #2a78d6;
+    --score-soft:  rgba(42,120,214,0.12);
+    --cost:        #1baf7a;
+    --good:        #006300;
+    --track:       #f0efec;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) {
+      color-scheme: dark;
+      --page:        #0d0d0d;
+      --surface:     #1a1a19;
+      --ink:         #ffffff;
+      --ink-2:       #c3c2b7;
+      --ink-muted:   #898781;
+      --grid:        #2c2c2a;
+      --baseline:    #383835;
+      --ring:        rgba(255,255,255,0.10);
+      --score:       #3987e5;
+      --score-soft:  rgba(57,135,229,0.16);
+      --cost:        #199e70;
+      --good:        #0ca30c;
+      --track:       #232322;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --page:        #0d0d0d;
+    --surface:     #1a1a19;
+    --ink:         #ffffff;
+    --ink-2:       #c3c2b7;
+    --ink-muted:   #898781;
+    --grid:        #2c2c2a;
+    --baseline:    #383835;
+    --ring:        rgba(255,255,255,0.10);
+    --score:       #3987e5;
+    --score-soft:  rgba(57,135,229,0.16);
+    --cost:        #199e70;
+    --good:        #0ca30c;
+    --track:       #232322;
+  }
+  :root[data-theme="light"] {
+    color-scheme: light;
+    --page:        #f9f9f7;
+    --surface:     #fcfcfb;
+    --ink:         #0b0b0b;
+    --ink-2:       #52514e;
+    --ink-muted:   #898781;
+    --grid:        #e1e0d9;
+    --baseline:    #c3c2b7;
+    --ring:        rgba(11,11,11,0.10);
+    --score:       #2a78d6;
+    --score-soft:  rgba(42,120,214,0.12);
+    --cost:        #1baf7a;
+    --good:        #006300;
+    --track:       #f0efec;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--page);
+    color: var(--ink);
+    font: 16px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 48px 24px 72px; display: flex; flex-direction: column; gap: 40px; }
+  .mono { font-family: ui-monospace, "Cascadia Code", "SF Mono", Consolas, monospace; }
+
+  header .eyebrow {
+    font-family: ui-monospace, "Cascadia Code", "SF Mono", Consolas, monospace;
+    font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--ink-muted); margin-bottom: 12px;
+  }
+  header h1 {
+    margin: 0 0 12px; font-size: clamp(26px, 4.5vw, 38px); line-height: 1.15;
+    font-weight: 750; letter-spacing: -0.015em; text-wrap: balance;
+  }
+  header .thesis { margin: 0; max-width: 62ch; color: var(--ink-2); font-size: 17px; }
+  header .thesis strong { color: var(--ink); }
+
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
+  .tile {
+    background: var(--surface); border: 1px solid var(--ring); border-radius: 8px;
+    padding: 16px 18px 14px;
+  }
+  .tile .k { font-size: 30px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.1; }
+  .tile .k small { font-size: 15px; font-weight: 600; color: var(--ink-2); }
+  .tile .l { margin-top: 6px; font-size: 13px; color: var(--ink-muted); line-height: 1.4; }
+
+  section h2 {
+    margin: 0 0 4px; font-size: 19px; font-weight: 700; letter-spacing: -0.01em;
+  }
+  section .sub { margin: 0 0 18px; font-size: 14px; color: var(--ink-muted); max-width: 68ch; }
+
+  .chart { background: var(--surface); border: 1px solid var(--ring); border-radius: 8px; padding: 20px 22px 14px; }
+  .row {
+    display: grid; grid-template-columns: 168px 1fr 84px; align-items: center;
+    gap: 12px; padding: 7px 0;
+  }
+  .row + .row { border-top: 1px solid transparent; }
+  .row:hover { background: var(--score-soft); border-radius: 6px; }
+  .row .name { font-size: 14px; font-weight: 600; text-align: right; line-height: 1.25; }
+  .row .name .h { display: block; font-size: 11.5px; font-weight: 500; color: var(--ink-muted); }
+  .track { position: relative; height: 20px; background: var(--track); border-radius: 0 4px 4px 0; }
+  .fill {
+    position: absolute; inset: 0 auto 0 0; border-radius: 0 4px 4px 0;
+    background: var(--score); min-width: 2px;
+  }
+  .fill.cost { background: var(--cost); }
+  .fill.control {
+    background: transparent; border: 2px solid var(--score);
+  }
+  .fill.control.cost { border-color: var(--cost); }
+  .row .val {
+    font-family: ui-monospace, "Cascadia Code", "SF Mono", Consolas, monospace;
+    font-size: 13.5px; font-variant-numeric: tabular-nums; white-space: nowrap;
+  }
+  .row .val small { color: var(--ink-muted); font-size: 11.5px; }
+  .axis {
+    display: grid; grid-template-columns: 168px 1fr 84px; gap: 12px;
+    font-family: ui-monospace, Consolas, monospace; font-size: 11px; color: var(--ink-muted);
+    padding-top: 8px; margin-top: 4px; border-top: 1px solid var(--grid);
+  }
+  .axis .ticks { display: flex; justify-content: space-between; }
+  .chip {
+    display: inline-block; font-family: ui-monospace, Consolas, monospace;
+    font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase;
+    border: 1px solid var(--ring); border-radius: 999px; padding: 1px 8px;
+    color: var(--ink-muted); vertical-align: 1px;
+  }
+
+  .verdicts { display: flex; flex-direction: column; gap: 8px; }
+  .verdict {
+    display: grid; grid-template-columns: 44px 200px 1fr; gap: 14px; align-items: baseline;
+    background: var(--surface); border: 1px solid var(--ring); border-radius: 8px;
+    padding: 13px 18px;
+  }
+  .verdict .rank {
+    font-family: ui-monospace, Consolas, monospace; font-size: 20px; font-weight: 700;
+    color: var(--score); font-variant-numeric: tabular-nums;
+  }
+  .verdict .who { font-weight: 650; font-size: 14.5px; line-height: 1.3; }
+  .verdict .who .h { display: block; font-weight: 500; font-size: 12px; color: var(--ink-muted); }
+  .verdict .line { font-size: 14.5px; color: var(--ink-2); margin: 0; }
+
+  .callout {
+    background: var(--surface); border: 1px solid var(--ring); border-left: 3px solid var(--score);
+    border-radius: 8px; padding: 16px 20px; font-size: 15px; color: var(--ink-2); max-width: 100%;
+  }
+  .callout strong { color: var(--ink); }
+  .callout code {
+    font-family: ui-monospace, Consolas, monospace; font-size: 13px;
+    background: var(--track); border-radius: 4px; padding: 1px 5px;
+  }
+
+  details { border: 1px solid var(--ring); border-radius: 8px; background: var(--surface); }
+  details summary {
+    cursor: pointer; padding: 12px 18px; font-size: 14px; font-weight: 600; color: var(--ink-2);
+  }
+  details[open] summary { border-bottom: 1px solid var(--grid); }
+  .tblwrap { overflow-x: auto; padding: 6px 12px 12px; }
+  table { border-collapse: collapse; font-size: 13.5px; width: 100%; min-width: 640px; }
+  th, td { padding: 7px 10px; text-align: right; font-variant-numeric: tabular-nums; }
+  th:first-child, td:first-child { text-align: left; }
+  thead th { color: var(--ink-muted); font-weight: 600; font-size: 12px; border-bottom: 1px solid var(--grid); }
+  tbody tr + tr td { border-top: 1px solid var(--grid); }
+  td.win { font-weight: 700; }
+
+  footer { font-size: 13px; color: var(--ink-muted); max-width: 72ch; line-height: 1.6; }
+  footer p { margin: 0 0 8px; }
+</style>
+
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">harness-eval · POC run 1 · 2026-07-15 · kai / Copilot CLI / Claude Opus 4.8</div>
+    <h1>Four agent harnesses, one bare model, the same task. The bare model tied for second.</h1>
+    <p class="thesis">Five identical greenfield builds of a log-analysis CLI, one per harness. After
+    adjudication, <strong>every run passed all 12 sealed acceptance checks</strong> — the harnesses
+    changed the cost of shipping, not what shipped. The 4.5-point spread is inside the noise floor of n=1.</p>
+  </header>
+
+  <div class="tiles">
+    <div class="tile"><div class="k">5 × 12/12</div><div class="l">acceptance checks passed — every run, after consensus adjudication</div></div>
+    <div class="tile"><div class="k">0</div><div class="l">human interventions across all five runs</div></div>
+    <div class="tile"><div class="k">4.5 <small>pts</small></div><div class="l">total spread on a 100-point weighted rubric</div></div>
+    <div class="tile"><div class="k">3.1×</div><div class="l">cost of the priciest harness vs the no-harness baseline</div></div>
+  </div>
+
+  <section>
+    <h2>Consensus weighted score</h2>
+    <p class="sub">Two independent graders (Fable, GPT Sol), 7 weighted dimensions, one reconciliation
+    round. Full 0–100 axis — the field is tightly bunched.</p>
+    <div class="chart">
+      <div class="row"><span class="name">kprojects<span class="h">04 · sprint record + instructions</span></span><span class="track"><span class="fill" style="width:92.5%"></span></span><span class="val">92.5</span></div>
+      <div class="row"><span class="name">working-skill-repo<span class="h">03 · KB skills</span></span><span class="track"><span class="fill" style="width:92%"></span></span><span class="val">92.0</span></div>
+      <div class="row"><span class="name">baseline <span class="chip">control</span><span class="h">05 · raw prompt, no harness</span></span><span class="track"><span class="fill control" style="width:92%"></span></span><span class="val">92.0</span></div>
+      <div class="row"><span class="name">ATV-Phoenix<span class="h">02 · global Copilot plugin</span></span><span class="track"><span class="fill" style="width:89%"></span></span><span class="val">89.0</span></div>
+      <div class="row"><span class="name">ATV-StarterKit<span class="h">01 · /lfg pipeline</span></span><span class="track"><span class="fill" style="width:88%"></span></span><span class="val">88.0</span></div>
+      <div class="axis"><span></span><span class="ticks"><span>0</span><span>25</span><span>50</span><span>75</span><span>100</span></span><span></span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>What each result cost</h2>
+    <p class="sub">AI credits per run (bar), with wall-clock and uploaded tokens alongside.
+    Every run delivered the same 12/12 acceptance result.</p>
+    <div class="chart">
+      <div class="row"><span class="name">ATV-StarterKit<span class="h">10m 54s · 4.7M tokens</span></span><span class="track"><span class="fill cost" style="width:97.8%"></span></span><span class="val">440 <small>3.08×</small></span></div>
+      <div class="row"><span class="name">ATV-Phoenix<span class="h">7m 12s · 2.9M tokens</span></span><span class="track"><span class="fill cost" style="width:58.9%"></span></span><span class="val">265 <small>1.85×</small></span></div>
+      <div class="row"><span class="name">kprojects<span class="h">6m 52s · 2.8M tokens</span></span><span class="track"><span class="fill cost" style="width:56%"></span></span><span class="val">252 <small>1.76×</small></span></div>
+      <div class="row"><span class="name">working-skill-repo<span class="h">6m 40s · 2.1M tokens</span></span><span class="track"><span class="fill cost" style="width:48%"></span></span><span class="val">216 <small>1.51×</small></span></div>
+      <div class="row"><span class="name">baseline <span class="chip">control</span><span class="h">4m 32s · 1.3M tokens</span></span><span class="track"><span class="fill control cost" style="width:31.8%"></span></span><span class="val">143 <small>1×</small></span></div>
+      <div class="axis"><span></span><span class="ticks"><span>0</span><span>150</span><span>300</span><span>450</span></span><span></span></div>
+    </div>
+  </section>
+
+  <div class="callout">
+    <strong>The only real quality signal sat outside the checklist.</strong> An offset-less ISO 8601
+    window bound (<code>--since 2026-07-14T07:00:00</code>) crashes Phoenix, working-skill-repo, and
+    the baseline with a raw <code>TypeError</code> — in Phoenix&rsquo;s case the README&rsquo;s own example is the
+    crashing form. kprojects is the only repo that handles, documents, <em>and tests</em> that edge;
+    StarterKit documents explicit boundary semantics end to end. That robustness — not acceptance —
+    is what the extra tokens bought, where they bought anything at all.
+  </div>
+
+  <section>
+    <h2>One-line verdicts</h2>
+    <div class="verdicts">
+      <div class="verdict"><span class="rank">1</span><span class="who">kprojects<span class="h">92.5 · 252 credits</span></span><p class="line">Wins on substance: a decision record that isn&rsquo;t ceremony and the field&rsquo;s only tested timezone edge — at mid-field cost.</p></div>
+      <div class="verdict"><span class="rank">2=</span><span class="who">working-skill-repo<span class="h">92.0 · 216 credits</span></span><p class="line">The efficiency frontier of the harnesses: 12/12 at 1.5× baseline, plus the field&rsquo;s best judgment call.</p></div>
+      <div class="verdict"><span class="rank">2=</span><span class="who">baseline<span class="h">92.0 · 143 credits</span></span><p class="line">The control that embarrassed the field: matched every sealed check at a third of the price.</p></div>
+      <div class="verdict"><span class="rank">4</span><span class="who">ATV-Phoenix<span class="h">89.0 · 265 credits</span></span><p class="line">Clean, correct, textbook commits — but the machinery left no fingerprints on the artifact.</p></div>
+      <div class="verdict"><span class="rank">5</span><span class="who">ATV-StarterKit<span class="h">88.0 · 440 credits</span></span><p class="line">Deepest process, best tests, priciest ticket — the 220-line plan never repaid its 3× token bill.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <details>
+      <summary>Full consensus scores by dimension</summary>
+      <div class="tblwrap">
+        <table>
+          <thead><tr><th>dimension (weight)</th><th>kprojects</th><th>working-skill</th><th>baseline</th><th>Phoenix</th><th>StarterKit</th></tr></thead>
+          <tbody>
+            <tr><td>correctness (30)</td><td>5</td><td>5</td><td>5</td><td>5</td><td>5</td></tr>
+            <tr><td>code quality (20)</td><td>4.5</td><td>4</td><td>4</td><td>4</td><td>4.5</td></tr>
+            <tr><td>tests (15)</td><td>4.5</td><td>4</td><td>4</td><td>4</td><td>5</td></tr>
+            <tr><td>docs (10)</td><td>5</td><td>5</td><td>5</td><td>4.5</td><td>4.5</td></tr>
+            <tr><td>process (10)</td><td>4.5</td><td>5</td><td>4.5</td><td>5</td><td>3.5</td></tr>
+            <tr><td>efficiency (10)</td><td>3.5</td><td>4.5</td><td>5</td><td>3.5</td><td>2</td></tr>
+            <tr><td>autonomy (5)</td><td>5</td><td>5</td><td>5</td><td>5</td><td>5</td></tr>
+            <tr><td><strong>weighted total</strong></td><td class="win">92.5</td><td>92.0</td><td>92.0</td><td>89.0</td><td>88.0</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </details>
+  </section>
+
+  <footer>
+    <p><strong>Read with care:</strong> n=1 per harness; the spec, the eval, and the winning harness
+    (kprojects) share an author; harness artifacts self-identify to graders; all runs used the
+    Copilot CLI runner that three of four harnesses require. One acceptance dispute (a window-boundary
+    record) was adjudicated in a fresh clone — the spec was silent on boundary semantics, and both
+    interpretations were ruled permissible.</p>
+    <p class="mono">method &amp; caveats: _eval/report/whitepaper.md · grades: _eval/grades/final.md</p>
+  </footer>
+
+</div>

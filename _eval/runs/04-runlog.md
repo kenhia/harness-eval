@@ -4,7 +4,7 @@
 - runner: Copilot CLI on kai
 - model: claude-opus-4.8
 - profile used: clean
-- profile verified with `use-profile.sh status` before start: yes/no
+- profile verified with `use-profile.sh status` before start: yes
 - start time: 17:18:46 UTC (computed: end time - wall clock)
 - end time: 17:25:38 UTC
 - wall clock: 6m 52s
