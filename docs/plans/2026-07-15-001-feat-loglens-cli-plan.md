@@ -1,7 +1,7 @@
 ---
 title: "feat: Build loglens web-access-log analysis CLI"
 type: feat
-status: active
+status: completed
 date: 2026-07-15
 ---
 
@@ -85,7 +85,7 @@ breakdown, time-of-day distribution) directly from a CLF log file.
 
 ## Implementation Units
 
-- [ ] **Unit 1: Project scaffold and packaging**
+- [x] **Unit 1: Project scaffold and packaging**
 
 **Goal:** Create `uv`-managed project with entry point, ruff/pytest config, and a `justfile`.
 
@@ -102,7 +102,7 @@ breakdown, time-of-day distribution) directly from a CLF log file.
 
 **Verification:** `uv sync` succeeds; `uv run loglens --help` runs after CLI exists.
 
-- [ ] **Unit 2: CLF parser**
+- [x] **Unit 2: CLF parser**
 
 **Goal:** Parse a CLF line into a typed record; identify malformed lines.
 
@@ -126,7 +126,7 @@ breakdown, time-of-day distribution) directly from a CLF log file.
 
 **Verification:** `pytest tests/test_parser.py` passes.
 
-- [ ] **Unit 3: Analysis functions**
+- [x] **Unit 3: Analysis functions**
 
 **Goal:** Pure functions computing each command's statistics from records.
 
@@ -152,7 +152,7 @@ breakdown, time-of-day distribution) directly from a CLF log file.
 
 **Verification:** `pytest tests/test_analyze.py` passes.
 
-- [ ] **Unit 4: CLI, rendering, exit codes**
+- [x] **Unit 4: CLI, rendering, exit codes**
 
 **Goal:** Wire argparse subcommands, text/JSON renderers, error handling, and exit codes.
 
@@ -180,7 +180,7 @@ breakdown, time-of-day distribution) directly from a CLF log file.
 
 **Verification:** `pytest tests/test_cli.py` passes; manual `uv run loglens summary tests/fixtures/sample.log`.
 
-- [ ] **Unit 5: Sample fixture and README**
+- [x] **Unit 5: Sample fixture and README**
 
 **Goal:** Provide realistic sample data and user documentation.
 
