@@ -93,7 +93,7 @@ and available to every contender equally.
 
 New contenders are added incrementally — one run + a delta grading pass +
 a short delta consensus; prior grades are frozen, never re-derived. Process:
-[ADDING-A-HARNESS.md](ADDING-A-HARNESS.md). First expansion: 
+[ADDING-A-HARNESS.md](ADDING-A-HARNESS.md). First expansion: `06-gstack`
 (garrytan/gstack, Claude-Code-native — introducing the runner covariate;
-go command: ; global piece sandboxed in the 
-HOME-profile, staging repo at ).
+go command: `/autoplan`; global piece sandboxed in the `claude-clean`
+HOME-profile, staging repo at `~/src/ai-agents/harness-eval-runs/06-gstack`).
