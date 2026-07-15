@@ -4,3 +4,4 @@
 04-kprojects|Build the loglens CLI described below, start to finish, following this repository's project conventions.
 05-baseline|Build the loglens CLI described below, start to finish.
 06-gstack|/autoplan Build the loglens CLI described below, start to finish; after the autonomous planning completes, implement the plan through to the definition of done.
+07-baseline-claude|Build the loglens CLI described below, start to finish.
