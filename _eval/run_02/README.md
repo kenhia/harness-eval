@@ -1,4 +1,11 @@
-# run_02 — complex greenfield: feedhub (STATUS: setup)
+# run_02 — complex greenfield: feedhub (STATUS: FROZEN — executing)
+
+**Frozen 2026-07-16** (after shakedown validation): the spec
+(`prompts/00-project-spec.md`), the prompt files, and the acceptance
+suite (`acceptance/`) are immutable for the life of this field. Changes
+past this point invalidate comparability; suite defects discovered
+mid-field are recorded here and adjudicated, not silently patched.
+Copy-paste run helpers: `.scratch/NN-run-cmds.txt` (gitignored).
 
 The "do the heavy harnesses pull their weight?" run: **feedhub**, a Rust
 workspace of three cooperating binaries (`feedd` REST server / `feedctl`
@@ -78,11 +85,12 @@ Version-drift notes vs run 1:
    # then: delete 99-shakedown + its runlog; log findings below
    ```
 
-2. **Freeze** — spec + acceptance freeze when the first real contender
-   runs.
-3. **Execute** — headless, hands-off, one cell at a time via
-   `run-eval.sh`, then `run-acceptance.sh` (archives output + core/hard
-   tally to `runs/NN-acceptance.txt` automatically).
+2. **Freeze** — DONE 2026-07-16 (see header).
+3. **Execute** (in progress) — headless, hands-off, one cell at a time
+   via `run-eval.sh`, then `run-acceptance.sh` (archives output +
+   core/hard tally to `runs/NN-acceptance.txt` automatically). Run cells
+   serially — concurrent runs share account rate limits and muddy the
+   real-HOME leak canary. Planned order: 06, 07 (tonight), then 01–05.
 
 Note for Rust runs: `run-eval.sh` passes `CARGO_HOME`/`RUSTUP_HOME`
 through to the real installs — rustup breaks under a bare fake-HOME

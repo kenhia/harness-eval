@@ -104,7 +104,7 @@ if [[ $runner == claude ]]; then
     $headless && launch+=(-p "$(cat "$prompt_file")")
 else
     [[ -n $model ]] && launch+=(--model "$model")
-    $headless && launch+=(-p "$(cat "$prompt_file")" --allow-all-tools)
+    $headless && launch+=(-p "$(cat "$prompt_file")" --allow-all)
 fi
 
 echo
