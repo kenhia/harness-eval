@@ -216,7 +216,10 @@ mod tests {
         assert_eq!(e.title, "Hello & World");
         assert_eq!(e.link.as_deref(), Some("http://e/1"));
         assert_eq!(e.summary.as_deref(), Some("Body"));
-        assert_eq!(to_rfc3339_z(e.published_at.unwrap()), "2021-09-06T16:20:00Z");
+        assert_eq!(
+            to_rfc3339_z(e.published_at.unwrap()),
+            "2021-09-06T16:20:00Z"
+        );
     }
 
     #[test]
@@ -268,7 +271,10 @@ mod tests {
         assert_eq!(e.guid, "urn:1");
         assert_eq!(e.link.as_deref(), Some("http://e/1"));
         assert_eq!(e.summary.as_deref(), Some("Sum"));
-        assert_eq!(to_rfc3339_z(e.published_at.unwrap()), "2021-09-06T16:20:00Z");
+        assert_eq!(
+            to_rfc3339_z(e.published_at.unwrap()),
+            "2021-09-06T16:20:00Z"
+        );
     }
 
     #[test]
@@ -283,7 +289,10 @@ mod tests {
         let feed = parse_feed(xml.as_bytes()).unwrap();
         let e = &feed.entries[0];
         assert_eq!(e.summary.as_deref(), Some("Contented"));
-        assert_eq!(to_rfc3339_z(e.published_at.unwrap()), "2021-01-01T00:00:00Z");
+        assert_eq!(
+            to_rfc3339_z(e.published_at.unwrap()),
+            "2021-01-01T00:00:00Z"
+        );
     }
 
     #[test]

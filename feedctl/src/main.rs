@@ -250,12 +250,18 @@ fn print_feed_line(f: &FeedDto) {
 fn print_feed_detail(f: &FeedDto) {
     println!("id:              {}", f.id);
     println!("url:             {}", f.url);
-    println!("title:           {}", f.title.as_deref().unwrap_or("(none)"));
+    println!(
+        "title:           {}",
+        f.title.as_deref().unwrap_or("(none)")
+    );
     println!(
         "last_fetched_at: {}",
         f.last_fetched_at.as_deref().unwrap_or("(never)")
     );
-    println!("last_error:      {}", f.last_error.as_deref().unwrap_or("(none)"));
+    println!(
+        "last_error:      {}",
+        f.last_error.as_deref().unwrap_or("(none)")
+    );
     println!("entry_count:     {}", f.entry_count);
 }
 

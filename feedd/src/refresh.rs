@@ -18,7 +18,11 @@ pub fn refresh_feed(store: &Arc<Store>, id: i64) -> Option<RefreshResult> {
         Err(e) => return Some(err_result(id, e.to_string())),
     };
 
-    let outcome = fetch(&info.url, info.etag.as_deref(), info.last_modified.as_deref());
+    let outcome = fetch(
+        &info.url,
+        info.etag.as_deref(),
+        info.last_modified.as_deref(),
+    );
     match outcome {
         Err(message) => {
             let _ = store.record_error(id, &message);

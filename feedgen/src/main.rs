@@ -67,8 +67,7 @@ fn make_fixtures(dir: &Path) -> std::io::Result<()> {
 
 fn serve(dir: &Path, listen: &str) -> std::io::Result<()> {
     let dir = dir.to_path_buf();
-    let server = Server::http(listen)
-        .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e.to_string()))?;
+    let server = Server::http(listen).map_err(|e| std::io::Error::other(e.to_string()))?;
     println!("feedgen serving {} on http://{listen}", dir.display());
     for request in server.incoming_requests() {
         if let Err(e) = handle(&dir, request) {
@@ -222,7 +221,10 @@ mod tests {
         let dir = Path::new("/srv");
         assert!(resolve(dir, "/../etc/passwd").is_none());
         assert!(resolve(dir, "/").is_none());
-        assert_eq!(resolve(dir, "/rss.xml"), Some(PathBuf::from("/srv/rss.xml")));
+        assert_eq!(
+            resolve(dir, "/rss.xml"),
+            Some(PathBuf::from("/srv/rss.xml"))
+        );
         assert_eq!(
             resolve(dir, "/rss.xml?x=1"),
             Some(PathBuf::from("/srv/rss.xml"))

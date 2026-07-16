@@ -17,8 +17,7 @@ type Resp = Response<Cursor<Vec<u8>>>;
 
 /// Run the HTTP server loop until the process is terminated.
 pub fn run(store: Arc<Store>, listen: &str) -> std::io::Result<()> {
-    let server = Server::http(listen)
-        .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e.to_string()))?;
+    let server = Server::http(listen).map_err(|e| std::io::Error::other(e.to_string()))?;
     println!("feedd listening on http://{listen}");
     for request in server.incoming_requests() {
         if let Err(e) = dispatch(&store, request) {
@@ -44,9 +43,7 @@ fn dispatch(store: &Arc<Store>, mut request: Request) -> std::io::Result<()> {
         (Method::Get, ["api", "feeds", id]) => get_feed(store, id),
         (Method::Delete, ["api", "feeds", id]) => delete_feed(store, id),
         (Method::Post, ["api", "feeds", id, "refresh"]) => refresh_one(store, id),
-        (Method::Post, ["api", "refresh"]) => {
-            json(200, &refresh_all(store))
-        }
+        (Method::Post, ["api", "refresh"]) => json(200, &refresh_all(store)),
         (Method::Get, ["api", "entries"]) => entries(store, &query),
         _ => error(404, "not found"),
     };
@@ -169,13 +166,19 @@ fn parse_instant_ms(value: Option<&String>) -> Result<Option<i64>, ()> {
     match value {
         None => Ok(None),
         Some(s) if s.is_empty() => Ok(None),
-        Some(s) => parse_rfc3339(s).map(|d| Some(d.timestamp_millis())).ok_or(()),
+        Some(s) => parse_rfc3339(s)
+            .map(|d| Some(d.timestamp_millis()))
+            .ok_or(()),
     }
 }
 
 fn is_valid_http_url(url: &str) -> bool {
     let rest = match url.split_once("://") {
-        Some((scheme, rest)) if scheme.eq_ignore_ascii_case("http") || scheme.eq_ignore_ascii_case("https") => rest,
+        Some((scheme, rest))
+            if scheme.eq_ignore_ascii_case("http") || scheme.eq_ignore_ascii_case("https") =>
+        {
+            rest
+        }
         _ => return false,
     };
     let host = rest.split(['/', '?', '#']).next().unwrap_or("");
@@ -219,8 +222,7 @@ fn percent_decode(input: &str) -> String {
 }
 
 fn json_header() -> Header {
-    Header::from_bytes(&b"Content-Type"[..], &b"application/json"[..])
-        .expect("valid static header")
+    Header::from_bytes(&b"Content-Type"[..], &b"application/json"[..]).expect("valid static header")
 }
 
 fn json<T: Serialize>(status: u16, value: &T) -> Resp {
@@ -254,7 +256,10 @@ mod tests {
     #[test]
     fn percent_decode_keeps_plus() {
         assert_eq!(percent_decode("a%20b"), "a b");
-        assert_eq!(percent_decode("2021-09-06T16:20:00%2B02:00"), "2021-09-06T16:20:00+02:00");
+        assert_eq!(
+            percent_decode("2021-09-06T16:20:00%2B02:00"),
+            "2021-09-06T16:20:00+02:00"
+        );
         assert_eq!(percent_decode("x+y"), "x+y");
     }
 
@@ -270,7 +275,9 @@ mod tests {
     fn parse_instant_ms_cases() {
         assert_eq!(parse_instant_ms(None), Ok(None));
         assert_eq!(parse_instant_ms(Some(&String::new())), Ok(None));
-        assert!(parse_instant_ms(Some(&"2021-09-06T16:20:00Z".to_string())).unwrap().is_some());
+        assert!(parse_instant_ms(Some(&"2021-09-06T16:20:00Z".to_string()))
+            .unwrap()
+            .is_some());
         assert_eq!(parse_instant_ms(Some(&"nope".to_string())), Err(()));
     }
 }
