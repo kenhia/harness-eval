@@ -4,7 +4,7 @@ default:
 
 # Run CI gates: syntax-check the eval tooling
 check:
-    bash -n _eval/bin/new-run.sh _eval/bin/run-eval.sh _eval/bin/use-profile.sh
+    bash -n _eval/bin/new-run.sh _eval/bin/run-eval.sh _eval/bin/run-acceptance.sh _eval/bin/use-profile.sh
     python3 -m py_compile _eval/bin/collect-session.py
     @echo ok
 

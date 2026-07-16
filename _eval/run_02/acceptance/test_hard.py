@@ -141,14 +141,15 @@ def test_h10_pagination(api, feeds):
     assert hours == sorted(hours, reverse=True), "newest first across pages"
 
 
-# H11 — q search is case-insensitive substring on title
+# H11 — q search is case-insensitive SUBSTRING on title (pinned): "rust"
+# matches C-rust-acean too — word-boundary or fuzzy matching both fail this.
 def test_h11_search(api, feeds):
     feed = add_feed(api, feeds.url("rss_search.xml"))
     refresh(api, feed["id"])
     body = entries(api, f"?feed_id={feed['id']}&q=rust")
     titles = sorted(i["title"] for i in body["items"])
-    assert titles == ["RUSTACEAN news", "Rust Weekly"], f"got {titles}"
-    assert body["total"] == 2
+    assert titles == ["Crustacean recipes", "RUSTACEAN news", "Rust Weekly"], f"got {titles}"
+    assert body["total"] == 3
 
 
 # H12 — refresh-all: one broken feed, siblings still update, per-feed results

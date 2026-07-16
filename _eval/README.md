@@ -67,6 +67,9 @@ Rules (earned the hard way — see run_01 lessons 1, 16, 17):
   tokens/credits, diffstat, real-HOME leak canary). You fill only the
   *Manual* section: declared-done, interventions, observations, `/cost`
   paste for interactive Claude runs.
+- **`run-acceptance.sh <run-group> <NN-name>`** — runs the run group's
+  executable acceptance suite against one repo and archives the full
+  output + core/hard tier tally to `_eval/<run-group>/runs/NN-acceptance.txt`.
 - **`collect-session.py --runner claude|copilot <session files>`** — parses
   a session log into metrics by hand; `run-eval.sh` calls it automatically.
   Claude: `<profile>/.claude/projects/<slug>/*.jsonl` (+ `subagents/*`);

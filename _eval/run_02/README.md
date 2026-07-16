@@ -74,15 +74,15 @@ Version-drift notes vs run 1:
    _eval/bin/run-eval.sh --runner claude --profile claude-clean \
      --run-group run_02 --repo 99-shakedown --model claude-opus-4-8 \
      --headless --prompt-file _eval/run_02/prompts/07-baseline-claude.md
-   FEEDHUB_REPO=~/src/ai-agents/harness-eval-runs/run_02/99-shakedown \
-     uv run --with pytest pytest _eval/run_02/acceptance -v
+   _eval/bin/run-acceptance.sh run_02 99-shakedown
    # then: delete 99-shakedown + its runlog; log findings below
    ```
 
 2. **Freeze** — spec + acceptance freeze when the first real contender
    runs.
 3. **Execute** — headless, hands-off, one cell at a time via
-   `run-eval.sh`; acceptance output archived to `runs/NN-acceptance.txt`.
+   `run-eval.sh`, then `run-acceptance.sh` (archives output + core/hard
+   tally to `runs/NN-acceptance.txt` automatically).
 
 Note for Rust runs: `run-eval.sh` passes `CARGO_HOME`/`RUSTUP_HOME`
 through to the real installs — rustup breaks under a bare fake-HOME
@@ -90,4 +90,24 @@ through to the real installs — rustup breaks under a bare fake-HOME
 
 ## Shakedown log
 
-(none yet)
+**2026-07-16 — shakedown run complete (99-shakedown, bare Claude Code).**
+
+- Run mechanics: headless end-to-end worked; runlog auto-filled. Wall
+  clock **52m 05s**, ~207k output tokens (vs 8m38s / 122.7k for the same
+  cell on loglens) — the Rust task is ≈6× wall clock before harness
+  overhead. Plan field execution accordingly (7 cells ≈ a full day of
+  serial runs).
+- Acceptance suite vs first real implementation: **25/26 first pass; the
+  one failure was a suite bug, not an implementation bug.** H11 assumed
+  `q=rust` would not match "C**rust**acean recipes", but the spec pins
+  substring semantics — the implementation was right. Fixed: H11 now
+  asserts Crustacean IS matched (deliberate substring probe). Exactly
+  the fixture-vs-spec error class (run 1's A5) the executable suite
+  exists to catch — and the pinned spec settled it mechanically. After
+  fix: **core 14/14, hard 12/12**.
+- Output capture wasn't automatic (Ken hit this) — added
+  `_eval/bin/run-acceptance.sh`: runs the suite with `FEEDHUB_REPO` set,
+  archives full output + tier tally to `runs/NN-acceptance.txt`.
+- Calibration note: the bare-Claude control passed the full hard tier.
+  Spread, if any, will come from the harness cells — or the hard tier
+  needs to get harder in run 03+.
