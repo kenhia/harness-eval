@@ -44,9 +44,15 @@ Remaining (ordered — details in `_eval/run_02/README.md`):
 
 ## Later / Ideas
 
-- **N ≥ 3 reps per cell**; medians + spread, not single runs. Needs the
-  headless matrix driver (a justfile/script looping run-eval.sh
-  `--headless`) — mechanics exist, orchestration doesn't.
+- **N ≥ 3 reps per cell**; medians + spread, not single runs. Variance
+  is now measured, not hypothetical: the run 02 control cell ran twice
+  (99-shakedown vs 07) at 52m/207k vs 36m/145k output tokens — 44%
+  wall-clock spread, identical throughput, leakage forensically ruled
+  out. Personal-project budget means ≈21+ runs will take **weeks**:
+  publish run 02 as preliminary N=1 (caveat stated prominently), then
+  accumulate reps as time/money allow and refine. Needs the headless
+  matrix driver (a justfile/script looping run-eval.sh `--headless`) —
+  mechanics exist, orchestration doesn't.
 - **Harness × runner axis** where dual-target harnesses exist (kprojects,
   possibly others) — lesson 15 showed the runner effect is as large as
   the harness effect.

@@ -96,6 +96,27 @@ Note for Rust runs: `run-eval.sh` passes `CARGO_HOME`/`RUSTUP_HOME`
 through to the real installs — rustup breaks under a bare fake-HOME
 (verified during setup).
 
+## Report notes (carry into the run 02 whitepaper)
+
+**Rep variance is measured, not hypothetical — treat N=1 results as
+preliminary.** The control cell effectively ran twice with the identical
+frozen prompt (99-shakedown, then 07): 52m 05s / 206.9k output tokens vs
+36m 09s / 144.9k — a 44% wall-clock spread with *identical* ~4k tok/min
+throughput. Forensics ruled out cross-run leakage (no profile memory, no
+global CLAUDE.md, separate project slugs, zero prior-run references in
+the 07 transcript, fresh session): this is pure trajectory variance,
+plus runner drift (2.1.209 → 2.1.211 mid-field, auto-update). Efficiency
+and wall-clock comparisons between single runs sit inside this noise
+band; score gaps of this order must not be read as ranking signal.
+
+**Why we publish anyway:** this is a personal project; each cell costs
+0.5–1.5h wall clock and real dollars, so N≥3 across 7 cells (≈21+ runs)
+will take **weeks** to accumulate. Run 02 results are published as
+**preliminary (N=1 per cell)** with this caveat stated prominently, then
+refined as reps accumulate. The 99/07 pair doubles as the first informal
+rep pair, giving a concrete variance estimate to report alongside the
+headline numbers.
+
 ## Suite defect log (post-freeze)
 
 **S1 (2026-07-16, discovered on 06-gstack).** H9's request-log assertion
