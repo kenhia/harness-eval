@@ -57,3 +57,26 @@ bare controls resuming from nothing but the code.
 
 - 2026-07-16: protocol written; prompts, addendum, tags, tooling in
   place (this commit). Awaiting fix runs.
+- 2026-07-16 (late): **E1 — GitHub policy began blocking CLI MCP servers
+  mid-evening** (`! 3 MCP servers were blocked by policy:
+  'klams', 'korg', 'phoenix'`). Forensics: run 02's *graded* phoenix
+  session (Jul 16 17:06 UTC) made successful `phoenix_sense` MCP calls —
+  run 02 results are unaffected; the identical launch reproduced the
+  block at ~22:51 and again at probe time. Server-side change; nothing
+  local differs (same CLI 1.0.71, profile, flags, token).
+  Impact and handling per cell:
+  - **02 fix run: ran without the phoenix harness's MCP spine —
+    recommended VOID + rerun after policy is restored** (the round
+    exists to measure harness machinery; phoenix's was off). Run 02
+    main phoenix cell: verified unaffected.
+  - **01 fix run: stands** — klams/korg ambient MCP absent, but
+    StarterKit's machinery is fully repo-local (no MCP dependency);
+    noted as covariate.
+  - **04 (kprojects): hold until restored** — its conventions
+    reference korg/klams ambiently.
+  - 05/06/07: no harness MCP dependency (Claude cells' profile MCP is
+    not subject to GitHub policy); may run, with the runner-side
+    ambient-MCP asymmetry noted (lesson 7 again: ambient-service
+    availability is part of the environment definition and can change
+    UNDER you mid-field — v3 preflight should capture an MCP
+    availability manifest per run mechanically).
