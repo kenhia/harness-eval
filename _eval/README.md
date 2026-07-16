@@ -57,7 +57,10 @@ Rules (earned the hard way — see run_01 lessons 1, 16, 17):
   idle while other sessions refreshed the chain can hit "OAuth session
   expired and could not be refreshed". `run-eval.sh` preflight probes
   auth (cheap haiku call) and re-syncs `.credentials.json` from the real
-  `~/.claude` automatically for Claude runners.
+  `~/.claude` automatically for Claude runners. Copilot's stored token
+  has the same failure mode (plus a fake HOME hides the real
+  `~/.config/gh` fallback) — `run-eval.sh` injects a fresh
+  `COPILOT_GITHUB_TOKEN` from the real `gh auth token` at every launch.
 
 ## Tooling (`_eval/bin/`)
 

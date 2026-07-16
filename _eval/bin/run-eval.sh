@@ -95,6 +95,11 @@ if [[ $runner == claude ]]; then
         auth_probe || fail "auth still failing after credential re-sync — log in on the real account and retry"
     fi
     note "auth: ok"
+else
+    # Copilot's stored token rotates stale, and a fake HOME hides the real
+    # ~/.config/gh fallback — inject a fresh token from the real gh instead.
+    copilot_token="$(gh auth token 2>/dev/null)" || fail "gh auth token unavailable — run 'gh auth login' and retry"
+    note "auth: fresh gh token will be injected (COPILOT_GITHUB_TOKEN)"
 fi
 
 [[ -d $RUNLOG_DIR ]] || mkdir -p "$RUNLOG_DIR"
@@ -115,7 +120,9 @@ STAMP="$(mktemp)"; trap 'rm -f "$STAMP"' EXIT
 toolchain_env=()
 [[ -d $HOME/.cargo ]] && toolchain_env+=(CARGO_HOME="$HOME/.cargo")
 [[ -d $HOME/.rustup ]] && toolchain_env+=(RUSTUP_HOME="$HOME/.rustup")
-launch=(env HOME="$PROFILE_DIR" "${toolchain_env[@]}" "$runner")
+launch=(env HOME="$PROFILE_DIR" "${toolchain_env[@]}")
+[[ $runner == copilot ]] && launch+=(COPILOT_GITHUB_TOKEN="$copilot_token")
+launch+=("$runner")
 if [[ $runner == claude ]]; then
     [[ -n $model ]] && launch+=(--model "$model")
     $headless && launch+=(-p "$(cat "$prompt_file")")
@@ -127,7 +134,7 @@ fi
 echo
 echo "== launch =="
 echo "  cd $REPO_DIR"
-echo "  ${launch[*]:0:4} ..."
+echo "  ${launch[*]:0:2} ..."   # never echo further elements (token may follow)
 if ! $headless && [[ -n $prompt_file ]]; then
     echo "  --> paste the FULL contents of: $prompt_file"
 fi
@@ -155,6 +162,13 @@ if [[ ${#new_sessions[@]} -gt 0 ]]; then
     session_metrics="$(python3 "$EVAL_ROOT/bin/collect-session.py" --runner "$runner" "${new_sessions[@]}" 2>&1 || true)"
 fi
 
+# Launch-class failure (auth, bad flags): runner died without ever starting
+# a session — don't write a run log for a run that never happened.
+if [[ $runner_exit -ne 0 && ${#new_sessions[@]} -eq 0 ]]; then
+    echo "  runner exited $runner_exit before starting a session — no run log written; fix and re-run"
+    exit "$runner_exit"
+fi
+
 diffstat="$(git -C "$REPO_DIR" diff --stat pre-run..HEAD 2>/dev/null | tail -1)"
 committed=yes
 [[ -z "$(git -C "$REPO_DIR" status --porcelain)" ]] || committed="NO — uncommitted changes present"
@@ -174,7 +188,7 @@ auto_block="$(cat <<EOF
 - runner: $runner ($runner_version) on $(hostname)
 - model (requested): ${model:-"(interactive selection — see session metrics)"}
 - profile used: $profile (HOME-sandbox: $PROFILE_DIR)
-- launch: (cd $REPO_DIR && ${launch[*]:0:3} ...)
+- launch: (cd $REPO_DIR && ${launch[*]:0:2} ... $runner)
 - headless: $headless
 - start time: $start_iso
 - end time: $end_iso
