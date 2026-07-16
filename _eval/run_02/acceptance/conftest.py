@@ -45,8 +45,10 @@ class FeedHandler(http.server.BaseHTTPRequestHandler):
     def do_GET(self):  # noqa: N802
         name = self.path.lstrip("/")
         store = self.server.store  # type: ignore[attr-defined]
+        # Header names lowercased: HTTP headers are case-insensitive and
+        # clients differ (S1 — a case-sensitive lookup failed 06 unfairly).
         self.server.request_log.append(  # type: ignore[attr-defined]
-            {"path": self.path, "headers": dict(self.headers)}
+            {"path": self.path, "headers": {k.lower(): v for k, v in self.headers.items()}}
         )
         if name not in store:
             self.send_response(404)

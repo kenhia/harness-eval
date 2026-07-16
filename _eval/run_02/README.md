@@ -96,6 +96,22 @@ Note for Rust runs: `run-eval.sh` passes `CARGO_HOME`/`RUSTUP_HOME`
 through to the real installs — rustup breaks under a bare fake-HOME
 (verified during setup).
 
+## Suite defect log (post-freeze)
+
+**S1 (2026-07-16, discovered on 06-gstack).** H9's request-log assertion
+looked up `If-None-Match` case-sensitively; HTTP header names are
+case-insensitive and 06's client emits lowercase. 06 *did* send both
+conditional headers — the suite's observation plumbing, not the
+implementation, was wrong. Adjudication: mechanical observation bug, no
+semantic change to what's tested; fixed (log lowercases header names),
+every completed repo re-run under the fixed suite: 99-shakedown
+unchanged (26/26), 06 H9 flips to PASS → **core 13/14, hard 11/12**.
+06's two remaining failures (C9, H12) share one root cause and are
+**true failures**: refresh of malformed XML returns `status: ok,
+new_entries: 0` instead of recording `last_error` — the spec pins
+malformed XML as a recorded fetch failure. Pre-fix output preserved at
+`.scratch/06-acceptance.pre-S1.txt`.
+
 ## Shakedown log
 
 **2026-07-16 — shakedown run complete (99-shakedown, bare Claude Code).**

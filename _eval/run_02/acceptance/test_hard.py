@@ -119,7 +119,7 @@ def test_h9_conditional_get(api, feeds):
     result = refresh(api, feed["id"])
     reqs = feeds.requests_for("rss_basic.xml")
     assert len(reqs) > n_before, "second refresh must actually hit the server"
-    assert reqs[-1]["headers"].get("If-None-Match"), "refetch must send If-None-Match"
+    assert reqs[-1]["headers"].get("if-none-match"), "refetch must send If-None-Match"
     assert result.get("status") == "ok", "304 is a successful fetch"
     assert result.get("new_entries") == 0
     assert entries(api, f"?feed_id={feed['id']}")["total"] == 3
