@@ -3,7 +3,14 @@
 use std::time::Duration;
 
 use reqwest::header::{ETAG, IF_MODIFIED_SINCE, IF_NONE_MATCH, LAST_MODIFIED};
-use reqwest::{Client, StatusCode};
+use reqwest::{Client, Response, StatusCode};
+
+/// Most a feed document may be before we give up on it.
+///
+/// feedd fetches whatever URLs it is pointed at, so the body has to be bounded:
+/// an endless or enormous response must fail that one feed, not exhaust memory
+/// and take the whole server with it.
+pub const MAX_FEED_BYTES: usize = 16 * 1024 * 1024;
 
 /// The result of a conditional GET.
 pub enum Fetched {
@@ -69,17 +76,42 @@ pub async fn fetch(
     };
     let etag = header(ETAG);
     let last_modified = header(LAST_MODIFIED);
-
-    let body = response
-        .bytes()
-        .await
-        .map_err(|e| FetchError(format!("could not read response body: {e}")))?;
+    let body = read_bounded(response).await?;
 
     Ok(Fetched::Modified {
-        body: body.to_vec(),
+        body,
         etag,
         last_modified,
     })
+}
+
+/// Read the body, refusing anything over [`MAX_FEED_BYTES`].
+///
+/// The advertised length is only a hint — a chunked or lying response has to be
+/// caught as it streams, which is why the running total is checked too.
+async fn read_bounded(mut response: Response) -> Result<Vec<u8>, FetchError> {
+    if let Some(length) = response.content_length()
+        && length > MAX_FEED_BYTES as u64
+    {
+        return Err(FetchError(format!(
+            "feed is too large: {length} bytes, limit is {MAX_FEED_BYTES}"
+        )));
+    }
+
+    let mut body = Vec::new();
+    while let Some(chunk) = response
+        .chunk()
+        .await
+        .map_err(|e| FetchError(format!("could not read response body: {e}")))?
+    {
+        if body.len() + chunk.len() > MAX_FEED_BYTES {
+            return Err(FetchError(format!(
+                "feed is too large: over {MAX_FEED_BYTES} bytes"
+            )));
+        }
+        body.extend_from_slice(&chunk);
+    }
+    Ok(body)
 }
 
 /// reqwest's own Display is a chain of internal causes; these messages say what

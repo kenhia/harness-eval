@@ -20,7 +20,13 @@ struct Harness {
 }
 
 impl Harness {
+    /// A server with background polling off: every fetch is one a test asked
+    /// for, so nothing here races the clock.
     async fn start() -> Harness {
+        Harness::start_with_poll_interval(0).await
+    }
+
+    async fn start_with_poll_interval(poll_interval: u64) -> Harness {
         let fixture_dir = tempfile::tempdir().expect("fixture tempdir");
         feedgen::write_fixtures(fixture_dir.path()).expect("write fixtures");
         let feedgen = feedgen::serve_dir(
@@ -34,7 +40,7 @@ impl Harness {
         let feedd = feedd::start(feedd::Config {
             db_path: db_dir.path().join("feedd.sqlite"),
             listen: "127.0.0.1:0".parse().unwrap(),
-            poll_interval: 0,
+            poll_interval,
         })
         .await
         .expect("start feedd");
@@ -131,6 +137,52 @@ fn find<'a>(page: &'a EntriesPage, guid: &str) -> &'a Entry {
         .iter()
         .find(|e| e.guid == guid)
         .unwrap_or_else(|| panic!("no entry {guid} in {:?}", guids(page)))
+}
+
+#[tokio::test]
+async fn background_polling_fetches_without_being_asked() {
+    // The shortest interval there is, so the test waits a tick, not a minute.
+    let h = Harness::start_with_poll_interval(1).await;
+    let feed = h.add_fixture("rss-basic.xml").await;
+
+    // Nothing has asked for a fetch, so entries can only come from the poller.
+    let mut entries = 0;
+    for _ in 0..100 {
+        tokio::time::sleep(std::time::Duration::from_millis(100)).await;
+        entries = h.entries("").await.total;
+        if entries > 0 {
+            break;
+        }
+    }
+
+    assert_eq!(entries, 3, "the poller should have fetched the feed");
+    let feed = h.feed(feed.id).await;
+    assert_eq!(feed.title.as_deref(), Some("Basic RSS Feed"));
+    assert_eq!(feed.last_error, None);
+    h.shutdown().await;
+}
+
+#[tokio::test]
+async fn a_feeds_title_follows_the_document() {
+    let h = Harness::start().await;
+    let (feed, _) = h.add_and_refresh("rss-basic.xml").await;
+    assert_eq!(
+        h.feed(feed.id).await.title.as_deref(),
+        Some("Basic RSS Feed")
+    );
+
+    let renamed = feedgen::fixtures::RSS_BASIC.replace(
+        "<title>Basic RSS Feed</title>",
+        "<title>Renamed RSS Feed</title>",
+    );
+    std::fs::write(h.fixture_dir.path().join("rss-basic.xml"), renamed).expect("rewrite fixture");
+
+    h.refresh(feed.id).await;
+    assert_eq!(
+        h.feed(feed.id).await.title.as_deref(),
+        Some("Renamed RSS Feed")
+    );
+    h.shutdown().await;
 }
 
 #[tokio::test]
@@ -494,6 +546,37 @@ async fn a_broken_feed_does_not_disturb_the_others() {
 }
 
 #[tokio::test]
+async fn an_oversized_feed_is_refused_rather_than_buffered() {
+    let h = Harness::start().await;
+
+    // One item padded past the limit: feedd must reject it on size, not try to
+    // hold it all in memory.
+    let padding = "x".repeat(feedd::fetch::MAX_FEED_BYTES + 1);
+    let huge = format!(
+        "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n\
+         <rss version=\"2.0\"><channel><title>Huge</title>\
+         <item><guid>huge-1</guid><title>Huge</title>\
+         <description>{padding}</description></item></channel></rss>"
+    );
+    std::fs::write(h.fixture_dir.path().join("huge.xml"), huge).expect("write huge fixture");
+
+    let (feed, result) = h.add_and_refresh("huge.xml").await;
+    assert_eq!(result.status, "error", "{result:?}");
+    assert!(
+        result
+            .error
+            .as_deref()
+            .unwrap_or_default()
+            .contains("too large"),
+        "{result:?}"
+    );
+    assert_eq!(h.feed(feed.id).await.entry_count, 0);
+    // The server is still serving.
+    assert_eq!(h.get("/api/health").await.0, StatusCode::OK);
+    h.shutdown().await;
+}
+
+#[tokio::test]
 async fn refresh_all_reports_every_feed() {
     let h = Harness::start().await;
     let rss = h.add_fixture("rss-basic.xml").await;
@@ -585,6 +668,27 @@ async fn entries_window_is_half_open_and_offset_aware() {
         .await;
     assert_eq!(empty.total, 0);
     assert!(empty.items.is_empty());
+    h.shutdown().await;
+}
+
+#[tokio::test]
+async fn sub_second_bounds_round_in_the_direction_that_keeps_the_window_honest() {
+    let h = Harness::start().await;
+    h.add_and_refresh("dates-edge.xml").await;
+    // The three noon-UTC entries are the ones a bound just past noon can slice.
+    let noon = ["date-gmt", "date-ut", "date-z"];
+
+    // An entry at 12:00:00 is before 12:00:00.5, so this window must keep it.
+    let page = h
+        .entries("since=2024-03-01T12:00:00Z&until=2024-03-01T12:00:00.500Z&limit=500")
+        .await;
+    assert_eq!(guids(&page), noon);
+
+    // An entry at 12:00:00 is not at or after 12:00:00.5, so this must drop it.
+    let page = h
+        .entries("since=2024-03-01T12:00:00.500Z&until=2024-03-01T13:00:00Z&limit=500")
+        .await;
+    assert_eq!(page.total, 0);
     h.shutdown().await;
 }
 

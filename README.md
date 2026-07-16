@@ -81,8 +81,12 @@ feedd --db PATH [--listen ADDR:PORT] [--poll-interval SECS]
 | `--poll-interval SECS` | `300` | seconds between background refreshes of every feed; `0` disables polling |
 
 Background polling is independent of the refresh endpoints: those always fetch
-on demand, which is what makes tests deterministic. `RUST_LOG=feedd=debug`
-turns up logging.
+on demand, which is what makes tests deterministic. A poll that runs longer than
+the interval does not queue up a burst of catch-up polls; the next one starts a
+full interval later. `RUST_LOG=feedd=debug` turns up logging.
+
+A feed document larger than 16 MiB is refused rather than buffered, so one
+runaway origin cannot exhaust the server's memory.
 
 ### What it understands
 
@@ -121,10 +125,12 @@ keeps its internal id and its original `fetched_at`.
 back as `If-None-Match` / `If-Modified-Since`. A `304` leaves entries untouched,
 counts as a successful fetch, and reports `new_entries: 0`.
 
-**Failure isolation.** A refused connection, an HTTP error or a malformed
-document is recorded in that feed's `last_error` and returned in its refresh
-result. It never affects another feed and never brings down the server. The next
-successful fetch clears the error.
+**Failure isolation.** A refused connection, an HTTP error, a malformed
+document or a body over 16 MiB is recorded in that feed's `last_error` and
+returned in its refresh result. It never affects another feed and never brings
+down the server. The next successful fetch clears the error. A failed fetch also
+leaves the feed's validators alone, so the next refresh refetches rather than
+being told `304` about content that was never successfully read.
 
 ## `feedctl`
 
@@ -243,6 +249,12 @@ All parameters are optional.
 The window is half-open, `since <= published_at < until`, compared as UTC
 instants regardless of the offsets you write them with. When either bound is
 given, entries with a null `published_at` are excluded.
+
+Stored instants have second precision, so a bound with fractional seconds is
+rounded up to the next whole second — the direction that keeps the half-open
+window honest in both directions. An entry at `12:00:00Z` is before
+`until=12:00:00.5Z` and so is kept, and is not at or after `since=12:00:00.5Z`
+and so is dropped.
 
 Ordering is `published_at` descending, entries with no date last, ties broken by
 internal entry id ascending.

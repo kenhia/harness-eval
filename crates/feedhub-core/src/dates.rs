@@ -6,11 +6,41 @@
 //! also chronological ordering — which is what lets SQLite sort and range-filter
 //! `published_at` directly.
 
-use chrono::{DateTime, FixedOffset, NaiveDate, SecondsFormat, TimeZone, Utc};
+use chrono::{DateTime, FixedOffset, NaiveDate, SecondsFormat, TimeDelta, TimeZone, Timelike, Utc};
 
 /// Serialize an instant in the pinned storage format: RFC 3339, UTC, `Z`.
+///
+/// Sub-second precision is dropped, so this rounds *down* to the second.
 pub fn format_utc(dt: DateTime<Utc>) -> String {
     dt.to_rfc3339_opts(SecondsFormat::Secs, true)
+}
+
+/// Serialize an instant in the storage format, rounding *up* to the next whole
+/// second when it has a fractional part.
+///
+/// This is what a query bound needs. Stored instants are whole seconds, so
+/// comparing them against a bound with fractional seconds has to round the bound
+/// in the direction that preserves the comparison:
+///
+/// * `published_at >= since` — an entry at 12:00:00 is not at or after
+///   12:00:00.5, so `since` must round up to 12:00:01 to exclude it.
+/// * `published_at < until` — an entry at 12:00:00 *is* before 12:00:00.5, so
+///   `until` must round up to 12:00:01 to keep it.
+///
+/// Rounding down would get the second case backwards and silently drop entries
+/// from inside the requested window.
+pub fn format_utc_ceil(dt: DateTime<Utc>) -> String {
+    let rounded = match dt.nanosecond() {
+        0 => dt,
+        // Leap seconds report nanosecond() >= 1_000_000_000; truncating first
+        // keeps the arithmetic on the second boundary either way.
+        _ => dt
+            .with_nanosecond(0)
+            .unwrap_or(dt)
+            .checked_add_signed(TimeDelta::seconds(1))
+            .unwrap_or(dt),
+    };
+    format_utc(rounded)
 }
 
 /// Parse an RFC 3339 timestamp with any numeric offset and optional fractional
@@ -241,6 +271,29 @@ mod tests {
         );
         assert_eq!(parse_rfc3339("2024-03-01"), None);
         assert_eq!(parse_rfc3339("yesterday"), None);
+    }
+
+    #[test]
+    fn ceiling_rounds_up_only_when_there_is_a_fraction() {
+        // A whole second is already the bound it means.
+        assert_eq!(
+            format_utc_ceil(utc("2024-03-01T12:00:00Z")),
+            "2024-03-01T12:00:00Z"
+        );
+        // Anything past it belongs to the next whole second.
+        assert_eq!(
+            format_utc_ceil(utc("2024-03-01T12:00:00.001Z")),
+            "2024-03-01T12:00:01Z"
+        );
+        assert_eq!(
+            format_utc_ceil(utc("2024-03-01T12:00:00.999999Z")),
+            "2024-03-01T12:00:01Z"
+        );
+        // Rounding up across a minute boundary carries.
+        assert_eq!(
+            format_utc_ceil(utc("2024-03-01T12:00:59.5Z")),
+            "2024-03-01T12:01:00Z"
+        );
     }
 
     #[test]

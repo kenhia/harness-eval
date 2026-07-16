@@ -4,8 +4,7 @@ members = ["crates/feedhub-core", "crates/feedd", "crates/feedctl", "crates/feed
 
 [workspace.package]
 version = "0.1.0"
-edition = "2021"
-license = "MIT"
+edition = "2024"
 
 [workspace.dependencies]
 feedhub-core = { path = "crates/feedhub-core" }

@@ -1,5 +1,7 @@
 //! Talking to the feedd API, and turning its answers into [`CliError`]s.
 
+use std::time::Duration;
+
 use feedhub_core::api::ErrorBody;
 use reqwest::{Client, Method, StatusCode};
 use serde_json::Value;
@@ -11,11 +13,20 @@ pub struct Api {
     client: Client,
 }
 
+/// How long to wait on a server that has accepted the connection but is not
+/// answering. Without this a wedged feedd would hang the CLI forever instead of
+/// failing with exit code 2.
+const TIMEOUT: Duration = Duration::from_secs(30);
+
 impl Api {
     pub fn new(base: &str) -> Api {
         Api {
             base: base.trim_end_matches('/').to_string(),
-            client: Client::new(),
+            client: Client::builder()
+                .timeout(TIMEOUT)
+                .user_agent(concat!("feedctl/", env!("CARGO_PKG_VERSION")))
+                .build()
+                .unwrap_or_default(),
         }
     }
 

@@ -58,12 +58,31 @@ pub async fn refresh_feed(state: &SharedState, feed_id: i64) -> Option<RefreshRe
     )
     .await;
 
+    // Parsing happens before the lock is taken: it is pure CPU work on a body we
+    // already own, and holding the db mutex through it would block every API
+    // request for the length of the parse.
+    let outcome = match fetched {
+        Err(e) => Err(e.to_string()),
+        Ok(Fetched::NotModified) => Ok(None),
+        Ok(Fetched::Modified {
+            body,
+            etag,
+            last_modified,
+        }) => match parse_feed(&body) {
+            Ok(parsed) => Ok(Some((parsed, etag, last_modified))),
+            Err(e) => Err(e.to_string()),
+        },
+    };
+
     let now = Utc::now();
     let mut conn = state.db.lock().expect("db mutex poisoned");
 
-    match fetched {
-        Err(e) => {
-            let message = e.to_string();
+    match outcome {
+        // Both a failed fetch and an unparseable document are recorded against
+        // this feed and reported; neither touches its entries or its validators,
+        // so the next refresh refetches rather than getting a 304 for content we
+        // never managed to read.
+        Err(message) => {
             if let Err(e) = db::record_error(&conn, feed_id, &message) {
                 return Some(error_result(feed_id, format!("database error: {e}")));
             }
@@ -71,38 +90,21 @@ pub async fn refresh_feed(state: &SharedState, feed_id: i64) -> Option<RefreshRe
         }
         // A 304 is a successful fetch that found nothing new: entries are left
         // untouched and no new ones are reported.
-        Ok(Fetched::NotModified) => match db::record_not_modified(&conn, feed_id, now) {
+        Ok(None) => match db::record_not_modified(&conn, feed_id, now) {
             Ok(()) => Some(ok_result(feed_id, db::ApplyCounts::default(), true)),
             Err(e) => Some(error_result(feed_id, format!("database error: {e}"))),
         },
-        Ok(Fetched::Modified {
-            body,
-            etag,
-            last_modified,
-        }) => {
-            let parsed = match parse_feed(&body) {
-                Ok(parsed) => parsed,
-                Err(e) => {
-                    let message = e.to_string();
-                    if let Err(e) = db::record_error(&conn, feed_id, &message) {
-                        return Some(error_result(feed_id, format!("database error: {e}")));
-                    }
-                    return Some(error_result(feed_id, message));
-                }
-            };
-
-            match db::apply_fetch(
-                &mut conn,
-                feed_id,
-                &parsed,
-                etag.as_deref(),
-                last_modified.as_deref(),
-                now,
-            ) {
-                Ok(counts) => Some(ok_result(feed_id, counts, false)),
-                Err(e) => Some(error_result(feed_id, format!("database error: {e}"))),
-            }
-        }
+        Ok(Some((parsed, etag, last_modified))) => match db::apply_fetch(
+            &mut conn,
+            feed_id,
+            &parsed,
+            etag.as_deref(),
+            last_modified.as_deref(),
+            now,
+        ) {
+            Ok(counts) => Some(ok_result(feed_id, counts, false)),
+            Err(e) => Some(error_result(feed_id, format!("database error: {e}"))),
+        },
     }
 }
 

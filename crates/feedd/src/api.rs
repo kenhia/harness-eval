@@ -17,7 +17,7 @@ use chrono::Utc;
 use feedhub_core::api::{
     AddFeedRequest, DEFAULT_LIMIT, EntriesPage, ErrorBody, Feed, MAX_LIMIT, RefreshResult,
 };
-use feedhub_core::parse_rfc3339;
+use feedhub_core::{format_utc_ceil, parse_rfc3339};
 use serde_json::json;
 use url::Url;
 
@@ -189,15 +189,15 @@ fn parse_entry_query(params: &HashMap<String, String>) -> ApiResult<EntryQuery> 
 
     // Bounds are normalized to the storage format here, so the comparison in SQL
     // is between two UTC instants regardless of the offset the caller used.
+    // Both bounds round up: see `format_utc_ceil` for why that is the direction
+    // that keeps a half-open window correct against second-precision storage.
     let instant = |name: &str| -> ApiResult<Option<String>> {
         params
             .get(name)
             .map(|raw| {
-                parse_rfc3339(raw)
-                    .map(feedhub_core::format_utc)
-                    .ok_or_else(|| {
-                        ApiError::unprocessable(format!("{name} must be an RFC 3339 timestamp"))
-                    })
+                parse_rfc3339(raw).map(format_utc_ceil).ok_or_else(|| {
+                    ApiError::unprocessable(format!("{name} must be an RFC 3339 timestamp"))
+                })
             })
             .transpose()
     };

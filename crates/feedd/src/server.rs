@@ -109,6 +109,10 @@ fn spawn_poller(state: SharedState, interval: u64) -> Option<JoinHandle<()>> {
 
     Some(tokio::spawn(async move {
         let mut ticker = tokio::time::interval(Duration::from_secs(interval));
+        // A poll that overruns the interval must not be followed by a burst of
+        // queued ticks hammering every origin back-to-back; wait a full interval
+        // after each poll instead.
+        ticker.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Delay);
         // The first tick fires immediately; skip it so that starting the server
         // does not itself cause a fetch.
         ticker.tick().await;

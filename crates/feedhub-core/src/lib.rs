@@ -11,7 +11,7 @@ pub mod api;
 pub mod dates;
 pub mod parse;
 
-pub use dates::{format_utc, parse_rfc822, parse_rfc3339};
+pub use dates::{format_utc, format_utc_ceil, parse_rfc822, parse_rfc3339};
 pub use parse::{ParseError, ParsedEntry, ParsedFeed, parse_feed};
 
 /// Title stored for an entry whose feed provided no title.
