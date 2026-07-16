@@ -80,6 +80,23 @@ note "repo: $REPO_DIR ok (pre-run tagged, clean)"
 runner_version="$(env HOME="$PROFILE_DIR" "$runner" --version 2>/dev/null | head -1)"
 note "runner: $runner $runner_version"
 
+# Auth check. Profile credentials are snapshots; OAuth refresh tokens
+# rotate, so a profile that sat idle while other sessions refreshed the
+# chain can expire unrecoverably. For Claude runners: verify with a cheap
+# haiku call, re-sync from the real HOME once on failure.
+if [[ $runner == claude ]]; then
+    auth_probe() {
+        env HOME="$PROFILE_DIR" claude --model claude-haiku-4-5-20251001 \
+            -p "Reply with exactly: ok" </dev/null >/dev/null 2>&1
+    }
+    if ! auth_probe; then
+        echo "  auth probe failed — re-syncing credentials from ~/.claude"
+        cp "$HOME/.claude/.credentials.json" "$PROFILE_DIR/.claude/.credentials.json"
+        auth_probe || fail "auth still failing after credential re-sync — log in on the real account and retry"
+    fi
+    note "auth: ok"
+fi
+
 [[ -d $RUNLOG_DIR ]] || mkdir -p "$RUNLOG_DIR"
 [[ -e $RUNLOG ]] && fail "$RUNLOG already exists — move it aside first"
 

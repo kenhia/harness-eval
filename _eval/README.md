@@ -52,6 +52,12 @@ Rules (earned the hard way — see run_01 lessons 1, 16, 17):
   available to every contender equally); personal skills/hooks/statusline
   stay out.
 - Profiles hold live auth tokens — `_eval/profiles/` is gitignored, always.
+- **Profile credentials go stale.** They're snapshots of the real
+  account's OAuth state, and refresh tokens rotate — a profile that sat
+  idle while other sessions refreshed the chain can hit "OAuth session
+  expired and could not be refreshed". `run-eval.sh` preflight probes
+  auth (cheap haiku call) and re-syncs `.credentials.json` from the real
+  `~/.claude` automatically for Claude runners.
 
 ## Tooling (`_eval/bin/`)
 
