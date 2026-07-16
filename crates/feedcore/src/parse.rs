@@ -103,7 +103,6 @@ fn strip_bom(bytes: &[u8]) -> &[u8] {
 pub fn parse(bytes: &[u8]) -> Result<ParsedFeed> {
     let text = String::from_utf8_lossy(strip_bom(bytes));
     let mut reader = Reader::from_str(&text);
-    reader.check_end_names(false);
 
     let mut feed = ParsedFeed::default();
     let mut stack: Vec<String> = Vec::new();
@@ -209,7 +208,10 @@ fn handle_atom_link(e: &quick_xml::events::BytesStart<'_>, item: Option<&mut Ite
     let mut rel: Option<String> = None;
     for attr in e.attributes().flatten() {
         let key = String::from_utf8_lossy(attr.key.local_name().as_ref()).to_ascii_lowercase();
-        let val = attr.unescape_value().map(|v| v.to_string()).unwrap_or_default();
+        let val = attr
+            .unescape_value()
+            .map(|v| v.to_string())
+            .unwrap_or_default();
         match key.as_str() {
             "href" => href = Some(val),
             "rel" => rel = Some(val),
@@ -220,10 +222,8 @@ fn handle_atom_link(e: &quick_xml::events::BytesStart<'_>, item: Option<&mut Ite
         if acc.link_href_first.is_none() {
             acc.link_href_first = Some(h.clone());
         }
-        if rel.as_deref() == Some("alternate") || rel.is_none() {
-            if acc.link_href_alt.is_none() {
-                acc.link_href_alt = Some(h);
-            }
+        if (rel.as_deref() == Some("alternate") || rel.is_none()) && acc.link_href_alt.is_none() {
+            acc.link_href_alt = Some(h);
         }
     }
 }
@@ -332,7 +332,9 @@ mod tests {
     #[test]
     fn bom_is_tolerated() {
         let mut bytes = vec![0xEF, 0xBB, 0xBF];
-        bytes.extend_from_slice(b"<rss><channel><title>T</title><item><guid>g</guid></item></channel></rss>");
+        bytes.extend_from_slice(
+            b"<rss><channel><title>T</title><item><guid>g</guid></item></channel></rss>",
+        );
         let f = parse(&bytes).unwrap();
         assert_eq!(f.title.as_deref(), Some("T"));
     }

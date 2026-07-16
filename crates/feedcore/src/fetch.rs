@@ -43,9 +43,10 @@ fn fetch_with_agent(agent: &ureq::Agent, info: &FeedFetchInfo) -> Result<FetchOu
     match req.call() {
         Ok(resp) => build_outcome(resp),
         Err(ureq::Error::Status(304, _)) => Ok(FetchOutcome::NotModified),
-        Err(ureq::Error::Status(code, resp)) => {
-            Err(FeedError::Fetch(format!("HTTP {code} {}", resp.status_text())))
-        }
+        Err(ureq::Error::Status(code, resp)) => Err(FeedError::Fetch(format!(
+            "HTTP {code} {}",
+            resp.status_text()
+        ))),
         Err(ureq::Error::Transport(t)) => Err(FeedError::Fetch(format!("transport error: {t}"))),
     }
 }

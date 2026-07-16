@@ -202,10 +202,8 @@ impl Store {
     ) -> Result<()> {
         // Only overwrite the title when the feed provided one.
         if let Some(t) = title {
-            self.conn.execute(
-                "UPDATE feeds SET title = ?2 WHERE id = ?1",
-                params![id, t],
-            )?;
+            self.conn
+                .execute("UPDATE feeds SET title = ?2 WHERE id = ?1", params![id, t])?;
         }
         self.conn.execute(
             "UPDATE feeds SET last_fetched_at = ?2, last_error = NULL, etag = ?3, last_modified = ?4 WHERE id = ?1",
@@ -406,9 +404,13 @@ mod tests {
     fn dedupe_updates_in_place() {
         let s = Store::open_in_memory().unwrap();
         let f = s.add_feed("http://example.com/feed").unwrap();
-        assert!(s.upsert_entry(f.id, &item("g1", "First", Some(100)), "T0").unwrap());
+        assert!(s
+            .upsert_entry(f.id, &item("g1", "First", Some(100)), "T0")
+            .unwrap());
         // Second insert of same guid updates, not duplicates.
-        assert!(!s.upsert_entry(f.id, &item("g1", "Updated", Some(200)), "T1").unwrap());
+        assert!(!s
+            .upsert_entry(f.id, &item("g1", "Updated", Some(200)), "T1")
+            .unwrap());
         let (total, items) = s.query_entries(&EntryQuery::new()).unwrap();
         assert_eq!(total, 1);
         assert_eq!(items[0].title, "Updated");
@@ -419,7 +421,8 @@ mod tests {
     fn delete_cascades_entries() {
         let s = Store::open_in_memory().unwrap();
         let f = s.add_feed("http://example.com/feed").unwrap();
-        s.upsert_entry(f.id, &item("g1", "x", Some(1)), "T0").unwrap();
+        s.upsert_entry(f.id, &item("g1", "x", Some(1)), "T0")
+            .unwrap();
         assert!(s.delete_feed(f.id).unwrap());
         let (total, _) = s.query_entries(&EntryQuery::new()).unwrap();
         assert_eq!(total, 0);
@@ -429,10 +432,13 @@ mod tests {
     fn ordering_desc_nulls_last_tie_by_id() {
         let s = Store::open_in_memory().unwrap();
         let f = s.add_feed("http://example.com/feed").unwrap();
-        s.upsert_entry(f.id, &item("a", "a", Some(300)), "T").unwrap();
+        s.upsert_entry(f.id, &item("a", "a", Some(300)), "T")
+            .unwrap();
         s.upsert_entry(f.id, &item("b", "b", None), "T").unwrap();
-        s.upsert_entry(f.id, &item("c", "c", Some(300)), "T").unwrap();
-        s.upsert_entry(f.id, &item("d", "d", Some(500)), "T").unwrap();
+        s.upsert_entry(f.id, &item("c", "c", Some(300)), "T")
+            .unwrap();
+        s.upsert_entry(f.id, &item("d", "d", Some(500)), "T")
+            .unwrap();
         let (_total, items) = s.query_entries(&EntryQuery::new()).unwrap();
         let guids: Vec<&str> = items.iter().map(|e| e.guid.as_str()).collect();
         // 500 first, then the two 300s tie-broken by id (a before c), null last.
@@ -444,10 +450,14 @@ mod tests {
         let s = Store::open_in_memory().unwrap();
         let f = s.add_feed("http://example.com/feed").unwrap();
         // published at epoch 100, 200, 300 seconds.
-        s.upsert_entry(f.id, &item("p100", "x", Some(100)), "T").unwrap();
-        s.upsert_entry(f.id, &item("p200", "x", Some(200)), "T").unwrap();
-        s.upsert_entry(f.id, &item("p300", "x", Some(300)), "T").unwrap();
-        s.upsert_entry(f.id, &item("pnull", "x", None), "T").unwrap();
+        s.upsert_entry(f.id, &item("p100", "x", Some(100)), "T")
+            .unwrap();
+        s.upsert_entry(f.id, &item("p200", "x", Some(200)), "T")
+            .unwrap();
+        s.upsert_entry(f.id, &item("p300", "x", Some(300)), "T")
+            .unwrap();
+        s.upsert_entry(f.id, &item("pnull", "x", None), "T")
+            .unwrap();
         let mut q = EntryQuery::new();
         q.since = Some(Utc.timestamp_opt(200, 0).unwrap().to_rfc3339());
         q.until = Some(Utc.timestamp_opt(300, 0).unwrap().to_rfc3339());
@@ -460,9 +470,12 @@ mod tests {
     fn search_and_pagination() {
         let s = Store::open_in_memory().unwrap();
         let f = s.add_feed("http://example.com/feed").unwrap();
-        s.upsert_entry(f.id, &item("g1", "Rust news", Some(10)), "T").unwrap();
-        s.upsert_entry(f.id, &item("g2", "rust weekly", Some(20)), "T").unwrap();
-        s.upsert_entry(f.id, &item("g3", "Cooking", Some(30)), "T").unwrap();
+        s.upsert_entry(f.id, &item("g1", "Rust news", Some(10)), "T")
+            .unwrap();
+        s.upsert_entry(f.id, &item("g2", "rust weekly", Some(20)), "T")
+            .unwrap();
+        s.upsert_entry(f.id, &item("g3", "Cooking", Some(30)), "T")
+            .unwrap();
         let mut q = EntryQuery::new();
         q.q = Some("RUST".into());
         let (total, items) = s.query_entries(&q).unwrap();
