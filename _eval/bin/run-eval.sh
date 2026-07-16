@@ -92,7 +92,13 @@ $headless && [[ -z $prompt_file ]] && fail "--headless requires --prompt-file"
 STAMP="$(mktemp)"; trap 'rm -f "$STAMP"' EXIT
 
 # ---------- launch ----------
-launch=(env HOME="$PROFILE_DIR" "$runner")
+# Toolchain passthrough: rustup/cargo resolve toolchains via $HOME, which a
+# fake-HOME profile breaks. Point them at the real installs (shared build
+# cache is fine — it's the same class of shared resource as network access).
+toolchain_env=()
+[[ -d $HOME/.cargo ]] && toolchain_env+=(CARGO_HOME="$HOME/.cargo")
+[[ -d $HOME/.rustup ]] && toolchain_env+=(RUSTUP_HOME="$HOME/.rustup")
+launch=(env HOME="$PROFILE_DIR" "${toolchain_env[@]}" "$runner")
 if [[ $runner == claude ]]; then
     [[ -n $model ]] && launch+=(--model "$model")
     $headless && launch+=(-p "$(cat "$prompt_file")")

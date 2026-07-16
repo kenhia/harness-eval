@@ -5,30 +5,27 @@
 > `_eval/ADDING-A-HARNESS.md`. Lessons driving all of this:
 > `_eval/run_01/report/lessons-learned.md`.
 
-## Now — prepare run 02 (complex greenfield)
+## Now — run 02 (complex greenfield: feedhub)
 
-Run 02 is the "do the heavy harnesses pull their weight?" experiment: a
-bigger, multi-component project that genuinely needs planning and web
-research, where run 1's task was too small to reward machinery.
+Run 02 is the "do the heavy harnesses pull their weight?" experiment.
+Decisions locked 2026-07-16: **Rust** workspace (feedd/feedctl/feedgen),
+**SQLite pinned**, **all 7 cells**, **headless** (covariate vs run 1).
 
-1. **Author the run 02 spec** (`_eval/run_02/prompts/00-project-spec.md`)
-   — see design sketch below. Spec must pin its own edge semantics
-   (lesson 11) and stay frozen once the first contender runs.
-2. **Executable sealed acceptance suite** (`_eval/run_02/acceptance/`) —
-   the single highest-value v2 change (lessons 9, 10, 21): one shared
-   pytest suite run identically against every repo, black-box (CLI + REST
-   against the built binaries), two tiers:
-   - **core** — every competent run should pass (parity with run 1's
-     checklist role);
-   - **hard** — adversarial/edge inputs designed to spread the field
-     (malformed feeds, encoding traps, timezone/date pathologies,
-     boundary semantics *as pinned by the spec*).
-   Graders then score only subjective dimensions.
-3. **Refresh contenders + profiles** — re-verify each harness's install
-   under current versions; preflight per §2 of ADDING-A-HARNESS; harness
-   versions recorded in run logs (auto-captured runner version already is).
-4. **Dry-run the mechanics** — one throwaway control run end-to-end with
-   `run-eval.sh` on the new spec before burning the real field.
+Done in setup (sprint 003): spec with pinned edge semantics
+(`_eval/run_02/prompts/00-project-spec.md`), 7 prompts, executable sealed
+acceptance suite (core C1–C13 + hard H1–H12, hermetic pytest), rubric,
+staging repos (controls pre-run-tagged), cargo/rustup fake-HOME
+passthrough in run-eval.sh.
+
+Remaining (ordered — details in `_eval/run_02/README.md`):
+
+1. **Harness install refresh** into the 5 harness staging repos +
+   profile re-verification (Phoenix + gstack global pieces).
+2. **Dry-run shakedown** — throwaway control run, acceptance suite run
+   against its output (suite hasn't met a real implementation yet);
+   calibrates Rust-task cost/wall-clock.
+3. **Freeze** spec + suite at first real contender run; then execute the
+   field headless, one cell at a time.
 
 ## Next
 
