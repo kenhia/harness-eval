@@ -31,6 +31,7 @@ EVAL_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 STAGING_ROOT="$HOME/src/ai-agents/harness-eval-runs"
 
 runner="" profile="" run_group="" repo="" model="" prompt_file="" headless=false
+boundary_tag="pre-run" log_suffix=""
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --runner)      runner="$2"; shift 2 ;;
@@ -40,6 +41,8 @@ while [[ $# -gt 0 ]]; do
         --model)       model="$2"; shift 2 ;;
         --prompt-file) prompt_file="$2"; shift 2 ;;
         --headless)    headless=true; shift ;;
+        --tag)         boundary_tag="$2"; shift 2 ;;
+        --suffix)      log_suffix="-$2"; shift 2 ;;
         *) echo "unknown arg: $1" >&2; exit 1 ;;
     esac
 done
@@ -52,7 +55,7 @@ REPO_DIR="$repo"
 [[ -d $REPO_DIR ]] || REPO_DIR="$STAGING_ROOT/$run_group/$repo"
 RUN_NAME="$(basename "$REPO_DIR")"
 RUNLOG_DIR="$EVAL_ROOT/$run_group/runs"
-RUNLOG="$RUNLOG_DIR/${RUN_NAME%%-*}-runlog.md"   # NN-runlog.md
+RUNLOG="$RUNLOG_DIR/${RUN_NAME%%-*}${log_suffix}-runlog.md"   # NN[-suffix]-runlog.md
 
 fail() { echo "PREFLIGHT FAIL: $*" >&2; exit 1; }
 note() { echo "  $*"; }
@@ -70,12 +73,12 @@ fi
 note "profile: $PROFILE_DIR ok"
 
 [[ -d $REPO_DIR/.git ]] || fail "$REPO_DIR is not a git repo (new-run.sh creates staging repos)"
-git -C "$REPO_DIR" rev-parse -q --verify pre-run >/dev/null || fail "no pre-run tag in $REPO_DIR"
+git -C "$REPO_DIR" rev-parse -q --verify "$boundary_tag" >/dev/null || fail "no $boundary_tag tag in $REPO_DIR"
 [[ -z "$(git -C "$REPO_DIR" status --porcelain)" ]] || fail "working tree not clean in $REPO_DIR"
-if [[ "$(git -C "$REPO_DIR" rev-parse HEAD)" != "$(git -C "$REPO_DIR" rev-parse pre-run^{commit})" ]]; then
-    echo "  WARNING: HEAD != pre-run (re-run on a used repo?)"
+if [[ "$(git -C "$REPO_DIR" rev-parse HEAD)" != "$(git -C "$REPO_DIR" rev-parse "$boundary_tag"^{commit})" ]]; then
+    echo "  WARNING: HEAD != $boundary_tag (re-run on a used repo?)"
 fi
-note "repo: $REPO_DIR ok (pre-run tagged, clean)"
+note "repo: $REPO_DIR ok ($boundary_tag tagged, clean)"
 
 runner_version="$(env HOME="$PROFILE_DIR" "$runner" --version 2>/dev/null | head -1)"
 note "runner: $runner $runner_version"
@@ -169,7 +172,7 @@ if [[ $runner_exit -ne 0 && ${#new_sessions[@]} -eq 0 ]]; then
     exit "$runner_exit"
 fi
 
-diffstat="$(git -C "$REPO_DIR" diff --stat pre-run..HEAD 2>/dev/null | tail -1)"
+diffstat="$(git -C "$REPO_DIR" diff --stat "$boundary_tag"..HEAD 2>/dev/null | tail -1)"
 committed=yes
 [[ -z "$(git -C "$REPO_DIR" status --porcelain)" ]] || committed="NO — uncommitted changes present"
 
@@ -195,7 +198,7 @@ auto_block="$(cat <<EOF
 - wall clock: $wall_h
 - runner exit code: $runner_exit
 - working tree clean after run: $committed
-- git diff --stat pre-run..HEAD: ${diffstat:-"(empty)"}
+- git diff --stat $boundary_tag..HEAD: ${diffstat:-"(empty)"}
 - real-HOME leak canary: ${leak:-clean}
 
 ### Session metrics ($runner session log)

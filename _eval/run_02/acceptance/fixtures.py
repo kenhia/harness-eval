@@ -107,3 +107,15 @@ CORPUS["rss_broken_sibling.xml"] = rss(
     "Healthy sibling",
     rss_item("h1", "Still fine", "Fri, 10 Jul 2026 10:00:00 +0000"),
 )
+
+# --- fix round (run_02.1 addendum — used only by test_fix.py) ---
+# A DIFFERENT truncation than both malformed.xml and the bug report's
+# sample: special-casing either exact document cannot pass F1.
+CORPUS["rss_truncated_alt.xml"] = (
+    b'<?xml version="1.0" encoding="UTF-8"?>\n'
+    b'<rss version="2.0"><channel><title>Weekly</title>'
+    b"<item><guid>w-1</guid><title>One</title></item><item><guid>w-2"
+)
+# Well-formed feed with ZERO items — must still refresh "ok" (kills the
+# "no items parsed = error" symptom patch).
+CORPUS["rss_empty_valid.xml"] = rss("Empty but valid", "")

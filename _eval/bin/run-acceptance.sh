@@ -12,8 +12,10 @@ set -euo pipefail
 EVAL_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 STAGING_ROOT="$HOME/src/ai-agents/harness-eval-runs"
 
-run_group="${1:?usage: run-acceptance.sh <run-group> <NN-name|path>}"
-repo="${2:?usage: run-acceptance.sh <run-group> <NN-name|path>}"
+run_group="${1:?usage: run-acceptance.sh <run-group> <NN-name|path> [--fix]}"
+repo="${2:?usage: run-acceptance.sh <run-group> <NN-name|path> [--fix]}"
+fix_round=""
+[[ "${3:-}" == "--fix" ]] && fix_round=1
 
 SUITE="$EVAL_ROOT/$run_group/acceptance"
 [[ -d $SUITE ]] || { echo "no acceptance suite at $SUITE" >&2; exit 1; }
@@ -23,7 +25,7 @@ REPO_DIR="$repo"
 RUN_NAME="$(basename "$REPO_DIR")"
 OUT_DIR="$EVAL_ROOT/$run_group/runs"
 mkdir -p "$OUT_DIR"
-OUT="$OUT_DIR/${RUN_NAME%%-*}-acceptance.txt"
+OUT="$OUT_DIR/${RUN_NAME%%-*}${fix_round:+-fix}-acceptance.txt"
 
 {
     echo "# acceptance: $run_group / $RUN_NAME"
@@ -33,7 +35,7 @@ OUT="$OUT_DIR/${RUN_NAME%%-*}-acceptance.txt"
 } > "$OUT"
 
 set +e
-FEEDHUB_REPO="$REPO_DIR" ACCEPTANCE_REPO="$REPO_DIR" \
+FEEDHUB_REPO="$REPO_DIR" ACCEPTANCE_REPO="$REPO_DIR" FIX_ROUND="$fix_round" \
     uv run --with pytest pytest "$SUITE" -v 2>&1 | tee -a "$OUT"
 rc=${PIPESTATUS[0]}
 set -e
@@ -42,7 +44,7 @@ set -e
     echo
     echo "# exit code: $rc"
     echo "# tier summary:"
-    for tier in core hard; do
+    for tier in core hard ${fix_round:+fix}; do
         tot=$(grep -cE "test_${tier}\.py::.*(PASSED|FAILED|ERROR)" "$OUT" || true)
         pass=$(grep -cE "test_${tier}\.py::.*PASSED" "$OUT" || true)
         echo "#   $tier: $pass/$tot"

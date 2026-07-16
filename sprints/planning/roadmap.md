@@ -33,8 +33,14 @@ Remaining (ordered — details in `_eval/run_02/README.md`):
   native runner each), fresh staging under
   `harness-eval-runs/run_02/`, delta-style grading with a new rubric
   calibration; efficiency anchored to each runner's control (lesson 13).
-- **Publish run 02** — import to `run-output/run_02/`, whitepaper v2
-  section, README results table gains a per-run section.
+- **Publish run 02 + 02.1 as ONE combined report** (decided 2026-07-16):
+  the story is the field's shared quick-xml failure paired with how each
+  implementation fixed its own bug. Whitepaper, infographic, and README
+  results wait for 02.1 grading; the infographic gets an explicit blurb
+  that 03 sits out the fix round *because it passed* (strict roxmltree —
+  the same choice as the ungraded 99 shakedown control, i.e. 2 of 8
+  implementations dodged the trap). Import to `run-output/run_02/`
+  happens after 02.1 so final trees include the fix commits.
 - **run_02.1 — organic bug-fix round** (after run_02 grading is locked):
   every non-control implementation failed C9/H12 identically (quick-xml
   streaming leniency: malformed XML → "ok" empty feed). Give each agent
