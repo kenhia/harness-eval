@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 # use-profile.sh — swap ~/.copilot between eval profiles.
 #
+# DEPRECATED (run 02+): runs now use fake-HOME profiles via run-eval.sh
+# (`env HOME=<profile> copilot|claude`), no symlink swapping. Kept because
+# run 1 (run-output/run_01) was executed with this mechanism. If you
+# bootstrapped, ~/.copilot may still be a symlink — `use-profile.sh
+# original` restores day-to-day config.
+#
 # Usage:
 #   use-profile.sh bootstrap          # one-time: move real ~/.copilot -> profiles/original, symlink to it
 #   use-profile.sh clean|phoenix|original

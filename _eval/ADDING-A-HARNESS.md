@@ -29,17 +29,17 @@ undocumented global writes (Phoenix, gstack's `~/.gstack`).
 ## 2. Isolation
 
 - Repo-local harness bits → the staging repo (step 3).
-- Global bits → a **profile**, never the live config:
-  - Copilot CLI: `_eval/profiles/<name>/.copilot`, swapped with
-    `_eval/bin/use-profile.sh` (symlink on `~/.copilot`).
-  - Claude Code: profiles used as a **fake HOME**
-    (`env HOME=<profile> claude …`). Naming mirrors the Copilot
-    side: `claude-clean` is the harness-free base (credentials + klams/korg
-    MCP only, no skills); a harness with global pieces gets its own copy,
-    `claude-<harness>` (e.g. `claude-gstack`), with the global piece in the
-    profile's `.claude/skills/`. Profile layout: `.claude/` with
-    `.credentials.json`; **`.claude.json` at the profile ROOT** (with a
-    HOME override Claude Code reads `$HOME/.claude.json`, NOT
+- Global bits → a **profile**, never the live config. All profiles are
+  **fake HOMEs** (`env HOME=<profile> <runner> …` — run-eval.sh does this
+  for you); both runners resolve `~` through `$HOME`:
+  - Copilot CLI: profile contains `.copilot/` (config, auth, session
+    state). The run-1 symlink mechanism (`use-profile.sh`) is deprecated.
+  - Claude Code: `claude-clean` is the harness-free base (credentials +
+    klams/korg MCP only, no skills); a harness with global pieces gets its
+    own copy, `claude-<harness>` (e.g. `claude-gstack`), with the global
+    piece in the profile's `.claude/skills/`. Profile layout: `.claude/`
+    with `.credentials.json`; **`.claude.json` at the profile ROOT** (with
+    a HOME override Claude Code reads `$HOME/.claude.json`, NOT
     `.claude/.claude.json` — a minimal one: onboarding flags + MCP servers);
     `.gitconfig` (agents commit). The HOME override also captures stray
     global state (`~/.gstack`, `~/.cache`, …).
@@ -65,49 +65,63 @@ undocumented global writes (Phoenix, gstack's `~/.gstack`).
 ## 3. Staging repo
 
 Run repos on `main` are flattened trees (publish format), so new runs
-happen in a **staging repo** outside the eval repo:
+happen in a **staging repo** outside the eval repo, grouped by run:
 
 ```bash
-cd ~/src/ai-agents/harness-eval-runs
-mkdir NN-<name> && cd NN-<name>
-git init -b main
-git commit --allow-empty -m "eval: clean repo baseline"
-# install the harness (repo-local pieces); skip for baseline/control runs
-git add -A && git commit -m "eval: install <harness> (<exact command>)"
-git tag pre-run
+_eval/bin/new-run.sh <run-group> NN-<name>          # harness run
+_eval/bin/new-run.sh <run-group> NN-<name> --no-harness  # control run
 ```
+
+This creates `~/src/ai-agents/harness-eval-runs/<run-group>/NN-<name>`
+with the empty `eval: clean repo baseline` commit. For harness runs:
+install the repo-local pieces, `git add -A && git commit -m "eval: install
+<harness> (<exact command>)"`, then `git tag pre-run`.
 
 ## 4. Prompt
 
-Append one line to `_eval/prompts/prefixes.txt`
+Append one line to `_eval/<run-group>/prompts/prefixes.txt`
 (`NN-<name>|<go-command line>`), then regenerate:
 
 ```bash
-cd _eval/prompts
+cd _eval/<run-group>/prompts
 { grep '^NN-<name>' prefixes.txt | cut -d'|' -f2; echo; cat 00-project-spec.md; } > NN-<name>.md
 ```
 
 Only the first line may differ between contenders. The spec body is frozen
-for the life of run 1's field — changing it invalidates comparability.
+for the life of the run group's field — changing it invalidates
+comparability.
 
 ## 5. Run
 
-Fresh session, correct profile active, hands off, run log from
-`_eval/runs/runlog-template.md` (note the runner, exact tool version, and
-how token/cost data is captured on that runner). Zero-intervention
-discipline as in run 1.
+```bash
+_eval/bin/run-eval.sh --runner claude|copilot --profile <name> \
+  --run-group <run-group> --repo NN-<name> [--model <id>] \
+  [--prompt-file _eval/<run-group>/prompts/NN-<name>.md] [--headless]
+```
+
+Preflight, timing, runner version, session metrics, diffstat, and the
+real-HOME leak canary are captured automatically into
+`_eval/<run-group>/runs/NN-runlog.md`; you fill only the Manual section
+(declared-done, interventions verbatim, observations, `/cost` paste for
+interactive Claude runs). Zero-intervention discipline as in run 1.
 
 ## 6. Delta grading
 
 Two **new** grader sessions (same grader identities: `fable1`, `sol`), each
-given the matching `_eval/grader_prompts/<grader>-delta-*.md`. Key
-differences from run 1 grading:
+given the matching `_eval/<run-group>/grader_prompts/<grader>-delta-*.md`.
+Key differences from full-field grading:
 
 - Grade **only** the new run(s), in opposite order per grader.
 - **Calibrate first**: re-read your own prior sheets and
   `summary-<grader>.md` — the scale must be consistent with your
   predecessor session's. (Your own prior work is readable; the other
   grader's remains off-limits, as do `final.md` and `reconcile/`.)
+- **Precedents are readable**: `grades/precedents.md` records adjudicated
+  *interpretations* (not scores) from prior consensus sessions — e.g. run
+  1's half-open-window ruling. Delta graders read it before grading so
+  settled questions aren't re-litigated (run 1.5 wasted a full dispute
+  cycle re-arguing an already-adjudicated boundary question). Consensus
+  sessions append to it.
 - Reuse your existing sealed fixture (`grades/sealed-fixture-<grader>/`).
 - Output: `NN-acceptance-<grader>.md`, `NN-<grader>.md`, appended summary
   rows, one commit.
@@ -119,16 +133,21 @@ threats), the infographic, the root README results table, and lessons.
 
 ## 7. Publish import
 
-After consensus, fold each run into the published repo:
+After consensus, fold each run into the published repo (final trees live
+under `run-output/<run-group>/`):
 
 ```bash
 cd ~/src/ai-agents/harness-eval
-mkdir NN-<name>
-git -C ~/src/ai-agents/harness-eval-runs/NN-<name> archive main | tar -x -C NN-<name>
-git add NN-<name> && git commit -m "runs: import final tree of NN-<name>"
-git fetch --no-tags ~/src/ai-agents/harness-eval-runs/NN-<name> \
-  main:refs/heads/history/NN-<name> refs/tags/pre-run:refs/tags/pre-run/NN-<name>
-git push origin main "refs/heads/history/NN-<name>" "refs/tags/pre-run/NN-<name>"
+mkdir -p run-output/<run-group>/NN-<name>
+git -C ~/src/ai-agents/harness-eval-runs/<run-group>/NN-<name> archive main \
+  | tar -x -C run-output/<run-group>/NN-<name>
+git add run-output/<run-group>/NN-<name> \
+  && git commit -m "runs: import final tree of <run-group>/NN-<name>"
+git fetch --no-tags ~/src/ai-agents/harness-eval-runs/<run-group>/NN-<name> \
+  main:refs/heads/history/<run-group>/NN-<name> \
+  refs/tags/pre-run:refs/tags/pre-run/<run-group>/NN-<name>
+git push origin main "refs/heads/history/<run-group>/NN-<name>" \
+  "refs/tags/pre-run/<run-group>/NN-<name>"
 ```
 
 Run the secret scan first (tracked files + full staging history + the run
