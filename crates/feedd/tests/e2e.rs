@@ -339,14 +339,11 @@ async fn a_malformed_feed_records_last_error_and_spares_its_neighbours() {
 #[tokio::test]
 async fn an_unreachable_origin_records_last_error_without_crashing_the_server() {
     let h = harness(true);
-    // Bind and immediately drop, so the port is almost certainly dead.
-    let dead_port = {
-        let l = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
-        l.local_addr().unwrap().port()
-    };
-    let id = h
-        .add_url(&format!("http://127.0.0.1:{dead_port}/gone.rss"))
-        .await;
+    // Port 1, not an ephemeral port obtained by bind-then-drop: the OS is free
+    // to hand a released ephemeral port to a concurrent test's server, and then
+    // this "dead" origin answers and the test flakes. Ports below 1024 need
+    // privileges no test has, so this connection is refused deterministically.
+    let id = h.add_url("http://127.0.0.1:1/gone.rss").await;
 
     let result = h.refresh(id).await;
     assert_eq!(result["status"], "error");

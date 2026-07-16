@@ -92,14 +92,17 @@ async fn a_404_from_the_server_exits_1() {
     assert!(stderr(&out).contains("not found"), "got {:?}", stderr(&out));
 }
 
+/// A port nothing can be listening on.
+///
+/// Not an ephemeral port obtained by bind-then-drop: the OS is free to hand
+/// that port straight to a concurrent test's server, and then this "dead"
+/// address answers and the assertion flakes. Ports below 1024 need privileges
+/// no test has, so port 1 is refused deterministically.
+const DEAD_SERVER: &str = "http://127.0.0.1:1";
+
 #[tokio::test(flavor = "multi_thread")]
 async fn an_unreachable_server_exits_2() {
-    // Bind and drop, so the port is almost certainly closed.
-    let dead = {
-        let l = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
-        l.local_addr().unwrap().port()
-    };
-    let out = feedctl(&format!("http://127.0.0.1:{dead}"), &["list"]);
+    let out = feedctl(DEAD_SERVER, &["list"]);
     assert_eq!(code(&out), 2, "unreachable is exit 2, not 1");
     assert!(!stderr(&out).is_empty(), "an explanation belongs on stderr");
 }
