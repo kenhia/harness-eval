@@ -163,7 +163,11 @@ async fn feed_registration_lifecycle() {
     assert!(body["error"].is_string());
 
     // Anything that is not an http(s) URL is unprocessable.
-    for bad in ["not-a-url", "ftp://example.invalid/feed.xml", "/relative.xml"] {
+    for bad in [
+        "not-a-url",
+        "ftp://example.invalid/feed.xml",
+        "/relative.xml",
+    ] {
         let (status, body) = h.post("/api/feeds", Some(json!({"url": bad}))).await;
         assert_eq!(status, StatusCode::UNPROCESSABLE_ENTITY, "url {bad}");
         assert!(body["error"].is_string(), "url {bad}");
@@ -225,7 +229,10 @@ async fn rss_refresh_stores_mapped_entries() {
     let entry = find(&page, "rss-1");
     assert_eq!(entry.title, "Rust release notes");
     assert_eq!(entry.link.as_deref(), Some("http://feedgen.invalid/rss/1"));
-    assert_eq!(entry.summary.as_deref(), Some("What shipped in the latest release."));
+    assert_eq!(
+        entry.summary.as_deref(),
+        Some("What shipped in the latest release.")
+    );
     assert_eq!(entry.published_at.as_deref(), Some("2024-03-04T09:00:00Z"));
     assert!(entry.fetched_at.ends_with('Z'));
 
@@ -258,7 +265,10 @@ async fn atom_refresh_stores_mapped_entries() {
     assert_eq!(first.published_at.as_deref(), Some("2024-03-05T08:15:00Z"));
 
     let second = find(&page, "atom-2");
-    assert_eq!(second.link.as_deref(), Some("http://feedgen.invalid/atom/2"));
+    assert_eq!(
+        second.link.as_deref(),
+        Some("http://feedgen.invalid/atom/2")
+    );
     assert_eq!(
         second.summary.as_deref(),
         Some("No summary here, so the content is the summary.")
@@ -298,7 +308,10 @@ async fn known_entries_update_in_place() {
 
     // Same guid, new title/summary/date — plus one entirely new item.
     let edited = feedgen::fixtures::RSS_BASIC
-        .replace("<title>Rust release notes</title>", "<title>Rust release notes, revised</title>")
+        .replace(
+            "<title>Rust release notes</title>",
+            "<title>Rust release notes, revised</title>",
+        )
         .replace(
             "<description>What shipped in the latest release.</description>",
             "<description>Now with corrections.</description>",
@@ -333,7 +346,10 @@ async fn known_entries_update_in_place() {
     let updated = find(&after, "rss-1");
     assert_eq!(updated.title, "Rust release notes, revised");
     assert_eq!(updated.summary.as_deref(), Some("Now with corrections."));
-    assert_eq!(updated.published_at.as_deref(), Some("2024-03-05T09:00:00Z"));
+    assert_eq!(
+        updated.published_at.as_deref(),
+        Some("2024-03-05T09:00:00Z")
+    );
     // The identity of the row survives the update.
     assert_eq!(updated.id, original.id);
     assert_eq!(updated.fetched_at, original.fetched_at);
@@ -543,7 +559,10 @@ async fn entries_window_is_half_open_and_offset_aware() {
     let page = h
         .entries("since=2024-03-01T12:00:00Z&until=2024-03-01T17:00:00Z&limit=500")
         .await;
-    assert_eq!(guids(&page), vec!["date-edt", "date-gmt", "date-ut", "date-z"]);
+    assert_eq!(
+        guids(&page),
+        vec!["date-edt", "date-gmt", "date-ut", "date-z"]
+    );
     assert_eq!(page.total, 4);
 
     // The same instants written with a different offset select the same window.

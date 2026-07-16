@@ -38,7 +38,13 @@ async fn serves_feeds_with_validators_and_content_types() {
     );
     assert!(response.headers().contains_key(ETAG));
     assert!(response.headers().contains_key(LAST_MODIFIED));
-    assert!(response.text().await.unwrap().contains("Rust release notes"));
+    assert!(
+        response
+            .text()
+            .await
+            .unwrap()
+            .contains("Rust release notes")
+    );
 
     let response = client
         .get(format!("{}/atom-basic.xml", server.base_url()))
@@ -144,7 +150,11 @@ async fn root_lists_the_corpus() {
         .expect("body");
 
     for fixture in fixtures::FIXTURES {
-        assert!(body.contains(fixture.name), "index should list {}", fixture.name);
+        assert!(
+            body.contains(fixture.name),
+            "index should list {}",
+            fixture.name
+        );
     }
 
     server.shutdown().await;
@@ -159,6 +169,10 @@ fn make_fixtures_writes_the_documented_corpus() {
     let readme = std::fs::read_to_string(dir.path().join("README.md")).expect("readme");
     for fixture in fixtures::FIXTURES {
         assert!(dir.path().join(fixture.name).is_file(), "{}", fixture.name);
-        assert!(readme.contains(fixture.name), "README documents {}", fixture.name);
+        assert!(
+            readme.contains(fixture.name),
+            "README documents {}",
+            fixture.name
+        );
     }
 }

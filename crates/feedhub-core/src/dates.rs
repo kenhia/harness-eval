@@ -94,7 +94,11 @@ fn parse_year(token: &str) -> Option<i32> {
     match token.len() {
         4.. => Some(value),
         3 => Some(1900 + value),
-        2 => Some(if value < 50 { 2000 + value } else { 1900 + value }),
+        2 => Some(if value < 50 {
+            2000 + value
+        } else {
+            1900 + value
+        }),
         _ => None,
     }
 }

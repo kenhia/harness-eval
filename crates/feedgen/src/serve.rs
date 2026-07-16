@@ -6,10 +6,10 @@ use std::net::SocketAddr;
 use std::path::{Component, Path, PathBuf};
 
 use anyhow::Context;
+use axum::Router;
 use axum::extract::State;
 use axum::http::{HeaderMap, StatusCode, Uri, header};
 use axum::response::{IntoResponse, Response};
-use axum::Router;
 use axum::routing::any;
 use chrono::{DateTime, Timelike, Utc};
 use sha2::{Digest, Sha256};
@@ -128,7 +128,10 @@ async fn handle(State(dir): State<Dir>, uri: Uri, headers: HeaderMap) -> Respons
 /// it is the stronger one. A file rewritten within the same second has an
 /// unchanged mtime but a different ETag, and must not answer 304.
 fn not_modified(headers: &HeaderMap, etag: &str, modified: DateTime<Utc>) -> bool {
-    if let Some(inm) = headers.get(header::IF_NONE_MATCH).and_then(|v| v.to_str().ok()) {
+    if let Some(inm) = headers
+        .get(header::IF_NONE_MATCH)
+        .and_then(|v| v.to_str().ok())
+    {
         return inm.trim() == "*"
             || inm
                 .split(',')

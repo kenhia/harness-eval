@@ -9,7 +9,7 @@ use std::path::Path;
 
 use anyhow::{Context, Result};
 use chrono::{DateTime, Utc};
-use feedhub_core::api::{Entry, EntriesPage, Feed};
+use feedhub_core::api::{EntriesPage, Entry, Feed};
 use feedhub_core::{ParsedFeed, format_utc};
 use rusqlite::types::Value;
 use rusqlite::{Connection, OptionalExtension, params, params_from_iter};
@@ -239,7 +239,13 @@ pub fn apply_fetch(
                     "UPDATE entries
                         SET title = ?2, link = ?3, summary = ?4, published_at = ?5
                       WHERE id = ?1",
-                    params![entry_id, entry.title, entry.link, entry.summary, published_at],
+                    params![
+                        entry_id,
+                        entry.title,
+                        entry.link,
+                        entry.summary,
+                        published_at
+                    ],
                 )?;
                 counts.updated_entries += 1;
             }

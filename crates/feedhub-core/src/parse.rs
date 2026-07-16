@@ -9,8 +9,8 @@
 use std::fmt;
 
 use chrono::{DateTime, Utc};
-use quick_xml::events::{BytesRef, BytesStart, Event};
 use quick_xml::escape::resolve_predefined_entity;
+use quick_xml::events::{BytesRef, BytesStart, Event};
 use quick_xml::{Reader, XmlVersion};
 
 use crate::UNTITLED;
@@ -148,7 +148,10 @@ impl ItemBuf {
                 self.pub_date.as_deref().and_then(parse_rfc822),
             ),
             Format::Atom => {
-                let link = self.alternate_link.clone().or_else(|| self.first_link.clone());
+                let link = self
+                    .alternate_link
+                    .clone()
+                    .or_else(|| self.first_link.clone());
                 let summary = self.summary.clone().or_else(|| self.content.clone());
                 // `published` is preferred, but a feed that only has `updated`
                 // (or whose `published` is junk) still gets a date.
@@ -276,7 +279,9 @@ fn resolve_entity(entity: &BytesRef<'_>) -> Result<String, ParseError> {
     {
         return Ok(ch.to_string());
     }
-    let name = entity.decode().map_err(|e| ParseError::Xml(e.to_string()))?;
+    let name = entity
+        .decode()
+        .map_err(|e| ParseError::Xml(e.to_string()))?;
     Ok(match resolve_predefined_entity(&name) {
         Some(text) => text.to_string(),
         None => format!("&{name};"),

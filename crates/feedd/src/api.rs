@@ -98,9 +98,8 @@ async fn add_feed(
     State(state): State<SharedState>,
     body: Result<Json<AddFeedRequest>, JsonRejection>,
 ) -> ApiResult<(StatusCode, Json<Feed>)> {
-    let Json(request) = body.map_err(|_| {
-        ApiError::unprocessable("body must be a JSON object with a \"url\" string")
-    })?;
+    let Json(request) = body
+        .map_err(|_| ApiError::unprocessable("body must be a JSON object with a \"url\" string"))?;
     validate_feed_url(&request.url)?;
 
     let conn = state.db.lock().expect("db mutex poisoned");
@@ -116,7 +115,8 @@ async fn add_feed(
 
 /// Only absolute http(s) URLs with a host are feeds we can fetch.
 fn validate_feed_url(url: &str) -> ApiResult<()> {
-    let parsed = Url::parse(url).map_err(|_| ApiError::unprocessable(format!("not a valid URL: {url}")))?;
+    let parsed =
+        Url::parse(url).map_err(|_| ApiError::unprocessable(format!("not a valid URL: {url}")))?;
     if !matches!(parsed.scheme(), "http" | "https") {
         return Err(ApiError::unprocessable(format!(
             "URL scheme must be http or https, not {}",
@@ -137,7 +137,10 @@ async fn get_feed(State(state): State<SharedState>, Path(id): Path<i64>) -> ApiR
         .ok_or_else(|| ApiError::not_found(format!("no feed with id {id}")))
 }
 
-async fn remove_feed(State(state): State<SharedState>, Path(id): Path<i64>) -> ApiResult<StatusCode> {
+async fn remove_feed(
+    State(state): State<SharedState>,
+    Path(id): Path<i64>,
+) -> ApiResult<StatusCode> {
     let conn = state.db.lock().expect("db mutex poisoned");
     // Entries go with it, by way of ON DELETE CASCADE.
     match db::delete_feed(&conn, id).map_err(ApiError::internal)? {

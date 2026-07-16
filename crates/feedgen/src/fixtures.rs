@@ -260,8 +260,7 @@ pub const FIXTURES: &[Fixture] = &[
 /// Write the corpus and its README into `dir`, creating the directory if it
 /// does not exist. Returns the paths written.
 pub fn write_fixtures(dir: &Path) -> anyhow::Result<Vec<PathBuf>> {
-    std::fs::create_dir_all(dir)
-        .with_context(|| format!("cannot create {}", dir.display()))?;
+    std::fs::create_dir_all(dir).with_context(|| format!("cannot create {}", dir.display()))?;
 
     let mut written = Vec::new();
     for fixture in FIXTURES {
