@@ -22,7 +22,10 @@ anyhow = "1"
 axum = "0.8"
 chrono = { version = "0.4", default-features = false, features = ["std", "clock"] }
 clap = { version = "4", features = ["derive"] }
-quick-xml = "0.37"
+# escape-html: real feeds are full of HTML entities (&nbsp;, &mdash;, &rsquo;).
+# Without it, quick-xml knows only the five XML predefined entities and a single
+# &nbsp; fails the whole document, losing every entry in the feed.
+quick-xml = { version = "0.37", features = ["escape-html"] }
 reqwest = { version = "0.12", default-features = false, features = ["rustls-tls"] }
 rusqlite = { version = "0.32", features = ["bundled"] }
 serde = { version = "1", features = ["derive"] }

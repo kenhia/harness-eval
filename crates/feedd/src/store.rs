@@ -31,6 +31,10 @@ use rusqlite::{params, Connection, OptionalExtension, TransactionBehavior};
 pub enum StoreError {
     #[error("a feed with that URL is already registered")]
     DuplicateUrl,
+    /// The feed disappeared between being read and being written — it was
+    /// deleted while its refresh was in flight.
+    #[error("the feed no longer exists")]
+    FeedGone,
     #[error(transparent)]
     Sqlite(#[from] rusqlite::Error),
 }
@@ -323,13 +327,19 @@ impl Store {
 
         // A feed that omits its title keeps the one we already had; a failed or
         // title-less fetch must not blank it.
-        tx.execute(
+        let touched = tx.execute(
             "UPDATE feeds
                 SET title = COALESCE(?1, title), last_fetched_at = ?2,
                     last_error = NULL, etag = ?3, last_modified = ?4
               WHERE id = ?5",
             params![fetch.title, stamp, fetch.etag, fetch.last_modified, feed_id],
         )?;
+        // No row means the feed was deleted mid-refresh. Reporting success for
+        // a feed that no longer exists would be a lie — and with no entries in
+        // the document, nothing above would have tripped the foreign key.
+        if touched != 1 {
+            return Err(StoreError::FeedGone);
+        }
 
         tx.commit()?;
         Ok(counts)
@@ -338,10 +348,15 @@ impl Store {
     /// Apply a 304: entries untouched, and it counts as a successful fetch.
     pub fn apply_not_modified(&self, feed_id: i64, fetched_at: DateTime<Utc>) -> Result<()> {
         let conn = self.lock();
-        conn.execute(
+        let touched = conn.execute(
             "UPDATE feeds SET last_fetched_at = ?1, last_error = NULL WHERE id = ?2",
             params![format_rfc3339(fetched_at), feed_id],
         )?;
+        // A 304 never reaches the entries table, so the foreign key cannot
+        // catch a mid-refresh delete here. This is the only thing that does.
+        if touched != 1 {
+            return Err(StoreError::FeedGone);
+        }
         Ok(())
     }
 

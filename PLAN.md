@@ -121,6 +121,31 @@ pinned table ourselves. ~110 lines, table-driven tests over every pinned zone,
 plus optional seconds, optional day-of-week, single-digit days, 2/3/4-digit
 years, and a garbage-rejection set.
 
+### D11 — element matching is namespace-aware *(added under review)*
+
+Only elements in the root's namespace supply fields. Matching on the local name
+alone conflated `<atom:link>` with RSS's own `<link>`: being self-closing it
+captured `""`, first-occurrence-wins locked the slot, the real `<link>` was
+ignored, `non_empty` turned the `""` back into absent, identity fell through to
+nothing, and **the entry was silently dropped**. `<atom:link rel="self"/>` is
+near-universal in real RSS. `<media:description>` similarly out-competed the
+real `<description>` for the summary.
+
+Taking the native namespace from the *root* rather than hard-coding the Atom URI
+keeps prefixed Atom (`<atom:feed><atom:id>`) and namespace-less Atom working.
+
+Paired with: `set()` now ignores empty text, so a placeholder `<title/>` before
+the real one cannot lock a slot it will never fill.
+
+### D12 — HTML entities resolve *(added under review)*
+
+quick-xml's `escape-html` feature. Strictly, `&nbsp;` is undefined in XML
+without a DTD, so erroring was defensible — but the failure discards the *whole
+document*, so one `&nbsp;` in one title loses every entry in the feed, and these
+entities are everywhere in real RSS. The behavior was also positional: the same
+entity outside a captured element parsed fine, so identical content succeeded or
+failed depending on where it sat. Malformed XML (an unclosed tag) still errors.
+
 ### D6 — items with no identity are skipped **and counted**
 
 An RSS item with neither `guid` nor `link`, or an Atom entry with no `id`, has
@@ -183,6 +208,22 @@ axum's default rejection body instead.
 | `a_poll_tick_refreshes_every_feed_and_isolates_failures` | the poll loop, ticked explicitly |
 | `feed_list_columns_line_up_with_the_header` | a bug `contains()` could not see |
 | `rfc822_all_pinned_zone_names` | every zone in the pinned table |
+| `a_self_closing_atom_link_in_an_rss_item_does_not_destroy_the_entry` | D11. The bug dropped entries silently |
+| `common_html_entities_do_not_destroy_the_feed` | D12 |
+| `a_leap_second_keeps_the_text_and_integer_columns_in_agreement` | the TEXT/INTEGER invariant, on both grammars |
+| `a_deleted_feed_cannot_report_a_successful_refresh` | the FK can't see an empty document or a 304 |
+
+## Known limits
+
+- **`updated_entries` counts rows re-seen, not rows changed.** The `UPDATE` is
+  unconditional and SQLite counts rows matched. Documented rather than fixed;
+  `new_entries`, which the spec pins, is exact.
+- **Refreshes of one feed are not serialized.** A poll tick racing a manual
+  refresh can apply responses out of order, briefly storing stale fields. It
+  self-corrects on the next refresh and never corrupts counts. D4's `!Send`
+  argument buys lock discipline, not refresh serialization — worth being precise
+  about, since it reads like it covers more than it does.
+- **Non-UTF-8 feeds are a parse error.** The spec pins UTF-8.
 
 ## NOT in scope
 

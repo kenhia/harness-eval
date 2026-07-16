@@ -396,6 +396,26 @@ async fn a_feed_recovers_from_an_error_on_the_next_success() {
     assert_eq!(feed["entry_count"], 3);
 }
 
+#[tokio::test]
+async fn a_reported_error_always_matches_the_feed_row() {
+    // The response and the feed row must never disagree about what happened.
+    let h = harness(true);
+    let id = h.add_fixture("malformed.xml").await;
+
+    let result = h.refresh(id).await;
+    assert_eq!(result["status"], "error");
+
+    let feed = h.feed(id).await;
+    assert!(
+        feed["last_error"].is_string(),
+        "status was 'error', so last_error must say so, not stay null"
+    );
+    assert!(
+        feed["last_fetched_at"].is_string(),
+        "a failed attempt is still a completed fetch attempt"
+    );
+}
+
 // ---------------------------------------------------- pinned date + text
 
 #[tokio::test]

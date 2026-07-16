@@ -245,7 +245,7 @@ existing.
 | `feed_id` | The feed refreshed. |
 | `status` | `"ok"` or `"error"`. |
 | `new_entries` | Entries newly inserted. `0` for a 304, an error, or unchanged content. |
-| `updated_entries` | Known entries updated in place. Absent on error. |
+| `updated_entries` | Known entries **re-seen** and written back, not entries whose values actually changed. Re-fetching identical content reports every item here. Absent on error. |
 | `not_modified` | `true` when the origin answered `304`. Absent on error. |
 | `error` | Present only when `status` is `"error"`. |
 
@@ -318,6 +318,16 @@ are tolerated), numeric offsets (`+0000`, `-0500`), and the zone names
 `GMT UT Z EST EDT CST CDT MST MDT PST PDT`. Atom dates are RFC 3339 with any
 numeric offset and optional fractional seconds.
 
+The RFC 822 parser is deliberately a little more tolerant than that list: it
+also accepts `UTC`, treats a missing zone as GMT (RFC 2822 §4.3 reads an unknown
+zone as `-0000`), and accepts an optional day-of-week which it does not check
+against the date. Zone names are matched case-sensitively, as the specs write
+them — `gmt` does not parse. `:60` is clamped to `:59`, identically on both
+grammars, so a leap second can never make the stored text and the sort key
+disagree.
+
+Instants carry millisecond precision at most; anything finer is truncated.
+
 A missing or unparseable date stores `published_at: null`. **Fetch time is never
 substituted** — an undated entry is undated, and still stored.
 
@@ -328,8 +338,17 @@ instants rather than depending on the text form sorting correctly. (It doesn't:
 despite being later.)
 
 **Text.** Titles and summaries are stored after XML entity unescaping
-(`&amp;` → `&`). CDATA is taken verbatim, so `&amp;` inside CDATA stays literal.
+(`&amp;` → `&`). HTML entities (`&nbsp;`, `&mdash;`, `&rsquo;`) resolve too:
+strictly they are undefined in XML without a DTD, but they are pervasive in real
+feeds, and rejecting them would discard the entire document — every entry — over
+one character. CDATA is taken verbatim, so `&amp;` inside CDATA stays literal.
 A missing title is stored as `(untitled)`.
+
+Element matching is namespace-aware. Only elements in the feed's own namespace
+supply fields, so a `<atom:link>` or `<media:description>` sitting inside an RSS
+`<item>` is ignored rather than mistaken for the item's own `<link>` or
+`<description>`. An empty element never claims a field either, so a placeholder
+`<link/>` ahead of the real one is harmless.
 
 **Dedupe.** Identity is `(feed, guid-or-id)`. Seeing a known key again updates
 `title`, `link`, `summary`, and `published_at` in place — no duplicate row. The
@@ -351,7 +370,15 @@ untouched, counts as a successful fetch (so it clears `last_error`), and reports
 error, malformed XML — is recorded to that feed's `last_error` and goes no
 further. Other feeds are unaffected, the feed keeps its existing title and
 entries, and the server does not crash. Any subsequent successful fetch clears
-`last_error`.
+`last_error`. A refresh that reports `"status": "error"` always leaves a
+matching `last_error` on the feed row; the response and the row never disagree.
+
+**Concurrency.** Refreshes of the same feed are not serialized against each
+other, so a poll tick racing a manual refresh can apply responses out of order
+and briefly store stale entry fields and validators. It self-corrects: the stale
+validator draws a `200` on the next refresh, which re-applies. Counts stay
+honest throughout, because the store's mutex serializes the two transactions and
+identity dedupes them.
 
 **Network.** feedd only ever fetches URLs you explicitly register, and only over
 `http`/`https`. Requests carry a 30-second timeout and a 10-second connect

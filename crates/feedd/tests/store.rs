@@ -658,12 +658,38 @@ fn applying_a_fetch_to_a_feed_deleted_mid_refresh_is_safe() {
     );
 
     assert!(
-        matches!(result, Err(StoreError::Sqlite(_))),
+        result.is_err(),
         "expected a clean storage error, got {result:?}"
     );
     assert_eq!(
         s.query_entries(&query()).unwrap().total,
         0,
         "an entry must never survive pointing at a deleted feed"
+    );
+}
+
+#[test]
+fn a_deleted_feed_cannot_report_a_successful_refresh() {
+    // The FK only fires when there is at least one entry to insert. An empty
+    // document, or a 304, never touches the entries table — so without an
+    // explicit check both would report success for a feed that is gone.
+    let s = store();
+    let feed = s.add_feed("https://example.com/f.rss").unwrap();
+    assert!(s.delete_feed(feed.id).unwrap());
+    let now = at("2020-01-01T00:00:00Z");
+
+    assert!(
+        matches!(
+            s.apply_success(feed.id, &success(vec![]), now),
+            Err(StoreError::FeedGone)
+        ),
+        "an empty document must not report success for a deleted feed"
+    );
+    assert!(
+        matches!(
+            s.apply_not_modified(feed.id, now),
+            Err(StoreError::FeedGone)
+        ),
+        "a 304 must not report success for a deleted feed"
     );
 }

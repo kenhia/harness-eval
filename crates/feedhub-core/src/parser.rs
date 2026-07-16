@@ -10,7 +10,8 @@
 use crate::datetime::parse_feed_date;
 use crate::model::{FeedKind, ParsedEntry, ParsedFeed, UNTITLED};
 use quick_xml::events::{BytesStart, Event};
-use quick_xml::Reader;
+use quick_xml::name::ResolveResult;
+use quick_xml::NsReader;
 
 #[derive(Debug, thiserror::Error, PartialEq, Eq)]
 pub enum ParseError {
@@ -75,6 +76,13 @@ fn non_empty(s: Option<String>) -> Option<String> {
 
 impl ItemBuilder {
     fn set(&mut self, field: Field, text: String) {
+        // An empty element must never claim the slot. Feeds emit placeholder
+        // empties (`<link/>`, `<title></title>`) ahead of the populated
+        // element; letting `""` win would lock out the real value, and
+        // `finish()` would then turn it back into "absent" — unreachable.
+        if text.trim().is_empty() {
+            return;
+        }
         let slot = match field {
             Field::Guid => &mut self.guid,
             Field::Id => &mut self.id,
@@ -196,6 +204,14 @@ fn feed_title_field(kind: FeedKind, name: &str, stack: &[String]) -> Option<Fiel
 #[derive(Default)]
 struct ParserState {
     kind: Option<FeedKind>,
+    /// Namespace of the root element; `None` when the root is unnamespaced, as
+    /// RSS 2.0 is.
+    ///
+    /// Only elements in this namespace supply feed/item fields. Matching on the
+    /// local name alone conflates `<atom:link>` with RSS's own `<link>`, which
+    /// is not a hypothetical: `<atom:link rel="self"/>` is near-universal in
+    /// real RSS, and it silently destroyed entries.
+    root_ns: Option<Vec<u8>>,
     stack: Vec<String>,
     feed_title: Option<String>,
     entries: Vec<ParsedEntry>,
@@ -209,27 +225,49 @@ struct ParserState {
 }
 
 impl ParserState {
-    fn open(&mut self, e: &BytesStart<'_>) -> Result<(), ParseError> {
+    /// Is this element in the feed's own namespace?
+    ///
+    /// Foreign-namespace elements (`atom:`, `media:`, `dc:`, …) routinely reuse
+    /// the local names RSS and Atom care about, so only same-namespace elements
+    /// may supply fields.
+    fn is_native(&self, ns: &ResolveResult<'_>) -> bool {
+        match (ns, &self.root_ns) {
+            (ResolveResult::Unbound, None) => true,
+            (ResolveResult::Bound(found), Some(root)) => found.as_ref() == root.as_slice(),
+            _ => false,
+        }
+    }
+
+    fn open(&mut self, e: &BytesStart<'_>, ns: &ResolveResult<'_>) -> Result<(), ParseError> {
         let name = local_name(e.local_name().as_ref());
 
-        // The root element decides the grammar.
+        // The root element decides the grammar, and its namespace becomes the
+        // one that counts. Taking it from the root rather than hard-coding the
+        // Atom URI keeps prefixed Atom (`<atom:feed><atom:id>`) and
+        // namespace-less Atom both working.
         if self.stack.is_empty() {
             self.kind = Some(match name.as_str() {
                 "rss" => FeedKind::Rss,
                 "feed" => FeedKind::Atom,
                 _ => return Err(ParseError::UnknownFormat),
             });
+            self.root_ns = match ns {
+                ResolveResult::Bound(found) => Some(found.as_ref().to_vec()),
+                _ => None,
+            };
             self.stack.push(name);
             return Ok(());
         }
 
         let kind = self.kind.ok_or(ParseError::UnknownFormat)?;
         let parent = self.stack.last().map(String::as_str).unwrap_or_default();
+        let native = self.is_native(ns);
 
-        let starts_item = match kind {
-            FeedKind::Rss => name == "item" && parent == "channel",
-            FeedKind::Atom => name == "entry" && parent == "feed",
-        };
+        let starts_item = native
+            && match kind {
+                FeedKind::Rss => name == "item" && parent == "channel",
+                FeedKind::Atom => name == "entry" && parent == "feed",
+            };
         if starts_item && self.item.is_none() {
             self.item = Some(ItemBuilder::default());
             self.item_depth = Some(self.stack.len());
@@ -238,7 +276,7 @@ impl ParserState {
         }
 
         // Atom entry links carry their data in attributes, not in text.
-        if kind == FeedKind::Atom && name == "link" && parent == "entry" {
+        if kind == FeedKind::Atom && native && name == "link" && parent == "entry" {
             let (rel, href) = read_link_attrs(e);
             if let (Some(href), Some(builder)) = (non_empty(href), self.item.as_mut()) {
                 builder.links.push((rel, href));
@@ -248,7 +286,9 @@ impl ParserState {
         }
 
         // Open a text capture, unless one is already running (nested markup).
-        if self.capture.is_none() {
+        // A foreign element opens nothing, but text inside an already-open
+        // capture still counts — that is how Atom xhtml content works.
+        if self.capture.is_none() && native {
             let field = if self.item.is_some() {
                 if matches!(parent, "item" | "entry") {
                     field_for_item(kind, &name)
@@ -336,23 +376,25 @@ pub fn parse_feed(bytes: &[u8]) -> Result<ParseOutcome, ParseError> {
     let bytes = bytes.strip_prefix(BOM).unwrap_or(bytes);
     let text = std::str::from_utf8(bytes).map_err(|_| ParseError::NotUtf8)?;
 
-    let mut reader = Reader::from_str(text);
+    // NsReader, not Reader: field mapping has to know an element's namespace,
+    // not just its local name.
+    let mut reader = NsReader::from_str(text);
     // Malformed documents must surface as an error, not be silently salvaged.
     reader.config_mut().check_end_names = true;
 
     let mut st = ParserState::default();
 
     loop {
-        let event = reader
-            .read_event()
+        let (ns, event) = reader
+            .read_resolved_event()
             .map_err(|e| ParseError::Xml(e.to_string()))?;
 
         match event {
             Event::Eof => break,
-            Event::Start(e) => st.open(&e)?,
+            Event::Start(e) => st.open(&e, &ns)?,
             Event::Empty(e) => {
                 // Self-closing: opens and closes in one event.
-                st.open(&e)?;
+                st.open(&e, &ns)?;
                 st.close();
             }
             Event::End(_) => st.close(),
@@ -712,6 +754,127 @@ mod tests {
           </item></channel></rss>"#;
         let feed = parse(xml);
         assert_eq!(feed.entries[0].title, "Real Title");
+    }
+
+    #[test]
+    fn a_self_closing_atom_link_in_an_rss_item_does_not_destroy_the_entry() {
+        // <atom:link rel="self"/> is near-universal in real RSS. Matching on the
+        // local name alone made it Field::Link; being self-closing it captured
+        // "", first-occurrence-wins locked the slot, the real <link> was
+        // ignored, non_empty turned "" back into None, identity fell through,
+        // and the entry vanished with only a WARN.
+        let xml = r#"<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+          <channel><item>
+            <atom:link rel="self" href="https://example.com/self"/>
+            <link>https://example.com/real</link>
+            <title>T</title>
+          </item></channel></rss>"#;
+        let outcome = parse_feed(xml.as_bytes()).unwrap();
+        assert_eq!(
+            outcome.skipped_without_identity, 0,
+            "the entry must survive"
+        );
+        assert_eq!(outcome.feed.entries.len(), 1);
+        assert_eq!(
+            outcome.feed.entries[0].link.as_deref(),
+            Some("https://example.com/real"),
+            "the RSS <link> wins; the foreign atom:link is not a link field"
+        );
+        // No guid, so identity falls back to the real link.
+        assert_eq!(outcome.feed.entries[0].guid, "https://example.com/real");
+    }
+
+    #[test]
+    fn a_foreign_namespace_element_does_not_hijack_a_field() {
+        // media:description before the real description would win under
+        // first-occurrence-wins if the namespace were ignored.
+        let xml = r#"<rss version="2.0" xmlns:media="http://search.yahoo.com/mrss/">
+          <channel><item>
+            <guid>g1</guid>
+            <media:description>media blurb</media:description>
+            <description>real description</description>
+            <media:title>media title</media:title>
+            <title>real title</title>
+          </item></channel></rss>"#;
+        let feed = parse(xml);
+        assert_eq!(feed.entries[0].summary.as_deref(), Some("real description"));
+        assert_eq!(feed.entries[0].title, "real title");
+    }
+
+    #[test]
+    fn an_atom_feed_using_a_prefix_still_parses() {
+        // The native namespace is taken from the root, so prefixed Atom works
+        // exactly like default-namespaced Atom.
+        let xml = r#"<atom:feed xmlns:atom="http://www.w3.org/2005/Atom">
+            <atom:title>Prefixed Feed</atom:title>
+            <atom:entry>
+              <atom:id>e1</atom:id>
+              <atom:title>Prefixed Entry</atom:title>
+              <atom:link rel="alternate" href="https://example.com/1"/>
+              <atom:updated>2020-01-01T00:00:00Z</atom:updated>
+            </atom:entry>
+          </atom:feed>"#;
+        let feed = parse(xml);
+        assert_eq!(feed.title.as_deref(), Some("Prefixed Feed"));
+        assert_eq!(feed.entries.len(), 1);
+        assert_eq!(feed.entries[0].guid, "e1");
+        assert_eq!(feed.entries[0].title, "Prefixed Entry");
+        assert_eq!(
+            feed.entries[0].link.as_deref(),
+            Some("https://example.com/1")
+        );
+    }
+
+    #[test]
+    fn an_empty_element_does_not_lock_out_the_real_value() {
+        // Storing "" would satisfy first-occurrence-wins forever, and finish()
+        // would then map it back to absent — so the real value could never win.
+        let xml = r#"<rss version="2.0"><channel><item>
+            <guid>g1</guid>
+            <title></title>
+            <title>Real Title</title>
+            <link/>
+            <link>https://example.com/real</link>
+            <description></description>
+            <description>Real summary</description>
+          </item></channel></rss>"#;
+        let feed = parse(xml);
+        let entry = &feed.entries[0];
+        assert_eq!(entry.title, "Real Title");
+        assert_eq!(entry.link.as_deref(), Some("https://example.com/real"));
+        assert_eq!(entry.summary.as_deref(), Some("Real summary"));
+    }
+
+    #[test]
+    fn common_html_entities_do_not_destroy_the_feed() {
+        // A single &nbsp; used to fail the whole document, taking every entry
+        // with it — and real feeds are full of them.
+        let xml = r#"<rss version="2.0"><channel><item>
+            <guid>g1</guid>
+            <title>Q1&nbsp;2024 results &mdash; up 5&percnt;</title>
+            <description>Alice&rsquo;s take&hellip;</description>
+          </item>
+          <item><guid>g2</guid><title>Second survives too</title></item>
+          </channel></rss>"#;
+        let feed = parse(xml);
+        assert_eq!(feed.entries.len(), 2, "no entry may be lost to an entity");
+        assert!(
+            feed.entries[0].title.contains("2024 results"),
+            "got {:?}",
+            feed.entries[0].title
+        );
+        assert!(
+            feed.entries[0].title.contains('—'),
+            "&mdash; should resolve"
+        );
+        assert!(
+            feed.entries[0]
+                .summary
+                .as_deref()
+                .unwrap()
+                .contains('\u{2019}'),
+            "&rsquo; should resolve"
+        );
     }
 
     #[test]

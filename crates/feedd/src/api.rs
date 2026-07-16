@@ -60,6 +60,7 @@ impl From<StoreError> for ApiError {
     fn from(e: StoreError) -> Self {
         match e {
             StoreError::DuplicateUrl => ApiError::new(StatusCode::CONFLICT, e.to_string()),
+            StoreError::FeedGone => ApiError::new(StatusCode::NOT_FOUND, e.to_string()),
             StoreError::Sqlite(e) => {
                 // The client can't act on SQLite internals; log them, return a
                 // generic 500.
@@ -130,26 +131,50 @@ async fn remove_feed(State(state): State<AppState>, Path(id): Path<i64>) -> ApiR
 pub async fn refresh_feed(store: &Store, fetcher: &Fetcher, target: &FetchState) -> RefreshResult {
     let now = datetime::now();
 
-    match fetcher.fetch(target).await {
-        Ok(Fetched::NotModified) => match store.apply_not_modified(target.id, now) {
-            Ok(()) => RefreshResult::ok(target.id, 0, 0, true),
-            Err(e) => RefreshResult::error(target.id, e.to_string()),
-        },
-        Ok(Fetched::Body(success)) => match store.apply_success(target.id, &success, now) {
-            Ok(counts) => RefreshResult::ok(target.id, counts.new, counts.updated, false),
-            Err(e) => RefreshResult::error(target.id, e.to_string()),
-        },
-        Err(e) => {
-            // A failure is recorded against this feed and goes no further: it
-            // must never disturb another feed or take the server down.
-            let message = e.to_string();
-            tracing::warn!(feed_id = target.id, url = %target.url, error = %message, "refresh failed");
-            if let Err(e) = store.apply_error(target.id, &message, now) {
-                tracing::error!(feed_id = target.id, error = %e, "could not record fetch error");
-            }
-            RefreshResult::error(target.id, message)
+    // Fetch first. The store lock is taken only inside the `store.*` calls
+    // below, never across this await.
+    let fetched = match fetcher.fetch(target).await {
+        Ok(fetched) => fetched,
+        Err(e) => return record_failure(store, target, &e.to_string(), now),
+    };
+
+    let applied = match fetched {
+        Fetched::NotModified => store
+            .apply_not_modified(target.id, now)
+            .map(|()| (0, 0, true)),
+        Fetched::Body(success) => store
+            .apply_success(target.id, &success, now)
+            .map(|counts| (counts.new, counts.updated, false)),
+    };
+
+    match applied {
+        Ok((new, updated, not_modified)) => {
+            RefreshResult::ok(target.id, new, updated, not_modified)
         }
+        // A storage failure is a failed refresh too, and it goes down the same
+        // path — otherwise the response says "error" while the feed row keeps a
+        // null (or stale) last_error, and the two disagree about what happened.
+        Err(e) => record_failure(store, target, &e.to_string(), now),
     }
+}
+
+/// Record a failed refresh against one feed and build its result.
+///
+/// The failure stops here: it never disturbs another feed and never takes the
+/// server down.
+fn record_failure(
+    store: &Store,
+    target: &FetchState,
+    message: &str,
+    now: chrono::DateTime<chrono::Utc>,
+) -> RefreshResult {
+    tracing::warn!(feed_id = target.id, url = %target.url, error = %message, "refresh failed");
+    if let Err(e) = store.apply_error(target.id, message, now) {
+        // Best-effort: if the feed was deleted mid-refresh there is no row left
+        // to write to, which is not itself worth failing over.
+        tracing::debug!(feed_id = target.id, error = %e, "could not record the failure");
+    }
+    RefreshResult::error(target.id, message)
 }
 
 async fn refresh_one(State(state): State<AppState>, Path(id): Path<i64>) -> ApiResult<Response> {

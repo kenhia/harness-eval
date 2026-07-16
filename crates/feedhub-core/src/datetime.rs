@@ -13,7 +13,7 @@
 //! `2020-01-01T00:00:00Z` despite being later. Sorting on the integer sidesteps
 //! that whole class of bug and lets the text form stay faithful to the source.
 
-use chrono::{DateTime, NaiveDate, SecondsFormat, SubsecRound, TimeZone, Utc};
+use chrono::{DateTime, NaiveDate, SecondsFormat, SubsecRound, TimeZone, Timelike, Utc};
 
 /// Normalize an instant to feedhub's stored precision.
 ///
@@ -21,7 +21,22 @@ use chrono::{DateTime, NaiveDate, SecondsFormat, SubsecRound, TimeZone, Utc};
 /// agreement (a sub-millisecond difference could otherwise order two entries
 /// one way by instant and another by text). Feed timestamps do not carry
 /// meaningful sub-millisecond precision.
+///
+/// Also clamps leap seconds. chrono represents `:60` as a nanosecond overflow
+/// past 999_999_999, which would otherwise escape into storage and break the
+/// TEXT/INTEGER agreement this whole scheme rests on: `23:59:60Z` keeps its
+/// text but carries the epoch-ms of the *following* second, so the two columns
+/// name different instants. Every path into storage goes through here, which is
+/// why the clamp lives here rather than in one grammar's parser.
 pub fn normalize(dt: DateTime<Utc>) -> DateTime<Utc> {
+    let dt = match dt.timestamp_subsec_nanos() {
+        // >= 1e9 is chrono's leap-second encoding, not a real sub-second value.
+        // Clamp to the whole second, which is exactly where RFC 822's `:60`
+        // lands once its parser hands `:59` to `and_hms_opt` — the two grammars
+        // must not disagree about the same instant.
+        n if n >= 1_000_000_000 => dt.with_nanosecond(0).unwrap_or(dt),
+        _ => dt,
+    };
     dt.trunc_subsecs(3)
 }
 
@@ -174,8 +189,8 @@ pub fn parse_rfc822(s: &str) -> Option<DateTime<Utc>> {
         return None;
     }
 
-    // Clamp a leap second down to :59. chrono represents leap seconds as a
-    // nanosecond overflow, which must not leak into storage.
+    // `and_hms_opt` rejects :60 outright, so hand it :59 and let normalize()
+    // own the leap-second policy for both grammars.
     let second = if second == 60 { 59 } else { second };
 
     let offset = numeric_offset_seconds(zone).or_else(|| zone_offset_seconds(zone))?;
@@ -345,6 +360,41 @@ mod tests {
         assert!(
             format_rfc3339(frac) < format_rfc3339(whole),
             "text form misorders these, which is why the integer key exists"
+        );
+    }
+
+    #[test]
+    fn a_leap_second_keeps_the_text_and_integer_columns_in_agreement() {
+        // chrono encodes :60 as a nanosecond overflow past 999_999_999. Left
+        // alone it reaches storage and the two columns name different instants:
+        // the text stays 23:59:60 while the epoch-ms is the next second's.
+        let leap = parse_rfc3339("2016-12-31T23:59:60Z").expect("chrono accepts :60");
+        let next = parse_rfc3339("2017-01-01T00:00:00Z").unwrap();
+
+        assert_ne!(
+            to_millis(leap),
+            to_millis(next),
+            "a leap second must not collapse onto the following second's key"
+        );
+        // The invariant the whole storage scheme rests on: text and key agree.
+        assert_eq!(
+            to_millis(parse_rfc3339(&format_rfc3339(leap)).unwrap()),
+            to_millis(leap),
+            "the serialized form must round-trip to the same sort key"
+        );
+        assert!(
+            !format_rfc3339(leap).contains(":60"),
+            "the leap second is clamped, not serialized as :60: {}",
+            format_rfc3339(leap)
+        );
+    }
+
+    #[test]
+    fn both_grammars_clamp_leap_seconds_the_same_way() {
+        assert_eq!(
+            parse_rfc3339("2016-12-31T23:59:60Z"),
+            parse_rfc822("Sat, 31 Dec 2016 23:59:60 GMT"),
+            "RFC 822 and RFC 3339 must not disagree about :60"
         );
     }
 
