@@ -472,6 +472,7 @@ dependencies = [
  "axum",
  "chrono",
  "clap",
+ "feedhub-core",
  "reqwest",
  "sha2",
  "tempfile",
