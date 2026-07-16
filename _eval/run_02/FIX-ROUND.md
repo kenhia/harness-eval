@@ -74,6 +74,19 @@ bare controls resuming from nothing but the code.
   gh-token injection to an explicit `--inject-gh-token` flag with a
   loud MCP warning. Run 02's *graded* phoenix session (17:06) made
   successful `phoenix_sense` MCP calls — run 02 results unaffected.
+  Follow-on findings (later that night): fresh profile `/login`s get the
+  MCP policy enforced too — new sessions silently HIDE user-configured
+  servers (`/mcp list` shows only github-mcp-server; `copilot mcp list`
+  confirms configs still load). The older real-HOME login still connects
+  them, i.e. enforcement rides the login session; resolution is
+  account/org-side (Copilot MCP policy), not local. The voided phoenix
+  fix run also left a literal `~/` dir in its staging repo containing a
+  ~300MB copy of the eval repo (unexpanded-tilde bug during the
+  spineless run; untracked, never committed, removed — no other repo
+  affected, no live run exposed to sealed material). **02 staging repo
+  reset to `pre-fix`** (voided work preserved on branch `void/fix-e1`);
+  02 rerun + 04 stay HELD until a profile session shows the servers
+  connected again.
   Impact and handling per cell:
   - **02 fix run: ran without the phoenix harness's MCP spine —
     recommended VOID + rerun after policy is restored** (the round
