@@ -35,8 +35,24 @@ Remaining (ordered — details in `_eval/run_02/README.md`):
   calibration; efficiency anchored to each runner's control (lesson 13).
 - **Publish run 02** — import to `run-output/run_02/`, whitepaper v2
   section, README results table gains a per-run section.
+- **run_02.1 — organic bug-fix round** (after run_02 grading is locked):
+  every non-control implementation failed C9/H12 identically (quick-xml
+  streaming leniency: malformed XML → "ok" empty feed). Give each agent
+  a **bug report** against its own repo (fixture + observed vs expected +
+  spec quote — NOT the sealed pytest source, which must never enter the
+  published repos) and have it fix its own codebase. Mechanics: tag
+  `pre-fix`, same prompt template for all, grade the `pre-fix..HEAD`
+  delta (root-cause vs symptom patch, regression test, scope
+  discipline), re-run the full sealed suite for the flip + no
+  regressions. This is the task-matrix bug-fix + resume-own-work cell
+  arriving organically — handoff machinery (sprints, KB handoffs, gstack
+  context) finally gets tested against bare controls. Cheap (~7 short
+  runs). Optional bonus probe: hand 99 (which passes C9) the same bug
+  report and observe non-reproducing-bug behavior.
 - **Task-type matrix, one cell per run group** (v2 design, lessons §v2):
-  - run 03: **bug-fix** on a planted-bug repo;
+  - run 03: **bug-fix** on a planted-bug repo — largely superseded by
+    run_02.1 if it lands; keep only if a planted, multi-file bug adds
+    signal the organic one didn't;
   - run 04: **behavior-preserving refactor** on a messy repo;
   - run 05: **resume-from-handoff** — the cell where handoff-heavy
     harnesses (KB, kprojects) should shine or be exposed. Candidate
