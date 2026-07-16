@@ -1,9 +1,9 @@
-# acceptance: run_02 / 06-gstack
-# repo: /home/ken/src/ai-agents/harness-eval-runs/run_02/06-gstack @ 2abafec
-# date: 2026-07-16T06:50:54+00:00
+# acceptance: run_02 / 01-atv-starterkit
+# repo: /home/ken/src/ai-agents/harness-eval-runs/run_02/01-atv-starterkit @ e3ce602
+# date: 2026-07-16T18:02:06+00:00
 
 ============================= test session starts ==============================
-platform linux -- Python 3.13.13, pytest-9.1.1, pluggy-1.6.0 -- /home/ken/.cache/uv/builds-v0/.tmpilfY7F/bin/python
+platform linux -- Python 3.13.13, pytest-9.1.1, pluggy-1.6.0 -- /home/ken/.cache/uv/builds-v0/.tmptaly1S/bin/python
 rootdir: /home/ken/src/ai-agents/harness-eval/_eval/run_02/acceptance
 configfile: pytest.ini
 collecting ... collected 26 items
@@ -38,8 +38,8 @@ _eval/run_02/acceptance/test_hard.py::test_h12_refresh_all_isolation FAILED [100
 =================================== FAILURES ===================================
 __________________________ test_c9_failure_isolation ___________________________
 
-api = <conftest.Api object at 0x7495d8289bf0>
-feeds = <conftest.FixtureServer object at 0x7495d82a0830>
+api = <conftest.Api object at 0x7ee9a2f41bf0>
+feeds = <conftest.FixtureServer object at 0x7ee9a2f54830>
 
     def test_c9_failure_isolation(api, feeds):
         good = add_feed(api, feeds.url("rss_broken_sibling.xml"))
@@ -49,7 +49,7 @@ feeds = <conftest.FixtureServer object at 0x7495d82a0830>
         assert isinstance(results, list) and len(results) == 2
         by_ok = {r.get("status") for r in results}
 >       assert by_ok == {"ok", "error"}, f"expected one ok + one error: {results}"
-E       AssertionError: expected one ok + one error: [{'feed_id': 1, 'status': 'ok', 'new_entries': 1, 'updated_entries': 0, 'not_modified': False}, {'feed_id': 2, 'status': 'ok', 'new_entries': 0, 'updated_entries': 0, 'not_modified': False}]
+E       AssertionError: expected one ok + one error: [{'id': 1, 'new_entries': 1, 'status': 'ok'}, {'id': 2, 'new_entries': 0, 'status': 'ok'}]
 E       assert {'ok'} == {'error', 'ok'}
 E         
 E         Extra items in the right set:
@@ -64,9 +64,9 @@ E           }
 _eval/run_02/acceptance/test_core.py:106: AssertionError
 ________________________ test_h12_refresh_all_isolation ________________________
 
-api = <conftest.Api object at 0x7495d8122f00>
-feeds = <conftest.FixtureServer object at 0x7495d82a0830>
-feedctl = <function feedctl.<locals>.run at 0x7495d812ac00>
+api = <conftest.Api object at 0x7ee9a2dd7020>
+feeds = <conftest.FixtureServer object at 0x7ee9a2f54830>
+feedctl = <function feedctl.<locals>.run at 0x7ee9a2dde980>
 
     def test_h12_refresh_all_isolation(api, feeds, feedctl):
         good1 = add_feed(api, feeds.url("rss_basic.xml"))
@@ -76,13 +76,13 @@ feedctl = <function feedctl.<locals>.run at 0x7495d812ac00>
         assert status == 200 and len(results) == 3
 >       assert sum(1 for r in results if r.get("status") == "ok") == 2
 E       assert 3 == 2
-E        +  where 3 = sum(<generator object test_h12_refresh_all_isolation.<locals>.<genexpr> at 0x7495d8134380>)
+E        +  where 3 = sum(<generator object test_h12_refresh_all_isolation.<locals>.<genexpr> at 0x7ee9a2df4380>)
 
 _eval/run_02/acceptance/test_hard.py:162: AssertionError
 =========================== short test summary info ============================
 FAILED _eval/run_02/acceptance/test_core.py::test_c9_failure_isolation - Asse...
 FAILED _eval/run_02/acceptance/test_hard.py::test_h12_refresh_all_isolation
-========================= 2 failed, 24 passed in 5.83s =========================
+========================= 2 failed, 24 passed in 5.52s =========================
 
 # exit code: 1
 # tier summary:
