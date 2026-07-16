@@ -200,6 +200,10 @@ struct ParserState {
     feed_title: Option<String>,
     entries: Vec<ParsedEntry>,
     item: Option<ItemBuilder>,
+    /// Stack depth at which the current item opened. The item ends when the
+    /// stack returns to it — matching on the element name instead would let a
+    /// nested `<item>`/`<entry>` close the real one early.
+    item_depth: Option<usize>,
     capture: Option<Capture>,
     skipped: usize,
 }
@@ -228,6 +232,7 @@ impl ParserState {
         };
         if starts_item && self.item.is_none() {
             self.item = Some(ItemBuilder::default());
+            self.item_depth = Some(self.stack.len());
             self.stack.push(name);
             return Ok(());
         }
@@ -286,16 +291,15 @@ impl ParserState {
             }
         }
 
-        let Some(name) = self.stack.pop() else {
+        if self.stack.pop().is_none() {
             return;
-        };
+        }
 
-        let ends_item = match self.kind {
-            Some(FeedKind::Rss) => name == "item",
-            Some(FeedKind::Atom) => name == "entry",
-            None => false,
-        };
-        if ends_item {
+        // Finalize on the item's *depth*, not on the element name. Matching by
+        // name means a nested element that happens to be called <item> closes
+        // the real item early, dropping every field after it.
+        if self.item_depth == Some(self.stack.len()) {
+            self.item_depth = None;
             if let (Some(builder), Some(kind)) = (self.item.take(), self.kind) {
                 match builder.finish(kind) {
                     Some(entry) => self.entries.push(entry),
@@ -618,6 +622,96 @@ mod tests {
         let summary = feed.entries[0].summary.as_deref().unwrap();
         assert!(summary.contains("Hello"), "got {summary:?}");
         assert!(summary.contains("world"), "got {summary:?}");
+    }
+
+    #[test]
+    fn a_nested_element_named_item_does_not_close_the_real_item() {
+        // Finalizing on the element name rather than the item's depth would end
+        // the item at the inner </item>, losing every field after it.
+        let xml = r#"<rss version="2.0"><channel><item>
+            <guid>g1</guid>
+            <description><item>a literal item element inside the body</item></description>
+            <title>Title after the nested item</title>
+          </item></channel></rss>"#;
+        let feed = parse(xml);
+        assert_eq!(feed.entries.len(), 1, "exactly one entry");
+        assert_eq!(
+            feed.entries[0].title, "Title after the nested item",
+            "fields after the nested <item> must still be captured"
+        );
+    }
+
+    #[test]
+    fn the_channel_image_title_is_not_mistaken_for_the_feed_title() {
+        // RSS 2.0 <channel><image><title> is common and shares an element name
+        // with the channel's own title.
+        let xml = r#"<rss version="2.0"><channel>
+            <title>Real Channel Title</title>
+            <image>
+              <title>Image Alt Text</title>
+              <url>https://example.com/logo.png</url>
+            </image>
+            <item><guid>g1</guid><title>Item</title></item>
+          </channel></rss>"#;
+        let feed = parse(xml);
+        assert_eq!(feed.title.as_deref(), Some("Real Channel Title"));
+        assert_eq!(feed.entries[0].title, "Item");
+    }
+
+    #[test]
+    fn an_image_title_before_the_channel_title_is_still_not_the_feed_title() {
+        // First-occurrence-wins would pick the image's title if the path check
+        // were not doing the work.
+        let xml = r#"<rss version="2.0"><channel>
+            <image><title>Image Alt Text</title></image>
+            <title>Real Channel Title</title>
+          </channel></rss>"#;
+        assert_eq!(parse(xml).title.as_deref(), Some("Real Channel Title"));
+    }
+
+    #[test]
+    fn an_atom_entry_source_does_not_hijack_the_entry_id_or_title() {
+        // RFC 4287 §4.2.11: <entry><source> carries the *originating feed's*
+        // id/title. Taking them as the entry's own would corrupt identity.
+        let xml = r#"<feed xmlns="http://www.w3.org/2005/Atom">
+            <title>Aggregator</title>
+            <entry>
+              <id>real-entry-id</id>
+              <title>Real Entry Title</title>
+              <source>
+                <id>the-source-feeds-id</id>
+                <title>The Source Feed</title>
+              </source>
+            </entry></feed>"#;
+        let feed = parse(xml);
+        assert_eq!(feed.entries[0].guid, "real-entry-id");
+        assert_eq!(feed.entries[0].title, "Real Entry Title");
+    }
+
+    #[test]
+    fn an_rss_item_source_element_is_not_the_item_title() {
+        let xml = r#"<rss version="2.0"><channel><item>
+            <guid>g1</guid>
+            <title>Real Title</title>
+            <source url="https://other.example.com/feed">Other Feed</source>
+          </item></channel></rss>"#;
+        let feed = parse(xml);
+        assert_eq!(feed.entries[0].title, "Real Title");
+    }
+
+    #[test]
+    fn a_namespaced_child_element_does_not_supply_item_fields() {
+        // media:content has local name "content"; an Atom-shaped field name
+        // appearing inside an RSS item must not be picked up, and its nested
+        // <title> must not become the item's.
+        let xml = r#"<rss version="2.0" xmlns:media="http://search.yahoo.com/mrss/">
+          <channel><item>
+            <guid>g1</guid>
+            <title>Real Title</title>
+            <media:group><title>Media Title</title></media:group>
+          </item></channel></rss>"#;
+        let feed = parse(xml);
+        assert_eq!(feed.entries[0].title, "Real Title");
     }
 
     #[test]
