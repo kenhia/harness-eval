@@ -9,6 +9,10 @@ rust-version.workspace = true
 name = "feedd"
 path = "src/main.rs"
 
+[lib]
+name = "feedd"
+path = "src/lib.rs"
+
 [dependencies]
 feedcore = { path = "../feedcore" }
 anyhow = { workspace = true }
