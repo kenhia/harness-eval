@@ -1,0 +1,15 @@
+[package]
+name = "feedcore"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+description = "Shared feed parsing, storage, and fetch logic for feedhub."
+
+[dependencies]
+rusqlite.workspace = true
+quick-xml.workspace = true
+chrono.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+ureq.workspace = true

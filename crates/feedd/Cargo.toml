@@ -1,0 +1,23 @@
+[package]
+name = "feedd"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+description = "feedhub server: fetches and stores feeds, exposes a REST API."
+
+[[bin]]
+name = "feedd"
+path = "src/main.rs"
+
+[dependencies]
+feedcore.workspace = true
+rusqlite.workspace = true
+chrono.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tiny_http.workspace = true
+clap.workspace = true
+
+[dev-dependencies]
+ureq.workspace = true

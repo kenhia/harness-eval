@@ -1,0 +1,6 @@
+{
+  "kind": "command_exit",
+  "target": ["just", "check"],
+  "expect": "0",
+  "timeout_secs": 1200
+}
