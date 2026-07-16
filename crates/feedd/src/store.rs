@@ -118,7 +118,7 @@ impl Store {
         let conn = self.conn.lock().unwrap();
         let mut stmt = conn.prepare("SELECT * FROM feeds ORDER BY id")?;
         let feeds = stmt
-            .query_map([], |r| Self::row_to_feed(r))?
+            .query_map([], Self::row_to_feed)?
             .collect::<rusqlite::Result<Vec<_>>>()?;
         Ok(feeds)
     }
@@ -243,7 +243,12 @@ impl Store {
     }
 
     /// Record a fetch/parse failure on a feed without touching its entries.
-    pub fn record_error(&self, feed_id: i64, message: &str, fetched_at: i64) -> rusqlite::Result<()> {
+    pub fn record_error(
+        &self,
+        feed_id: i64,
+        message: &str,
+        fetched_at: i64,
+    ) -> rusqlite::Result<()> {
         let conn = self.conn.lock().unwrap();
         conn.execute(
             "UPDATE feeds SET last_error = ?1, last_fetched_at = ?2 WHERE id = ?3",
@@ -289,8 +294,7 @@ impl Store {
         };
 
         let count_sql = format!("SELECT COUNT(*) FROM entries {where_sql}");
-        let arg_refs: Vec<&dyn rusqlite::types::ToSql> =
-            args.iter().map(|b| b.as_ref()).collect();
+        let arg_refs: Vec<&dyn rusqlite::types::ToSql> = args.iter().map(|b| b.as_ref()).collect();
         let total: i64 = conn.query_row(&count_sql, arg_refs.as_slice(), |r| r.get(0))?;
 
         // Ordering: published_at DESC nulls last, ties by id ASC.
@@ -361,11 +365,20 @@ mod tests {
         let AddOutcome::Created(f) = s.add_feed("http://x/f").unwrap() else {
             panic!()
         };
-        assert!(s.upsert_entry(f.id, &entry("g1", "Old", Some(100)), 10).unwrap());
+        assert!(s
+            .upsert_entry(f.id, &entry("g1", "Old", Some(100)), 10)
+            .unwrap());
         // Re-seen: updates in place, not a new row.
-        assert!(!s.upsert_entry(f.id, &entry("g1", "New", Some(200)), 99).unwrap());
+        assert!(!s
+            .upsert_entry(f.id, &entry("g1", "New", Some(200)), 99)
+            .unwrap());
         assert_eq!(s.entry_count(f.id).unwrap(), 1);
-        let (_total, items) = s.query_entries(&EntryQuery { limit: 50, ..Default::default() }).unwrap();
+        let (_total, items) = s
+            .query_entries(&EntryQuery {
+                limit: 50,
+                ..Default::default()
+            })
+            .unwrap();
         assert_eq!(items[0]["title"], "New");
         // fetched_at preserved from original insert.
         assert_eq!(items[0]["fetched_at"], epoch_to_rfc3339(Some(10)));
@@ -377,12 +390,17 @@ mod tests {
         let AddOutcome::Created(f) = s.add_feed("http://x/f").unwrap() else {
             panic!()
         };
-        s.upsert_entry(f.id, &entry("a", "A", Some(100)), 1).unwrap();
+        s.upsert_entry(f.id, &entry("a", "A", Some(100)), 1)
+            .unwrap();
         s.upsert_entry(f.id, &entry("b", "B", None), 1).unwrap();
-        s.upsert_entry(f.id, &entry("c", "C", Some(300)), 1).unwrap();
+        s.upsert_entry(f.id, &entry("c", "C", Some(300)), 1)
+            .unwrap();
         s.upsert_entry(f.id, &entry("d", "D", None), 1).unwrap();
         let (total, items) = s
-            .query_entries(&EntryQuery { limit: 50, ..Default::default() })
+            .query_entries(&EntryQuery {
+                limit: 50,
+                ..Default::default()
+            })
             .unwrap();
         assert_eq!(total, 4);
         let titles: Vec<_> = items.iter().map(|i| i["title"].as_str().unwrap()).collect();
@@ -396,8 +414,10 @@ mod tests {
         let AddOutcome::Created(f) = s.add_feed("http://x/f").unwrap() else {
             panic!()
         };
-        s.upsert_entry(f.id, &entry("a", "A", Some(100)), 1).unwrap();
-        s.upsert_entry(f.id, &entry("b", "B", Some(200)), 1).unwrap();
+        s.upsert_entry(f.id, &entry("a", "A", Some(100)), 1)
+            .unwrap();
+        s.upsert_entry(f.id, &entry("b", "B", Some(200)), 1)
+            .unwrap();
         s.upsert_entry(f.id, &entry("n", "N", None), 1).unwrap();
         // since=100 until=200 -> only A (200 excluded, null excluded).
         let (total, items) = s
@@ -419,8 +439,10 @@ mod tests {
         let AddOutcome::Created(f) = s.add_feed("http://x/f").unwrap() else {
             panic!()
         };
-        s.upsert_entry(f.id, &entry("a", "Hello World", Some(1)), 1).unwrap();
-        s.upsert_entry(f.id, &entry("b", "Goodbye", Some(2)), 1).unwrap();
+        s.upsert_entry(f.id, &entry("a", "Hello World", Some(1)), 1)
+            .unwrap();
+        s.upsert_entry(f.id, &entry("b", "Goodbye", Some(2)), 1)
+            .unwrap();
         let (total, items) = s
             .query_entries(&EntryQuery {
                 q: Some("hello".into()),
@@ -440,7 +462,12 @@ mod tests {
         };
         s.upsert_entry(f.id, &entry("a", "A", Some(1)), 1).unwrap();
         assert!(s.delete_feed(f.id).unwrap());
-        let (total, _) = s.query_entries(&EntryQuery { limit: 50, ..Default::default() }).unwrap();
+        let (total, _) = s
+            .query_entries(&EntryQuery {
+                limit: 50,
+                ..Default::default()
+            })
+            .unwrap();
         assert_eq!(total, 0);
     }
 }

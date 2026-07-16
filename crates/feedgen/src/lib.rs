@@ -116,8 +116,7 @@ pub fn handle_request(request: tiny_http::Request, dir: &Path) -> io::Result<()>
         .and_then(|m| m.modified())
         .ok()
         .and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok())
-        .map(|d| Utc.timestamp_opt(d.as_secs() as i64, 0).single())
-        .flatten()
+        .and_then(|d| Utc.timestamp_opt(d.as_secs() as i64, 0).single())
         .unwrap_or_else(Utc::now);
     let last_modified = http_date(mtime);
 
@@ -333,10 +332,7 @@ mod tests {
         assert!(resolve_path(dir, "/../etc/passwd").is_none());
         assert!(resolve_path(dir, "/a/../b").is_none());
         assert!(resolve_path(dir, "/").is_none());
-        assert_eq!(
-            resolve_path(dir, "/rss.xml?x=1"),
-            Some(dir.join("rss.xml"))
-        );
+        assert_eq!(resolve_path(dir, "/rss.xml?x=1"), Some(dir.join("rss.xml")));
     }
 
     #[test]

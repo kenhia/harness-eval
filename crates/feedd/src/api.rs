@@ -14,7 +14,11 @@ pub fn handle(store: &Store, agent: &ureq::Agent, mut request: Request) {
     let method = request.method().clone();
     let url = request.url().to_string();
     let (path, query) = split_url(&url);
-    let segments: Vec<&str> = path.trim_matches('/').split('/').filter(|s| !s.is_empty()).collect();
+    let segments: Vec<&str> = path
+        .trim_matches('/')
+        .split('/')
+        .filter(|s| !s.is_empty())
+        .collect();
 
     let outcome = route(store, agent, &method, &segments, query, &mut request);
     match outcome {
@@ -274,8 +278,8 @@ fn percent_decode(s: &str) -> String {
 
 fn respond_json(request: Request, status: u16, value: &Value) {
     let body = value.to_string();
-    let header = Header::from_bytes(&b"Content-Type"[..], &b"application/json"[..])
-        .expect("valid header");
+    let header =
+        Header::from_bytes(&b"Content-Type"[..], &b"application/json"[..]).expect("valid header");
     let resp = Response::from_string(body)
         .with_status_code(status)
         .with_header(header);

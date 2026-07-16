@@ -94,7 +94,11 @@ pub fn refresh_all(store: &Store, agent: &ureq::Agent) -> Vec<(i64, RefreshResul
         .collect()
 }
 
-fn inner_refresh(store: &Store, agent: &ureq::Agent, feed_id: i64) -> Result<RefreshResult, String> {
+fn inner_refresh(
+    store: &Store,
+    agent: &ureq::Agent,
+    feed_id: i64,
+) -> Result<RefreshResult, String> {
     let feed = store
         .get_feed(feed_id)
         .map_err(|e| format!("database error: {e}"))?

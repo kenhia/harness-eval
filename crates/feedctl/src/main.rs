@@ -7,7 +7,10 @@ use clap::{Parser, Subcommand};
 use serde_json::{json, Value};
 
 #[derive(Parser)]
-#[command(name = "feedctl", about = "Command-line client for the feedhub server.")]
+#[command(
+    name = "feedctl",
+    about = "Command-line client for the feedhub server."
+)]
 struct Cli {
     /// Base URL of the feedd server.
     #[arg(long, default_value = "http://127.0.0.1:8600")]
@@ -112,9 +115,18 @@ fn run(cli: &Cli, agent: &ureq::Agent) -> Result<(), CtlError> {
             Ok(())
         }
         Command::Remove { id } => {
-            let reply = send(agent, "DELETE", &format!("{base}/api/feeds/{id}"), None, &[])?;
+            let reply = send(
+                agent,
+                "DELETE",
+                &format!("{base}/api/feeds/{id}"),
+                None,
+                &[],
+            )?;
             if cli.format == Format::Json {
-                println!("{}", reply.body.clone().unwrap_or(json!({ "status": "ok" })));
+                println!(
+                    "{}",
+                    reply.body.clone().unwrap_or(json!({ "status": "ok" }))
+                );
             } else {
                 println!("Removed feed {id}");
             }
@@ -194,13 +206,17 @@ fn send(
             let text = resp.into_string().unwrap_or_default();
             let msg = serde_json::from_str::<Value>(&text)
                 .ok()
-                .and_then(|v| v.get("error").and_then(|e| e.as_str()).map(|s| s.to_string()))
+                .and_then(|v| {
+                    v.get("error")
+                        .and_then(|e| e.as_str())
+                        .map(|s| s.to_string())
+                })
                 .unwrap_or_else(|| format!("server returned status {code}"));
             Err(CtlError::Server(msg))
         }
-        Err(ureq::Error::Transport(t)) => {
-            Err(CtlError::Unreachable(format!("could not reach server: {t}")))
-        }
+        Err(ureq::Error::Transport(t)) => Err(CtlError::Unreachable(format!(
+            "could not reach server: {t}"
+        ))),
     }
 }
 
@@ -243,7 +259,10 @@ fn feed_line(feed: &Value) -> String {
         .get("title")
         .and_then(|v| v.as_str())
         .unwrap_or("(untitled)");
-    let count = feed.get("entry_count").and_then(|v| v.as_i64()).unwrap_or(0);
+    let count = feed
+        .get("entry_count")
+        .and_then(|v| v.as_i64())
+        .unwrap_or(0);
     let error = feed.get("last_error").and_then(|v| v.as_str());
     let mut line = format!("[{id}] {title} <{url}> ({count} entries)");
     if let Some(e) = error {
@@ -287,7 +306,10 @@ fn refresh_line(r: &Value) -> String {
             format!("{prefix}: ok ({new} new)")
         }
     } else {
-        let err = r.get("error").and_then(|v| v.as_str()).unwrap_or("unknown error");
+        let err = r
+            .get("error")
+            .and_then(|v| v.as_str())
+            .unwrap_or("unknown error");
         format!("{prefix}: error: {err}")
     }
 }
@@ -300,11 +322,17 @@ fn output_entries(format: Format, reply: &Reply) {
     let Some(body) = &reply.body else { return };
     let total = body.get("total").and_then(|v| v.as_i64()).unwrap_or(0);
     let empty = Vec::new();
-    let items = body.get("items").and_then(|v| v.as_array()).unwrap_or(&empty);
+    let items = body
+        .get("items")
+        .and_then(|v| v.as_array())
+        .unwrap_or(&empty);
     println!("{total} entries (showing {})", items.len());
     for e in items {
         let id = e.get("id").and_then(|v| v.as_i64()).unwrap_or(0);
-        let title = e.get("title").and_then(|v| v.as_str()).unwrap_or("(untitled)");
+        let title = e
+            .get("title")
+            .and_then(|v| v.as_str())
+            .unwrap_or("(untitled)");
         let published = e
             .get("published_at")
             .and_then(|v| v.as_str())

@@ -248,7 +248,10 @@ fn handle_start(
         }
     } else {
         // Feed/channel level.
-        if name == "title" && feed_title.is_none() && matches!(parent, Some("channel") | Some("feed")) {
+        if name == "title"
+            && feed_title.is_none()
+            && matches!(parent, Some("channel") | Some("feed"))
+        {
             *target = Some(Target::FeedTitle);
             buf.clear();
         }
@@ -323,24 +326,25 @@ fn finalize(format: Format, raw: RawEntry) -> ParsedEntry {
                         raw.pubdate.clone().unwrap_or_default()
                     ))
                 });
-            (raw.rss_link.clone(), raw.description.clone(), raw.pubdate.clone(), identity)
+            (
+                raw.rss_link.clone(),
+                raw.description.clone(),
+                raw.pubdate.clone(),
+                identity,
+            )
         }
         Format::Atom => {
             let link = raw.alt_link.clone().or_else(|| raw.first_link.clone());
             let summary = raw.summary.clone().or_else(|| raw.content.clone());
             let date_str = raw.published.clone().or_else(|| raw.updated.clone());
-            let identity = raw
-                .id
-                .clone()
-                .or_else(|| link.clone())
-                .unwrap_or_else(|| {
-                    fallback_identity(&format!(
-                        "{}|{}|{}",
-                        raw.title.clone().unwrap_or_default(),
-                        summary.clone().unwrap_or_default(),
-                        date_str.clone().unwrap_or_default()
-                    ))
-                });
+            let identity = raw.id.clone().or_else(|| link.clone()).unwrap_or_else(|| {
+                fallback_identity(&format!(
+                    "{}|{}|{}",
+                    raw.title.clone().unwrap_or_default(),
+                    summary.clone().unwrap_or_default(),
+                    date_str.clone().unwrap_or_default()
+                ))
+            });
             (link, summary, date_str, identity)
         }
     };
@@ -403,7 +407,10 @@ mod tests {
         assert_eq!(e0.title, "First & Foremost");
         assert_eq!(e0.summary.as_deref(), Some("Hello <world>"));
         assert_eq!(e0.link.as_deref(), Some("http://example.com/1"));
-        assert_eq!(to_rfc3339_z(&e0.published_at.unwrap()), "2006-01-02T20:04:05Z");
+        assert_eq!(
+            to_rfc3339_z(&e0.published_at.unwrap()),
+            "2006-01-02T20:04:05Z"
+        );
 
         let e1 = &feed.entries[1];
         // no guid -> identity falls back to link
@@ -424,7 +431,10 @@ mod tests {
         assert_eq!(e.link.as_deref(), Some("http://example.com/a1"));
         assert_eq!(e.summary.as_deref(), Some("A & B"));
         // published preferred over updated
-        assert_eq!(to_rfc3339_z(&e.published_at.unwrap()), "2006-01-02T15:04:05Z");
+        assert_eq!(
+            to_rfc3339_z(&e.published_at.unwrap()),
+            "2006-01-02T15:04:05Z"
+        );
     }
 
     #[test]
