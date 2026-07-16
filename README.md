@@ -308,7 +308,7 @@ internal entry id.
 | `link` | string \| null | |
 | `summary` | string \| null | |
 | `published_at` | string \| null | RFC 3339 UTC with `Z`. Null when the source date was missing or unparseable. |
-| `fetched_at` | string \| null | RFC 3339 UTC. The entry's *first* fetch; unchanged by later updates. |
+| `fetched_at` | string | RFC 3339 UTC, never null. The entry's *first* fetch; unchanged by later updates. |
 
 ## Behavior worth knowing
 
