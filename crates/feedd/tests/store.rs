@@ -637,3 +637,33 @@ fn entries_survive_reopening_the_database_file() {
     assert_eq!(feed.entry_count, 1);
     assert_eq!(feed.title.as_deref(), Some("Feed Title"));
 }
+
+#[test]
+fn applying_a_fetch_to_a_feed_deleted_mid_refresh_is_safe() {
+    // refresh_feed reads fetch_state, awaits the network, then writes, so a
+    // DELETE can land in that window. The write must fail cleanly rather than
+    // panic or orphan entries.
+    //
+    // The FK is what saves us: `INSERT OR IGNORE` only swallows UNIQUE /
+    // NOT NULL / CHECK conflicts, never FOREIGN KEY ones, so the insert errors
+    // and the whole transaction rolls back.
+    let s = store();
+    let feed = s.add_feed("https://example.com/f.rss").unwrap();
+    assert!(s.delete_feed(feed.id).unwrap());
+
+    let result = s.apply_success(
+        feed.id,
+        &success(vec![entry("a", "A", None)]),
+        at("2020-01-01T00:00:00Z"),
+    );
+
+    assert!(
+        matches!(result, Err(StoreError::Sqlite(_))),
+        "expected a clean storage error, got {result:?}"
+    );
+    assert_eq!(
+        s.query_entries(&query()).unwrap().total,
+        0,
+        "an entry must never survive pointing at a deleted feed"
+    );
+}
