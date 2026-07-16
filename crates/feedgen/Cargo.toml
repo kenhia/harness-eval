@@ -1,0 +1,30 @@
+[package]
+name = "feedgen"
+description = "Fixture corpus generator and local HTTP server for feedhub development and tests."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[lib]
+name = "feedgen"
+path = "src/lib.rs"
+
+[[bin]]
+name = "feedgen"
+path = "src/main.rs"
+
+[dependencies]
+feedhub-core.workspace = true
+
+anyhow.workspace = true
+axum.workspace = true
+chrono.workspace = true
+clap.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+
+[dev-dependencies]
+reqwest = { workspace = true, features = ["json"] }
+tempfile = "3"
