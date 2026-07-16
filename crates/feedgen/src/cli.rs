@@ -104,7 +104,11 @@ mod tests {
     fn serve_defaults_to_8601() {
         let cli = Cli::parse_from(["feedgen", "serve", "--dir", "/tmp/x"]);
         match cli.command {
-            Command::Serve { listen, dir, no_conditional } => {
+            Command::Serve {
+                listen,
+                dir,
+                no_conditional,
+            } => {
                 assert_eq!(listen.to_string(), DEFAULT_LISTEN);
                 assert_eq!(dir, PathBuf::from("/tmp/x"));
                 assert!(!no_conditional, "conditional GET is on by default");

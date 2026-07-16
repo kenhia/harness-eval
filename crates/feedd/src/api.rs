@@ -59,9 +59,7 @@ impl IntoResponse for ApiError {
 impl From<StoreError> for ApiError {
     fn from(e: StoreError) -> Self {
         match e {
-            StoreError::DuplicateUrl => {
-                ApiError::new(StatusCode::CONFLICT, e.to_string())
-            }
+            StoreError::DuplicateUrl => ApiError::new(StatusCode::CONFLICT, e.to_string()),
             StoreError::Sqlite(e) => {
                 // The client can't act on SQLite internals; log them, return a
                 // generic 500.
@@ -169,7 +167,10 @@ async fn refresh_one(State(state): State<AppState>, Path(id): Path<i64>) -> ApiR
 /// Sequential on purpose: feeds are few, and it keeps one slow origin from
 /// contending for the store lock with N-1 others. Each feed's result is
 /// independent, so one failure never truncates the array.
-pub async fn refresh_all(store: &Store, fetcher: &Fetcher) -> Result<Vec<RefreshResult>, StoreError> {
+pub async fn refresh_all(
+    store: &Store,
+    fetcher: &Fetcher,
+) -> Result<Vec<RefreshResult>, StoreError> {
     let targets = store.all_fetch_states()?;
     let mut results = Vec::with_capacity(targets.len());
     for target in &targets {
@@ -194,10 +195,9 @@ fn parse_entry_query(params: &HashMap<String, String>) -> ApiResult<EntryQuery> 
     let int = |name: &str| -> ApiResult<Option<i64>> {
         match params.get(name) {
             None => Ok(None),
-            Some(raw) => raw
-                .parse::<i64>()
-                .map(Some)
-                .map_err(|_| ApiError::unprocessable(format!("{name} must be an integer, got {raw:?}"))),
+            Some(raw) => raw.parse::<i64>().map(Some).map_err(|_| {
+                ApiError::unprocessable(format!("{name} must be an integer, got {raw:?}"))
+            }),
         }
     };
 

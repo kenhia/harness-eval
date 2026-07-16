@@ -46,7 +46,11 @@ pub fn validate_feed_url(raw: &str) -> Result<(), String> {
     let url = Url::parse(raw).map_err(|e| format!("not a valid URL: {e}"))?;
     match url.scheme() {
         "http" | "https" => {}
-        other => return Err(format!("unsupported URL scheme {other:?}: expected http or https")),
+        other => {
+            return Err(format!(
+                "unsupported URL scheme {other:?}: expected http or https"
+            ))
+        }
     }
     if url.host().is_none() {
         return Err("URL has no host".to_string());

@@ -352,20 +352,16 @@ pub fn parse_feed(bytes: &[u8]) -> Result<ParseOutcome, ParseError> {
                 st.close();
             }
             Event::End(_) => st.close(),
-            Event::Text(e) => {
-                if st.capture.is_some() {
-                    // Entity references are resolved here: `&amp;` -> `&`.
-                    let decoded = e.unescape().map_err(|e| ParseError::Xml(e.to_string()))?;
-                    st.push_text(&decoded);
-                }
+            Event::Text(e) if st.capture.is_some() => {
+                // Entity references are resolved here: `&amp;` -> `&`.
+                let decoded = e.unescape().map_err(|e| ParseError::Xml(e.to_string()))?;
+                st.push_text(&decoded);
             }
-            Event::CData(e) => {
-                if st.capture.is_some() {
-                    // CDATA is taken verbatim: no entity expansion.
-                    let raw = e.into_inner();
-                    let decoded = String::from_utf8_lossy(&raw).into_owned();
-                    st.push_text(&decoded);
-                }
+            Event::CData(e) if st.capture.is_some() => {
+                // CDATA is taken verbatim: no entity expansion.
+                let raw = e.into_inner();
+                let decoded = String::from_utf8_lossy(&raw).into_owned();
+                st.push_text(&decoded);
             }
             _ => {}
         }
@@ -445,7 +441,10 @@ mod tests {
     fn rss_identity_falls_back_to_link_and_missing_date_is_null() {
         let feed = parse(RSS);
         let second = &feed.entries[1];
-        assert_eq!(second.guid, "https://example.com/2", "no guid, so link is identity");
+        assert_eq!(
+            second.guid, "https://example.com/2",
+            "no guid, so link is identity"
+        );
         assert_eq!(
             second.published_at, None,
             "a missing pubDate must be NULL, never fetch time"
@@ -503,7 +502,10 @@ mod tests {
         let xml = r#"<feed xmlns="http://www.w3.org/2005/Atom">
           <entry><id>e1</id><link href="https://example.com/bare"/></entry></feed>"#;
         let feed = parse(xml);
-        assert_eq!(feed.entries[0].link.as_deref(), Some("https://example.com/bare"));
+        assert_eq!(
+            feed.entries[0].link.as_deref(),
+            Some("https://example.com/bare")
+        );
     }
 
     #[test]
@@ -514,7 +516,10 @@ mod tests {
             <link rel="via" href="https://example.com/via"/>
           </entry></feed>"#;
         let feed = parse(xml);
-        assert_eq!(feed.entries[0].link.as_deref(), Some("https://example.com/self"));
+        assert_eq!(
+            feed.entries[0].link.as_deref(),
+            Some("https://example.com/self")
+        );
     }
 
     #[test]

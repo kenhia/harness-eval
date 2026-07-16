@@ -59,7 +59,10 @@ async fn adding_a_feed_returns_201_and_the_feed_object() {
 
     assert!(feed["id"].is_i64());
     assert_eq!(feed["url"], "https://example.com/feed.rss");
-    assert!(feed["title"].is_null(), "title is null until the first fetch");
+    assert!(
+        feed["title"].is_null(),
+        "title is null until the first fetch"
+    );
     assert!(feed["last_fetched_at"].is_null());
     assert!(feed["last_error"].is_null());
     assert_eq!(feed["entry_count"], 0);
@@ -103,14 +106,21 @@ async fn a_non_http_url_is_422() {
             "{bad:?} must be rejected"
         );
         let body: Value = res.json().await.unwrap();
-        assert!(body["error"].is_string(), "{bad:?} needs the error envelope");
+        assert!(
+            body["error"].is_string(),
+            "{bad:?} needs the error envelope"
+        );
     }
 }
 
 #[tokio::test]
 async fn a_malformed_body_is_422_in_the_pinned_error_shape() {
     let s = server();
-    for body in [json!({}), json!({ "uri": "https://example.com" }), json!("nope")] {
+    for body in [
+        json!({}),
+        json!({ "uri": "https://example.com" }),
+        json!("nope"),
+    ] {
         let res = client()
             .post(s.url("/api/feeds"))
             .json(&body)
@@ -119,7 +129,10 @@ async fn a_malformed_body_is_422_in_the_pinned_error_shape() {
             .unwrap();
         assert_eq!(res.status(), StatusCode::UNPROCESSABLE_ENTITY, "{body:?}");
         let parsed: Value = res.json().await.unwrap();
-        assert!(parsed["error"].is_string(), "{body:?} needs the error envelope");
+        assert!(
+            parsed["error"].is_string(),
+            "{body:?} needs the error envelope"
+        );
     }
 }
 
@@ -156,12 +169,20 @@ async fn getting_one_feed_works_and_a_missing_one_is_404() {
     let feed = add(&s, "https://example.com/a.rss").await;
     let id = feed["id"].as_i64().unwrap();
 
-    let res = client().get(s.url(&format!("/api/feeds/{id}"))).send().await.unwrap();
+    let res = client()
+        .get(s.url(&format!("/api/feeds/{id}")))
+        .send()
+        .await
+        .unwrap();
     assert_eq!(res.status(), StatusCode::OK);
     let body: Value = res.json().await.unwrap();
     assert_eq!(body["id"], id);
 
-    let res = client().get(s.url("/api/feeds/99999")).send().await.unwrap();
+    let res = client()
+        .get(s.url("/api/feeds/99999"))
+        .send()
+        .await
+        .unwrap();
     assert_eq!(res.status(), StatusCode::NOT_FOUND);
     let body: Value = res.json().await.unwrap();
     assert!(body["error"].is_string());
@@ -180,7 +201,11 @@ async fn deleting_a_feed_is_204_and_a_missing_one_is_404() {
         .unwrap();
     assert_eq!(res.status(), StatusCode::NO_CONTENT);
 
-    let res = client().get(s.url(&format!("/api/feeds/{id}"))).send().await.unwrap();
+    let res = client()
+        .get(s.url(&format!("/api/feeds/{id}")))
+        .send()
+        .await
+        .unwrap();
     assert_eq!(res.status(), StatusCode::NOT_FOUND, "the feed is gone");
 
     let res = client()
@@ -188,7 +213,11 @@ async fn deleting_a_feed_is_204_and_a_missing_one_is_404() {
         .send()
         .await
         .unwrap();
-    assert_eq!(res.status(), StatusCode::NOT_FOUND, "deleting it again is 404");
+    assert_eq!(
+        res.status(),
+        StatusCode::NOT_FOUND,
+        "deleting it again is 404"
+    );
 }
 
 #[tokio::test]
@@ -246,7 +275,10 @@ async fn bad_entry_parameters_are_422_in_the_pinned_error_shape() {
             "?{query} should be unprocessable"
         );
         let body: Value = res.json().await.unwrap();
-        assert!(body["error"].is_string(), "?{query} needs the error envelope");
+        assert!(
+            body["error"].is_string(),
+            "?{query} needs the error envelope"
+        );
     }
 }
 

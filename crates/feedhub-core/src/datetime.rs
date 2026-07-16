@@ -342,7 +342,10 @@ mod tests {
         let whole = utc("2020-01-01T00:00:00Z");
         let frac = utc("2020-01-01T00:00:00.500Z");
         assert!(to_millis(frac) > to_millis(whole));
-        assert!(format_rfc3339(frac) < format_rfc3339(whole), "text form misorders these, which is why the integer key exists");
+        assert!(
+            format_rfc3339(frac) < format_rfc3339(whole),
+            "text form misorders these, which is why the integer key exists"
+        );
     }
 
     #[test]

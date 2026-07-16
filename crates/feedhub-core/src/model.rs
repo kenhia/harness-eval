@@ -81,7 +81,12 @@ pub struct RefreshResult {
 }
 
 impl RefreshResult {
-    pub fn ok(feed_id: i64, new_entries: usize, updated_entries: usize, not_modified: bool) -> Self {
+    pub fn ok(
+        feed_id: i64,
+        new_entries: usize,
+        updated_entries: usize,
+        not_modified: bool,
+    ) -> Self {
         Self {
             feed_id,
             status: "ok".into(),

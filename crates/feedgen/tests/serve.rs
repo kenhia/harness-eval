@@ -64,24 +64,52 @@ async fn content_type_tracks_the_extension() {
 async fn etag_is_content_derived_and_changes_when_the_file_changes() {
     let (dir, server) = corpus_server(true);
 
-    let first = client().get(server.url("rss-basic.rss")).send().await.unwrap();
-    let etag_1 = first.headers().get(ETAG).unwrap().to_str().unwrap().to_string();
+    let first = client()
+        .get(server.url("rss-basic.rss"))
+        .send()
+        .await
+        .unwrap();
+    let etag_1 = first
+        .headers()
+        .get(ETAG)
+        .unwrap()
+        .to_str()
+        .unwrap()
+        .to_string();
 
     // Same bytes, same ETag.
-    let again = client().get(server.url("rss-basic.rss")).send().await.unwrap();
+    let again = client()
+        .get(server.url("rss-basic.rss"))
+        .send()
+        .await
+        .unwrap();
     assert_eq!(again.headers().get(ETAG).unwrap(), etag_1.as_str());
 
     // Different bytes, different ETag.
     std::fs::write(dir.path().join("rss-basic.rss"), fixtures::ATOM_BASIC).unwrap();
-    let changed = client().get(server.url("rss-basic.rss")).send().await.unwrap();
+    let changed = client()
+        .get(server.url("rss-basic.rss"))
+        .send()
+        .await
+        .unwrap();
     assert_ne!(changed.headers().get(ETAG).unwrap(), etag_1.as_str());
 }
 
 #[tokio::test]
 async fn if_none_match_gets_304() {
     let (_dir, server) = corpus_server(true);
-    let first = client().get(server.url("rss-basic.rss")).send().await.unwrap();
-    let etag = first.headers().get(ETAG).unwrap().to_str().unwrap().to_string();
+    let first = client()
+        .get(server.url("rss-basic.rss"))
+        .send()
+        .await
+        .unwrap();
+    let etag = first
+        .headers()
+        .get(ETAG)
+        .unwrap()
+        .to_str()
+        .unwrap()
+        .to_string();
 
     let second = client()
         .get(server.url("rss-basic.rss"))
@@ -91,13 +119,20 @@ async fn if_none_match_gets_304() {
         .unwrap();
 
     assert_eq!(second.status(), StatusCode::NOT_MODIFIED);
-    assert!(second.bytes().await.unwrap().is_empty(), "304 carries no body");
+    assert!(
+        second.bytes().await.unwrap().is_empty(),
+        "304 carries no body"
+    );
 }
 
 #[tokio::test]
 async fn if_modified_since_gets_304() {
     let (_dir, server) = corpus_server(true);
-    let first = client().get(server.url("rss-basic.rss")).send().await.unwrap();
+    let first = client()
+        .get(server.url("rss-basic.rss"))
+        .send()
+        .await
+        .unwrap();
     let last_modified = first
         .headers()
         .get(LAST_MODIFIED)
@@ -132,8 +167,18 @@ async fn stale_if_none_match_gets_200() {
 async fn no_conditional_mode_always_answers_200() {
     // The mode that lets feedd's dedupe path be exercised with identical bytes.
     let (_dir, server) = corpus_server(false);
-    let first = client().get(server.url("rss-basic.rss")).send().await.unwrap();
-    let etag = first.headers().get(ETAG).unwrap().to_str().unwrap().to_string();
+    let first = client()
+        .get(server.url("rss-basic.rss"))
+        .send()
+        .await
+        .unwrap();
+    let etag = first
+        .headers()
+        .get(ETAG)
+        .unwrap()
+        .to_str()
+        .unwrap()
+        .to_string();
 
     let second = client()
         .get(server.url("rss-basic.rss"))
@@ -161,7 +206,11 @@ async fn request_log_records_conditional_headers() {
     // If-None-Match, rather than merely that feedgen would honor it.
     let (_dir, server) = corpus_server(true);
 
-    client().get(server.url("rss-basic.rss")).send().await.unwrap();
+    client()
+        .get(server.url("rss-basic.rss"))
+        .send()
+        .await
+        .unwrap();
     client()
         .get(server.url("rss-basic.rss"))
         .header(IF_NONE_MATCH, "\"abc\"")

@@ -56,7 +56,10 @@ pub async fn run(cli: cli::Cli) -> anyhow::Result<()> {
         .map_err(|e| anyhow::anyhow!("cannot bind {}: {e}", cli.listen))?;
     let addr = listener.local_addr()?;
     tracing::info!(%addr, db = %cli.db.display(), "feedd listening");
-    println!("feedd listening on http://{addr} (db: {})", cli.db.display());
+    println!(
+        "feedd listening on http://{addr} (db: {})",
+        cli.db.display()
+    );
 
     serve(listener, state).await
 }
@@ -95,5 +98,9 @@ pub fn spawn(store: Arc<Store>) -> anyhow::Result<Spawned> {
     let handle = tokio::spawn(async move {
         let _ = serve(listener, state).await;
     });
-    Ok(Spawned { addr, store, handle })
+    Ok(Spawned {
+        addr,
+        store,
+        handle,
+    })
 }

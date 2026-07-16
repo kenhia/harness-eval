@@ -120,7 +120,10 @@ async fn add_refresh_and_read_back_an_rss_feed() {
     assert_eq!(result["feed_id"], id);
 
     let feed = h.feed(id).await;
-    assert_eq!(feed["title"], "Example RSS Feed", "title arrives on first fetch");
+    assert_eq!(
+        feed["title"], "Example RSS Feed",
+        "title arrives on first fetch"
+    );
     assert!(feed["last_error"].is_null());
     assert!(feed["last_fetched_at"].is_string());
     assert_eq!(feed["entry_count"], 3);
@@ -166,7 +169,10 @@ async fn add_refresh_and_read_back_an_atom_feed() {
         .find(|e| e["guid"] == "urn:uuid:1225c695-cfb8-4ebb-aaaa-80da344efa6a")
         .expect("the alternate-link entry");
     assert_eq!(alt["link"], "https://example.com/entries/1");
-    assert_eq!(alt["published_at"], "2003-12-13T12:29:29Z", "published, as UTC");
+    assert_eq!(
+        alt["published_at"], "2003-12-13T12:29:29Z",
+        "published, as UTC"
+    );
 
     // No summary element, so content became the summary; no published, so
     // updated supplied the date.
@@ -201,7 +207,10 @@ async fn a_second_refresh_sends_if_none_match_and_gets_a_304() {
     // write-only and every other assertion here would still pass.
     let requests = h.origin.log.snapshot();
     assert_eq!(requests.len(), 2);
-    assert_eq!(requests[0].if_none_match, None, "nothing to validate against yet");
+    assert_eq!(
+        requests[0].if_none_match, None,
+        "nothing to validate against yet"
+    );
     assert!(
         requests[1].if_none_match.is_some(),
         "the refetch must carry If-None-Match; got {:?}",
@@ -234,8 +243,15 @@ async fn refetching_identical_content_without_a_304_still_adds_nothing() {
         second["new_entries"], 0,
         "identical content must insert nothing on a 200"
     );
-    assert_eq!(second["updated_entries"], 3, "the known entries updated in place");
-    assert_eq!(h.feed(id).await["entry_count"], 3, "still no duplicate rows");
+    assert_eq!(
+        second["updated_entries"], 3,
+        "the known entries updated in place"
+    );
+    assert_eq!(
+        h.feed(id).await["entry_count"],
+        3,
+        "still no duplicate rows"
+    );
 }
 
 #[tokio::test]
@@ -248,10 +264,16 @@ async fn an_upstream_edit_updates_the_entry_in_place() {
     let before = h.entries("q=First post").await;
     assert_eq!(before["total"], 1);
     let original_id = before["items"][0]["id"].as_i64().unwrap();
-    let original_fetched_at = before["items"][0]["fetched_at"].as_str().unwrap().to_string();
+    let original_fetched_at = before["items"][0]["fetched_at"]
+        .as_str()
+        .unwrap()
+        .to_string();
 
     // Retitle post-0001 upstream, keeping its guid.
-    let edited = fixtures::RSS_BASIC.replace("<title>First post</title>", "<title>First post, revised</title>");
+    let edited = fixtures::RSS_BASIC.replace(
+        "<title>First post</title>",
+        "<title>First post, revised</title>",
+    );
     std::fs::write(dir.join("rss-basic.rss"), &edited).unwrap();
 
     let result = h.refresh(id).await;
@@ -261,7 +283,11 @@ async fn an_upstream_edit_updates_the_entry_in_place() {
     let after = h.entries("q=First post, revised").await;
     assert_eq!(after["total"], 1);
     let entry = &after["items"][0];
-    assert_eq!(entry["id"].as_i64().unwrap(), original_id, "keeps its internal id");
+    assert_eq!(
+        entry["id"].as_i64().unwrap(),
+        original_id,
+        "keeps its internal id"
+    );
     assert_eq!(
         entry["fetched_at"].as_str().unwrap(),
         original_fetched_at,
@@ -295,7 +321,10 @@ async fn a_malformed_feed_records_last_error_and_spares_its_neighbours() {
     // The broken feed carries its error; the healthy one is untouched.
     let broken_feed = h.feed(broken).await;
     assert!(
-        broken_feed["last_error"].as_str().unwrap().contains("malformed"),
+        broken_feed["last_error"]
+            .as_str()
+            .unwrap()
+            .contains("malformed"),
         "got {:?}",
         broken_feed["last_error"]
     );
@@ -315,7 +344,9 @@ async fn an_unreachable_origin_records_last_error_without_crashing_the_server() 
         let l = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
         l.local_addr().unwrap().port()
     };
-    let id = h.add_url(&format!("http://127.0.0.1:{dead_port}/gone.rss")).await;
+    let id = h
+        .add_url(&format!("http://127.0.0.1:{dead_port}/gone.rss"))
+        .await;
 
     let result = h.refresh(id).await;
     assert_eq!(result["status"], "error");
@@ -323,7 +354,11 @@ async fn an_unreachable_origin_records_last_error_without_crashing_the_server() 
     assert!(h.feed(id).await["last_error"].is_string());
 
     // The server is still answering.
-    let health = client().get(h.feedd.url("/api/health")).send().await.unwrap();
+    let health = client()
+        .get(h.feedd.url("/api/health"))
+        .send()
+        .await
+        .unwrap();
     assert_eq!(health.status(), StatusCode::OK);
 }
 
@@ -334,7 +369,10 @@ async fn a_404_from_the_origin_is_recorded_as_an_error() {
     let result = h.refresh(id).await;
     assert_eq!(result["status"], "error");
     assert!(
-        h.feed(id).await["last_error"].as_str().unwrap().contains("404"),
+        h.feed(id).await["last_error"]
+            .as_str()
+            .unwrap()
+            .contains("404"),
         "the HTTP status belongs in the error"
     );
 }
@@ -383,7 +421,10 @@ async fn edge_case_dates_land_exactly_where_the_spec_says() {
     assert_eq!(published("date-pdt"), "2020-01-01T19:00:00Z");
     assert_eq!(published("date-ut"), "2020-01-01T12:00:00Z");
     assert_eq!(published("date-numeric"), "2020-01-01T17:00:00Z");
-    assert!(published("date-missing").is_null(), "no date -> null, never fetch time");
+    assert!(
+        published("date-missing").is_null(),
+        "no date -> null, never fetch time"
+    );
     assert!(published("date-garbage").is_null(), "unparseable -> null");
 }
 
@@ -398,14 +439,19 @@ async fn cdata_and_entities_survive_the_round_trip() {
     let by_guid = |guid: &str| items.iter().find(|e| e["guid"] == guid).unwrap();
 
     let first = by_guid("cdata-entities-1");
-    assert_eq!(first["title"], "Tom & Jerry <the sequel>", "entities unescape");
     assert_eq!(
-        first["summary"],
-        "Verbatim CDATA: &amp; stays literal, <b>markup</b> is not parsed.",
+        first["title"], "Tom & Jerry <the sequel>",
+        "entities unescape"
+    );
+    assert_eq!(
+        first["summary"], "Verbatim CDATA: &amp; stays literal, <b>markup</b> is not parsed.",
         "CDATA is verbatim"
     );
 
-    assert_eq!(by_guid("cdata-entities-2")["title"], "A CDATA title with <angle> brackets");
+    assert_eq!(
+        by_guid("cdata-entities-2")["title"],
+        "A CDATA title with <angle> brackets"
+    );
     assert_eq!(by_guid("cdata-entities-3")["title"], "(untitled)");
 }
 
@@ -433,10 +479,16 @@ async fn the_since_until_window_is_half_open() {
     let first_post = "2003-06-10T04:00:00Z";
 
     let inclusive = h.entries(&format!("since={first_post}")).await;
-    assert_eq!(inclusive["total"], 3, "since is inclusive of an exact match");
+    assert_eq!(
+        inclusive["total"], 3,
+        "since is inclusive of an exact match"
+    );
 
     let exclusive = h.entries(&format!("until={first_post}")).await;
-    assert_eq!(exclusive["total"], 0, "until is exclusive of an exact match");
+    assert_eq!(
+        exclusive["total"], 0,
+        "until is exclusive of an exact match"
+    );
 
     let window = h
         .entries("since=2003-06-11T00:00:00Z&until=2003-06-12T00:00:00Z")

@@ -15,9 +15,7 @@ use std::path::{Path as FsPath, PathBuf};
 use std::sync::{Arc, Mutex};
 
 use axum::extract::{Path, State};
-use axum::http::header::{
-    CONTENT_TYPE, ETAG, IF_MODIFIED_SINCE, IF_NONE_MATCH, LAST_MODIFIED,
-};
+use axum::http::header::{CONTENT_TYPE, ETAG, IF_MODIFIED_SINCE, IF_NONE_MATCH, LAST_MODIFIED};
 use axum::http::{HeaderMap, StatusCode};
 use axum::response::{IntoResponse, Response};
 use axum::routing::get;
@@ -293,9 +291,20 @@ mod tests {
 
     #[test]
     fn etag_is_content_derived_and_stable() {
-        assert_eq!(etag_for(b"hello"), etag_for(b"hello"), "stable for equal content");
-        assert_ne!(etag_for(b"hello"), etag_for(b"hellp"), "differs on content change");
-        assert!(etag_for(b"hello").starts_with('"'), "must be a quoted-string");
+        assert_eq!(
+            etag_for(b"hello"),
+            etag_for(b"hello"),
+            "stable for equal content"
+        );
+        assert_ne!(
+            etag_for(b"hello"),
+            etag_for(b"hellp"),
+            "differs on content change"
+        );
+        assert!(
+            etag_for(b"hello").starts_with('"'),
+            "must be a quoted-string"
+        );
     }
 
     #[test]
@@ -333,9 +342,6 @@ mod tests {
         let t = feedhub_core::datetime::parse_rfc3339("1994-11-15T12:45:26Z").unwrap();
         assert_eq!(http_date(t), "Tue, 15 Nov 1994 12:45:26 GMT");
         // Round-trips through the RFC 822 parser feedd uses.
-        assert_eq!(
-            feedhub_core::datetime::parse_rfc822(&http_date(t)),
-            Some(t)
-        );
+        assert_eq!(feedhub_core::datetime::parse_rfc822(&http_date(t)), Some(t));
     }
 }

@@ -30,13 +30,20 @@ pub async fn poll_once(store: &Store, fetcher: &Fetcher) -> Vec<RefreshResult> {
 
 /// Spawn the poll loop. A zero interval disables polling entirely, and this
 /// returns `None`.
-pub fn spawn(store: Arc<Store>, fetcher: Arc<Fetcher>, interval: Duration) -> Option<tokio::task::JoinHandle<()>> {
+pub fn spawn(
+    store: Arc<Store>,
+    fetcher: Arc<Fetcher>,
+    interval: Duration,
+) -> Option<tokio::task::JoinHandle<()>> {
     if interval.is_zero() {
         tracing::info!("background polling disabled (--poll-interval 0)");
         return None;
     }
 
-    tracing::info!(interval_secs = interval.as_secs(), "background polling enabled");
+    tracing::info!(
+        interval_secs = interval.as_secs(),
+        "background polling enabled"
+    );
     Some(tokio::spawn(async move {
         let mut ticker = tokio::time::interval(interval);
         // The first tick fires immediately; skip it so startup isn't a

@@ -1,6 +1,11 @@
 [workspace]
 resolver = "2"
-members = ["crates/feedhub-core", "crates/feedgen", "crates/feedd"]
+members = [
+    "crates/feedhub-core",
+    "crates/feedd",
+    "crates/feedctl",
+    "crates/feedgen",
+]
 
 [workspace.package]
 version = "0.1.0"
@@ -10,6 +15,7 @@ rust-version = "1.75"
 
 [workspace.dependencies]
 feedhub-core = { path = "crates/feedhub-core" }
+feedd = { path = "crates/feedd" }
 feedgen = { path = "crates/feedgen" }
 
 anyhow = "1"

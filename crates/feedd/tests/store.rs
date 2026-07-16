@@ -44,7 +44,10 @@ fn query() -> EntryQuery {
 fn add_feed_starts_with_no_title_no_fetch_and_no_entries() {
     let s = store();
     let feed = s.add_feed("https://example.com/f.rss").unwrap();
-    assert_eq!(feed.title, None, "title is null until the first successful fetch");
+    assert_eq!(
+        feed.title, None,
+        "title is null until the first successful fetch"
+    );
     assert_eq!(feed.last_fetched_at, None);
     assert_eq!(feed.last_error, None);
     assert_eq!(feed.entry_count, 0);
@@ -76,10 +79,18 @@ fn deleting_a_feed_deletes_its_entries_and_leaves_others_alone() {
     let s = store();
     let doomed = s.add_feed("https://example.com/a.rss").unwrap();
     let keeper = s.add_feed("https://example.com/b.rss").unwrap();
-    s.apply_success(doomed.id, &success(vec![entry("a", "A", None)]), at("2020-01-01T00:00:00Z"))
-        .unwrap();
-    s.apply_success(keeper.id, &success(vec![entry("b", "B", None)]), at("2020-01-01T00:00:00Z"))
-        .unwrap();
+    s.apply_success(
+        doomed.id,
+        &success(vec![entry("a", "A", None)]),
+        at("2020-01-01T00:00:00Z"),
+    )
+    .unwrap();
+    s.apply_success(
+        keeper.id,
+        &success(vec![entry("b", "B", None)]),
+        at("2020-01-01T00:00:00Z"),
+    )
+    .unwrap();
 
     assert!(s.delete_feed(doomed.id).unwrap());
     assert!(s.get_feed(doomed.id).unwrap().is_none());
@@ -109,10 +120,14 @@ fn re_fetching_identical_content_inserts_nothing() {
         entry("b", "B", Some("2020-01-02T00:00:00Z")),
     ]);
 
-    let first = s.apply_success(feed.id, &fetch, at("2020-01-01T00:00:00Z")).unwrap();
+    let first = s
+        .apply_success(feed.id, &fetch, at("2020-01-01T00:00:00Z"))
+        .unwrap();
     assert_eq!(first, ApplyCounts { new: 2, updated: 0 });
 
-    let second = s.apply_success(feed.id, &fetch, at("2020-01-03T00:00:00Z")).unwrap();
+    let second = s
+        .apply_success(feed.id, &fetch, at("2020-01-03T00:00:00Z"))
+        .unwrap();
     assert_eq!(
         second,
         ApplyCounts { new: 0, updated: 2 },
@@ -128,7 +143,11 @@ fn a_known_identity_updates_in_place_keeping_id_and_fetched_at() {
 
     s.apply_success(
         feed.id,
-        &success(vec![entry("a", "Original title", Some("2020-01-01T00:00:00Z"))]),
+        &success(vec![entry(
+            "a",
+            "Original title",
+            Some("2020-01-01T00:00:00Z"),
+        )]),
         at("2020-01-01T00:00:00Z"),
     )
     .unwrap();
@@ -165,7 +184,10 @@ fn the_same_guid_twice_in_one_document_yields_one_row() {
     let counts = s
         .apply_success(
             feed.id,
-            &success(vec![entry("dup", "First", None), entry("dup", "Second", None)]),
+            &success(vec![
+                entry("dup", "First", None),
+                entry("dup", "Second", None),
+            ]),
             at("2020-01-01T00:00:00Z"),
         )
         .unwrap();
@@ -180,10 +202,18 @@ fn the_same_guid_in_different_feeds_is_two_entries() {
     let s = store();
     let a = s.add_feed("https://example.com/a.rss").unwrap();
     let b = s.add_feed("https://example.com/b.rss").unwrap();
-    s.apply_success(a.id, &success(vec![entry("shared", "A", None)]), at("2020-01-01T00:00:00Z"))
-        .unwrap();
+    s.apply_success(
+        a.id,
+        &success(vec![entry("shared", "A", None)]),
+        at("2020-01-01T00:00:00Z"),
+    )
+    .unwrap();
     let counts = s
-        .apply_success(b.id, &success(vec![entry("shared", "B", None)]), at("2020-01-01T00:00:00Z"))
+        .apply_success(
+            b.id,
+            &success(vec![entry("shared", "B", None)]),
+            at("2020-01-01T00:00:00Z"),
+        )
         .unwrap();
     assert_eq!(counts.new, 1);
     assert_eq!(s.query_entries(&query()).unwrap().total, 2);
@@ -197,7 +227,8 @@ fn title_appears_on_first_success_and_updates_on_refresh() {
     let feed = s.add_feed("https://example.com/f.rss").unwrap();
     assert_eq!(feed.title, None);
 
-    s.apply_success(feed.id, &success(vec![]), at("2020-01-01T00:00:00Z")).unwrap();
+    s.apply_success(feed.id, &success(vec![]), at("2020-01-01T00:00:00Z"))
+        .unwrap();
     assert_eq!(
         s.get_feed(feed.id).unwrap().unwrap().title.as_deref(),
         Some("Feed Title")
@@ -205,7 +236,8 @@ fn title_appears_on_first_success_and_updates_on_refresh() {
 
     let mut renamed = success(vec![]);
     renamed.title = Some("Renamed Feed".into());
-    s.apply_success(feed.id, &renamed, at("2020-01-02T00:00:00Z")).unwrap();
+    s.apply_success(feed.id, &renamed, at("2020-01-02T00:00:00Z"))
+        .unwrap();
     assert_eq!(
         s.get_feed(feed.id).unwrap().unwrap().title.as_deref(),
         Some("Renamed Feed")
@@ -216,13 +248,22 @@ fn title_appears_on_first_success_and_updates_on_refresh() {
 fn a_failure_preserves_the_title_and_entries() {
     let s = store();
     let feed = s.add_feed("https://example.com/f.rss").unwrap();
-    s.apply_success(feed.id, &success(vec![entry("a", "A", None)]), at("2020-01-01T00:00:00Z"))
+    s.apply_success(
+        feed.id,
+        &success(vec![entry("a", "A", None)]),
+        at("2020-01-01T00:00:00Z"),
+    )
+    .unwrap();
+
+    s.apply_error(feed.id, "connection refused", at("2020-01-02T00:00:00Z"))
         .unwrap();
 
-    s.apply_error(feed.id, "connection refused", at("2020-01-02T00:00:00Z")).unwrap();
-
     let feed = s.get_feed(feed.id).unwrap().unwrap();
-    assert_eq!(feed.title.as_deref(), Some("Feed Title"), "title survives a failure");
+    assert_eq!(
+        feed.title.as_deref(),
+        Some("Feed Title"),
+        "title survives a failure"
+    );
     assert_eq!(feed.entry_count, 1, "entries survive a failure");
     assert_eq!(feed.last_error.as_deref(), Some("connection refused"));
 }
@@ -231,11 +272,13 @@ fn a_failure_preserves_the_title_and_entries() {
 fn a_title_less_fetch_does_not_blank_a_known_title() {
     let s = store();
     let feed = s.add_feed("https://example.com/f.rss").unwrap();
-    s.apply_success(feed.id, &success(vec![]), at("2020-01-01T00:00:00Z")).unwrap();
+    s.apply_success(feed.id, &success(vec![]), at("2020-01-01T00:00:00Z"))
+        .unwrap();
 
     let mut untitled = success(vec![]);
     untitled.title = None;
-    s.apply_success(feed.id, &untitled, at("2020-01-02T00:00:00Z")).unwrap();
+    s.apply_success(feed.id, &untitled, at("2020-01-02T00:00:00Z"))
+        .unwrap();
 
     assert_eq!(
         s.get_feed(feed.id).unwrap().unwrap().title.as_deref(),
@@ -247,10 +290,12 @@ fn a_title_less_fetch_does_not_blank_a_known_title() {
 fn any_successful_fetch_clears_last_error() {
     let s = store();
     let feed = s.add_feed("https://example.com/f.rss").unwrap();
-    s.apply_error(feed.id, "boom", at("2020-01-01T00:00:00Z")).unwrap();
+    s.apply_error(feed.id, "boom", at("2020-01-01T00:00:00Z"))
+        .unwrap();
     assert!(s.get_feed(feed.id).unwrap().unwrap().last_error.is_some());
 
-    s.apply_success(feed.id, &success(vec![]), at("2020-01-02T00:00:00Z")).unwrap();
+    s.apply_success(feed.id, &success(vec![]), at("2020-01-02T00:00:00Z"))
+        .unwrap();
     assert_eq!(s.get_feed(feed.id).unwrap().unwrap().last_error, None);
 }
 
@@ -258,15 +303,24 @@ fn any_successful_fetch_clears_last_error() {
 fn a_304_counts_as_success_and_leaves_entries_untouched() {
     let s = store();
     let feed = s.add_feed("https://example.com/f.rss").unwrap();
-    s.apply_success(feed.id, &success(vec![entry("a", "A", None)]), at("2020-01-01T00:00:00Z"))
+    s.apply_success(
+        feed.id,
+        &success(vec![entry("a", "A", None)]),
+        at("2020-01-01T00:00:00Z"),
+    )
+    .unwrap();
+    s.apply_error(feed.id, "transient", at("2020-01-02T00:00:00Z"))
         .unwrap();
-    s.apply_error(feed.id, "transient", at("2020-01-02T00:00:00Z")).unwrap();
 
-    s.apply_not_modified(feed.id, at("2020-01-03T00:00:00Z")).unwrap();
+    s.apply_not_modified(feed.id, at("2020-01-03T00:00:00Z"))
+        .unwrap();
 
     let feed = s.get_feed(feed.id).unwrap().unwrap();
     assert_eq!(feed.last_error, None, "304 is a successful fetch");
-    assert_eq!(feed.last_fetched_at.as_deref(), Some("2020-01-03T00:00:00Z"));
+    assert_eq!(
+        feed.last_fetched_at.as_deref(),
+        Some("2020-01-03T00:00:00Z")
+    );
     assert_eq!(feed.entry_count, 1, "304 leaves entries untouched");
 }
 
@@ -275,10 +329,15 @@ fn an_error_on_one_feed_does_not_touch_another() {
     let s = store();
     let broken = s.add_feed("https://example.com/broken.rss").unwrap();
     let healthy = s.add_feed("https://example.com/healthy.rss").unwrap();
-    s.apply_success(healthy.id, &success(vec![entry("h", "H", None)]), at("2020-01-01T00:00:00Z"))
-        .unwrap();
+    s.apply_success(
+        healthy.id,
+        &success(vec![entry("h", "H", None)]),
+        at("2020-01-01T00:00:00Z"),
+    )
+    .unwrap();
 
-    s.apply_error(broken.id, "malformed XML", at("2020-01-02T00:00:00Z")).unwrap();
+    s.apply_error(broken.id, "malformed XML", at("2020-01-02T00:00:00Z"))
+        .unwrap();
 
     let healthy = s.get_feed(healthy.id).unwrap().unwrap();
     assert_eq!(healthy.last_error, None);
@@ -314,7 +373,13 @@ fn ordering_is_newest_first_then_nulls_last_by_id() {
     let titles: Vec<&str> = page.items.iter().map(|e| e.title.as_str()).collect();
     assert_eq!(
         titles,
-        ["New post", "Mid post", "Old post", "Undated one", "Undated two"]
+        [
+            "New post",
+            "Mid post",
+            "Old post",
+            "Undated one",
+            "Undated two"
+        ]
     );
 
     // The two undated entries tie, so entry id ascending breaks it.
@@ -374,7 +439,11 @@ fn a_sub_second_bound_compares_as_a_true_instant() {
     let feed = s.add_feed("https://example.com/f.rss").unwrap();
     s.apply_success(
         feed.id,
-        &success(vec![entry("frac", "Fractional", Some("2020-01-01T00:00:00.900Z"))]),
+        &success(vec![entry(
+            "frac",
+            "Fractional",
+            Some("2020-01-01T00:00:00.900Z"),
+        )]),
         at("2020-06-01T00:00:00Z"),
     )
     .unwrap();
@@ -401,11 +470,20 @@ fn undated_entries_drop_out_as_soon_as_either_bound_is_given() {
     let (s, _) = seeded();
 
     let unbounded = s.query_entries(&query()).unwrap();
-    assert_eq!(unbounded.total, 5, "no bounds: undated entries are included");
+    assert_eq!(
+        unbounded.total, 5,
+        "no bounds: undated entries are included"
+    );
 
     for bounded in [
-        EntryQuery { since: Some(to_millis(at("1970-01-01T00:00:00Z"))), ..query() },
-        EntryQuery { until: Some(to_millis(at("2999-01-01T00:00:00Z"))), ..query() },
+        EntryQuery {
+            since: Some(to_millis(at("1970-01-01T00:00:00Z"))),
+            ..query()
+        },
+        EntryQuery {
+            until: Some(to_millis(at("2999-01-01T00:00:00Z"))),
+            ..query()
+        },
     ] {
         let page = s.query_entries(&bounded).unwrap();
         assert_eq!(page.total, 3, "a bound must exclude undated entries");
@@ -418,7 +496,10 @@ fn search_folds_ascii_case_and_matches_substrings() {
     let (s, _) = seeded();
     for term in ["old post", "OLD POST", "Old Post", "ld po"] {
         let page = s
-            .query_entries(&EntryQuery { q: Some(term.into()), ..query() })
+            .query_entries(&EntryQuery {
+                q: Some(term.into()),
+                ..query()
+            })
             .unwrap();
         assert_eq!(page.total, 1, "{term:?} should match Old post");
         assert_eq!(page.items[0].title, "Old post");
@@ -432,7 +513,10 @@ fn search_treats_like_metacharacters_literally() {
     let (s, _) = seeded();
     for term in ["%", "_", "%post%"] {
         let page = s
-            .query_entries(&EntryQuery { q: Some(term.into()), ..query() })
+            .query_entries(&EntryQuery {
+                q: Some(term.into()),
+                ..query()
+            })
             .unwrap();
         assert_eq!(page.total, 0, "{term:?} must be a literal, not a wildcard");
     }
@@ -446,7 +530,10 @@ fn search_treats_like_metacharacters_literally() {
     )
     .unwrap();
     let page = s2
-        .query_entries(&EntryQuery { q: Some("100%".into()), ..query() })
+        .query_entries(&EntryQuery {
+            q: Some("100%".into()),
+            ..query()
+        })
         .unwrap();
     assert_eq!(page.total, 1, "a literal % must match a literal %");
 }
@@ -456,13 +543,24 @@ fn feed_id_restricts_to_one_feed() {
     let s = store();
     let a = s.add_feed("https://example.com/a.rss").unwrap();
     let b = s.add_feed("https://example.com/b.rss").unwrap();
-    s.apply_success(a.id, &success(vec![entry("a", "From A", None)]), at("2020-01-01T00:00:00Z"))
-        .unwrap();
-    s.apply_success(b.id, &success(vec![entry("b", "From B", None)]), at("2020-01-01T00:00:00Z"))
-        .unwrap();
+    s.apply_success(
+        a.id,
+        &success(vec![entry("a", "From A", None)]),
+        at("2020-01-01T00:00:00Z"),
+    )
+    .unwrap();
+    s.apply_success(
+        b.id,
+        &success(vec![entry("b", "From B", None)]),
+        at("2020-01-01T00:00:00Z"),
+    )
+    .unwrap();
 
     let page = s
-        .query_entries(&EntryQuery { feed_id: Some(a.id), ..query() })
+        .query_entries(&EntryQuery {
+            feed_id: Some(a.id),
+            ..query()
+        })
         .unwrap();
     assert_eq!(page.total, 1);
     assert_eq!(page.items[0].title, "From A");
@@ -472,7 +570,11 @@ fn feed_id_restricts_to_one_feed() {
 fn total_ignores_limit_and_offset_while_items_respect_them() {
     let (s, _) = seeded();
     let page = s
-        .query_entries(&EntryQuery { limit: 2, offset: 1, ..query() })
+        .query_entries(&EntryQuery {
+            limit: 2,
+            offset: 1,
+            ..query()
+        })
         .unwrap();
 
     assert_eq!(page.total, 5, "total is the match count, ignoring paging");
@@ -485,7 +587,11 @@ fn total_ignores_limit_and_offset_while_items_respect_them() {
 fn an_offset_past_the_end_yields_no_items_but_a_real_total() {
     let (s, _) = seeded();
     let page = s
-        .query_entries(&EntryQuery { limit: 50, offset: 999, ..query() })
+        .query_entries(&EntryQuery {
+            limit: 50,
+            offset: 999,
+            ..query()
+        })
         .unwrap();
     assert_eq!(page.total, 5);
     assert!(page.items.is_empty());
@@ -516,8 +622,12 @@ fn entries_survive_reopening_the_database_file() {
     let feed_id = {
         let s = Store::open(&path).unwrap();
         let feed = s.add_feed("https://example.com/f.rss").unwrap();
-        s.apply_success(feed.id, &success(vec![entry("a", "A", None)]), at("2020-01-01T00:00:00Z"))
-            .unwrap();
+        s.apply_success(
+            feed.id,
+            &success(vec![entry("a", "A", None)]),
+            at("2020-01-01T00:00:00Z"),
+        )
+        .unwrap();
         feed.id
     };
 

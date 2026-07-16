@@ -53,7 +53,10 @@ mod tests {
 
     #[test]
     fn db_is_required() {
-        assert!(Cli::try_parse_from(["feedd"]).is_err(), "--db has no default");
+        assert!(
+            Cli::try_parse_from(["feedd"]).is_err(),
+            "--db has no default"
+        );
     }
 
     #[test]
@@ -68,6 +71,9 @@ mod tests {
             "0",
         ]);
         assert_eq!(cli.listen.to_string(), "0.0.0.0:9000");
-        assert_eq!(cli.poll_interval, 0, "0 is a valid value, meaning no polling");
+        assert_eq!(
+            cli.poll_interval, 0,
+            "0 is a valid value, meaning no polling"
+        );
     }
 }

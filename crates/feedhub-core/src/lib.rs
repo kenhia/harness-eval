@@ -11,5 +11,7 @@ pub mod datetime;
 pub mod model;
 pub mod parser;
 
-pub use model::{Entry, EntryPage, Feed, FeedKind, ParsedEntry, ParsedFeed, RefreshResult, UNTITLED};
+pub use model::{
+    Entry, EntryPage, Feed, FeedKind, ParsedEntry, ParsedFeed, RefreshResult, UNTITLED,
+};
 pub use parser::{parse_feed, ParseError, ParseOutcome};
