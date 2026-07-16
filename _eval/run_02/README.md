@@ -37,22 +37,51 @@ working agents.
 Staging repos created at `~/src/ai-agents/harness-eval-runs/run_02/`
 (controls already `pre-run`-tagged; harness cells await installs).
 
+## Harness install refresh — DONE 2026-07-16
+
+All 7 staging repos at `pre-run`, clean trees, install commits record
+exact commands + versions:
+
+| repo | installed | version/source |
+|---|---|---|
+| 01-atv-starterkit | `npx atv-starterkit@latest init` | **2.6.3** (94 files) |
+| 02-atv-phoenix | none in repo (global) | `phoenix` profile verified: 19 skills, phoenix + token-master agents, phoenix-mcp binary answers JSON-RPC initialize |
+| 03-working-skill-repo | `kb-install.mjs --target repo --profile core --router skip` | source `Irtechie/working-skill-repo` @ **34804ea** (same commit as run 1; checkout at `~/src/ai-agents/working-skill-repo`) |
+| 04-kprojects | `install.sh --agent both` | kprojects @ **b3c5af8** |
+| 06-gstack | `gstack-team-init required` (run under profile HOME) | gstack **1.60.1.0** in `claude-gstack` profile |
+
+Version-drift notes vs run 1:
+- StarterKit 2.6.3 installs `.github` + `.vscode` only — **no vendored
+  `.atv`/`.gstack` dirs** (run 1's 2.x had them). The "01/06 share DNA"
+  caveat weakens to 3 textual gstack mentions; restate accordingly.
+- Copilot profiles (`clean`, `phoenix`) gained a profile-root
+  `.gitconfig` — required now that runs use fake-HOME (agents commit;
+  run 1's symlink method used the real `~/.gitconfig`).
+- Real-HOME leak check clean (no `~/.atv`, `~/.gstack`, `~/.kb`,
+  `~/.agents`).
+
 ## Remaining before the field runs (in order)
 
-1. **Harness install refresh** — per ADDING-A-HARNESS §0–§3: re-install
-   each harness into its staging repo under current versions, commit,
-   tag `pre-run`; re-verify profiles (incl. Phoenix's global piece in the
-   `phoenix` profile, gstack's in `claude-gstack`), doctor checks, no
-   real-HOME leakage. Record harness versions in the install commits.
-2. **Dry-run shakedown** — one throwaway control run end-to-end
+1. **Dry-run shakedown** — one throwaway control run end-to-end
    (`run-eval.sh --headless` on a copy of 07's setup), then run the
    acceptance suite against the result. This validates the suite itself
    (it has not yet met a real implementation) and gives a wall-clock/cost
    calibration for the Rust task. Suite bugs found here are process
-   fixes; log them below.
-3. **Freeze** — spec + acceptance freeze when the first real contender
+   fixes; log them below. Suggested:
+
+   ```bash
+   _eval/bin/new-run.sh run_02 99-shakedown --no-harness
+   _eval/bin/run-eval.sh --runner claude --profile claude-clean \
+     --run-group run_02 --repo 99-shakedown --model claude-opus-4-8 \
+     --headless --prompt-file _eval/run_02/prompts/07-baseline-claude.md
+   FEEDHUB_REPO=~/src/ai-agents/harness-eval-runs/run_02/99-shakedown \
+     uv run --with pytest pytest _eval/run_02/acceptance -v
+   # then: delete 99-shakedown + its runlog; log findings below
+   ```
+
+2. **Freeze** — spec + acceptance freeze when the first real contender
    runs.
-4. **Execute** — headless, hands-off, one cell at a time via
+3. **Execute** — headless, hands-off, one cell at a time via
    `run-eval.sh`; acceptance output archived to `runs/NN-acceptance.txt`.
 
 Note for Rust runs: `run-eval.sh` passes `CARGO_HOME`/`RUSTUP_HOME`

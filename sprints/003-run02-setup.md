@@ -47,9 +47,21 @@ executable acceptance, rubric, staging repos.
   `run-eval.sh` now passes `CARGO_HOME`/`RUSTUP_HOME` through to the real
   installs (verified).
 
+## Harness install refresh (2026-07-16)
+
+All 7 staging repos at `pre-run` with versions recorded in install
+commits (details + drift notes in `_eval/run_02/README.md`). Highlights:
+StarterKit 2.6.3 (no longer vendors `.atv`/`.gstack` — run 1's shared-DNA
+caveat weakens); KB installed from the same source commit as run 1
+(`Irtechie/working-skill-repo` @ 34804ea, checkout kept at
+`~/src/ai-agents/working-skill-repo`); phoenix profile verified
+mechanically (19 skills, agents, phoenix-mcp answers JSON-RPC);
+gstack-team-init run under the `claude-gstack` profile HOME; Copilot
+profiles gained profile-root `.gitconfig` for fake-HOME commits;
+real-HOME leak check clean.
+
 ## Remaining
 
-1. Harness install refresh (5 repos) + profile re-verification.
-2. Dry-run shakedown: throwaway control run + acceptance suite against
-   its output (suite is untested against a real implementation).
-3. Freeze at first contender run; execute field; grade.
+1. Dry-run shakedown: throwaway control run + acceptance suite against
+   its output (suite is untested against a real implementation) — Ken.
+2. Freeze at first contender run; execute field; grade.
