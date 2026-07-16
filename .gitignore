@@ -1,2 +1,4 @@
 .scratch/
 .env
+/target
+Cargo.lock

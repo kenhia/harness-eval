@@ -1,0 +1,12 @@
+[package]
+name = "feedcore"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+chrono = { workspace = true }
+quick-xml = { workspace = true }
+serde = { workspace = true }
+thiserror = { workspace = true }
