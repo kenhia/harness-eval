@@ -154,6 +154,14 @@ pub fn parse_feed(bytes: &[u8]) -> Result<ParsedFeed, ParseError> {
     if !saw_root {
         return Err(ParseError("no recognizable feed root element".into()));
     }
+    // A truncated document (e.g. an upstream server that cut the response off
+    // mid-element) reaches EOF with elements still open. quick_xml reports EOF
+    // rather than an error in that case, so guard against it explicitly.
+    if let Some(open) = stack.last() {
+        return Err(ParseError(format!(
+            "unexpected end of document: <{open}> was never closed"
+        )));
+    }
     Ok(feed)
 }
 
@@ -296,5 +304,21 @@ mod tests {
     fn malformed_is_error() {
         assert!(parse_feed(b"<rss><channel><item></oops>").is_err());
         assert!(parse_feed(b"not xml at all").is_err());
+    }
+
+    #[test]
+    fn truncated_mid_element_is_error() {
+        // Upstream server cut the response off mid-tag: the document reaches
+        // EOF with <rss>/<channel>/<item>/<title> still open. This must be a
+        // parse error, not a silently-successful empty fetch.
+        let xml = br#"<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"><channel><title>Nightly</title>
+<item><guid>n-1</guid><title>Release no"#;
+        assert!(parse_feed(xml).is_err());
+    }
+
+    #[test]
+    fn truncated_after_root_open_is_error() {
+        assert!(parse_feed(br#"<rss version="2.0"><channel>"#).is_err());
     }
 }
