@@ -1,6 +1,6 @@
 # Lessons learned — harness eval POC run 1
 
-Consolidates the setup-time findings from `_eval/notes/lessons.md`, run-log
+Consolidates the setup-time findings from `../notes/lessons.md`, run-log
 observations, grading and consensus friction, and the grader-agreement
 analysis into the design input for evaluation harness v2.
 
