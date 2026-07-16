@@ -57,13 +57,23 @@ bare controls resuming from nothing but the code.
 
 - 2026-07-16: protocol written; prompts, addendum, tags, tooling in
   place (this commit). Awaiting fix runs.
-- 2026-07-16 (late): **E1 — GitHub policy began blocking CLI MCP servers
-  mid-evening** (`! 3 MCP servers were blocked by policy:
-  'klams', 'korg', 'phoenix'`). Forensics: run 02's *graded* phoenix
-  session (Jul 16 17:06 UTC) made successful `phoenix_sense` MCP calls —
-  run 02 results are unaffected; the identical launch reproduced the
-  block at ~22:51 and again at probe time. Server-side change; nothing
-  local differs (same CLI 1.0.71, profile, flags, token).
+- 2026-07-16 (late): **E1 — MCP servers blocked by policy in fix-round
+  copilot runs** (`! 3 MCP servers were blocked by policy: 'klams',
+  'korg', 'phoenix'`). Root cause (established by probes 2026-07-17):
+  **token-class policy** — GitHub began policy-blocking ALL MCP servers
+  under gh-CLI OAuth tokens (`gho_`) between Jul 16 ~17:06 and ~22:51
+  UTC; run-eval.sh had been injecting exactly that token class since the
+  morning auth fix. The native Copilot login is unaffected (interactive
+  `/mcp list` works). Related trap found during diagnosis: VS Code
+  integrated terminals export a short-lived `COPILOT_GITHUB_TOKEN` PAT
+  that goes stale and hijacks fake-HOME copilot auth — this, not
+  credential rotation, likely caused the original 05 launch failure.
+  Fixes: run-eval.sh now scrubs ambient token vars from every launch,
+  uses the profile's own Copilot login by default (one-time
+  `env HOME=<profile> copilot` + `/login` per profile), and demotes
+  gh-token injection to an explicit `--inject-gh-token` flag with a
+  loud MCP warning. Run 02's *graded* phoenix session (17:06) made
+  successful `phoenix_sense` MCP calls — run 02 results unaffected.
   Impact and handling per cell:
   - **02 fix run: ran without the phoenix harness's MCP spine —
     recommended VOID + rerun after policy is restored** (the round

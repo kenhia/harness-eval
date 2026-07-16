@@ -31,7 +31,7 @@ EVAL_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 STAGING_ROOT="$HOME/src/ai-agents/harness-eval-runs"
 
 runner="" profile="" run_group="" repo="" model="" prompt_file="" headless=false
-boundary_tag="pre-run" log_suffix=""
+boundary_tag="pre-run" log_suffix="" inject_gh_token=false
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --runner)      runner="$2"; shift 2 ;;
@@ -43,6 +43,7 @@ while [[ $# -gt 0 ]]; do
         --headless)    headless=true; shift ;;
         --tag)         boundary_tag="$2"; shift 2 ;;
         --suffix)      log_suffix="-$2"; shift 2 ;;
+        --inject-gh-token) inject_gh_token=true; shift ;;
         *) echo "unknown arg: $1" >&2; exit 1 ;;
     esac
 done
@@ -99,10 +100,16 @@ if [[ $runner == claude ]]; then
     fi
     note "auth: ok"
 else
-    # Copilot's stored token rotates stale, and a fake HOME hides the real
-    # ~/.config/gh fallback — inject a fresh token from the real gh instead.
-    copilot_token="$(gh auth token 2>/dev/null)" || fail "gh auth token unavailable — run 'gh auth login' and retry"
-    note "auth: fresh gh token will be injected (COPILOT_GITHUB_TOKEN)"
+    # Copilot uses the profile's own login (do `env HOME=<profile> copilot`
+    # then /login, once per profile). gh-token injection is a last resort:
+    # since 2026-07-16 GitHub policy-blocks ALL MCP servers under gh-CLI
+    # tokens, so an injected run loses klams/korg/harness MCP.
+    if $inject_gh_token; then
+        copilot_token="$(gh auth token 2>/dev/null)" || fail "gh auth token unavailable — run 'gh auth login' and retry"
+        echo "  WARNING: --inject-gh-token — MCP servers will be BLOCKED BY POLICY under this token class"
+    else
+        note "auth: profile stored login (if launch fails instantly: env HOME=$PROFILE_DIR copilot -> /login)"
+    fi
 fi
 
 [[ -d $RUNLOG_DIR ]] || mkdir -p "$RUNLOG_DIR"
@@ -123,8 +130,10 @@ STAMP="$(mktemp)"; trap 'rm -f "$STAMP"' EXIT
 toolchain_env=()
 [[ -d $HOME/.cargo ]] && toolchain_env+=(CARGO_HOME="$HOME/.cargo")
 [[ -d $HOME/.rustup ]] && toolchain_env+=(RUSTUP_HOME="$HOME/.rustup")
-launch=(env HOME="$PROFILE_DIR" "${toolchain_env[@]}")
-[[ $runner == copilot ]] && launch+=(COPILOT_GITHUB_TOKEN="$copilot_token")
+# -u scrubs ambient token vars: VS Code integrated terminals export a
+# short-lived COPILOT_GITHUB_TOKEN PAT that goes stale and hijacks auth.
+launch=(env -u COPILOT_GITHUB_TOKEN -u GITHUB_TOKEN -u GH_TOKEN HOME="$PROFILE_DIR" "${toolchain_env[@]}")
+[[ $runner == copilot ]] && $inject_gh_token && launch+=(COPILOT_GITHUB_TOKEN="$copilot_token")
 launch+=("$runner")
 if [[ $runner == claude ]]; then
     [[ -n $model ]] && launch+=(--model "$model")
