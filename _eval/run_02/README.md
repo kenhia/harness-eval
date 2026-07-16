@@ -117,6 +117,14 @@ refined as reps accumulate. The 99/07 pair doubles as the first informal
 rep pair, giving a concrete variance estimate to report alongside the
 headline numbers.
 
+**Copilot credit units drifted vs run 1 — do not compare across runs.**
+The same cell (05-baseline) cost 143 credits in run 1 and 703 credits in
+run 02 with premium requests stable at 15 both times, and a trivial
+one-line session bills ~22 credits on CLI 1.0.7x. The credit *unit*
+changed between CLI/billing versions, not the work. Within-field
+comparisons (anchored to 05) remain valid; credit comparisons to run 1
+are not. Premium-request counts look like the stabler cross-run unit.
+
 ## Suite defect log (post-freeze)
 
 **S1 (2026-07-16, discovered on 06-gstack).** H9's request-log assertion
