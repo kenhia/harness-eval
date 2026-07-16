@@ -40,7 +40,11 @@ async fn end_to_end_flow() {
     let http = client();
 
     // Health.
-    let resp = http.get(format!("{feedd}/api/health")).send().await.unwrap();
+    let resp = http
+        .get(format!("{feedd}/api/health"))
+        .send()
+        .await
+        .unwrap();
     assert_eq!(resp.status(), 200);
     let body: Value = resp.json().await.unwrap();
     assert_eq!(body["status"], "ok");
@@ -197,7 +201,10 @@ async fn end_to_end_flow() {
     for item in items {
         match item["published_at"].as_str() {
             Some(p) => {
-                assert!(!seen_null, "non-null published_at after a null (nulls must be last)");
+                assert!(
+                    !seen_null,
+                    "non-null published_at after a null (nulls must be last)"
+                );
                 if let Some(prev) = &prev {
                     assert!(prev >= &p.to_string(), "not descending: {prev} then {p}");
                 }

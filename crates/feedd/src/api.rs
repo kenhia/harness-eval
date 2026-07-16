@@ -42,17 +42,21 @@ struct CreateFeed {
 
 async fn create_feed(State(state): State<AppState>, body: Option<Json<CreateFeed>>) -> Response {
     let Some(Json(body)) = body else {
-        return api_error(StatusCode::UNPROCESSABLE_ENTITY, "expected JSON body {\"url\": ...}");
+        return api_error(
+            StatusCode::UNPROCESSABLE_ENTITY,
+            "expected JSON body {\"url\": ...}",
+        );
     };
     let url = body.url.trim().to_string();
     if !valid_http_url(&url) {
-        return api_error(StatusCode::UNPROCESSABLE_ENTITY, "url must be a valid http(s) URL");
+        return api_error(
+            StatusCode::UNPROCESSABLE_ENTITY,
+            "url must be a valid http(s) URL",
+        );
     }
     let conn = state.db.lock().unwrap();
     match db::insert_feed(&conn, &url) {
-        Ok(InsertOutcome::Created(feed)) => {
-            (StatusCode::CREATED, Json(feed)).into_response()
-        }
+        Ok(InsertOutcome::Created(feed)) => (StatusCode::CREATED, Json(feed)).into_response(),
         Ok(InsertOutcome::Conflict) => {
             api_error(StatusCode::CONFLICT, "feed URL already registered")
         }
@@ -146,13 +150,16 @@ async fn get_entries(State(state): State<AppState>, Query(p): Query<EntryParams>
 fn normalize_bound(input: Option<&str>) -> Result<Option<String>, ()> {
     match input {
         None => Ok(None),
-        Some(s) if s.is_empty() => Ok(None),
+        Some("") => Ok(None),
         Some(s) => parse_date(s).map(|d| Some(to_rfc3339_z(&d))).ok_or(()),
     }
 }
 
 fn valid_http_url(url: &str) -> bool {
-    let rest = match url.strip_prefix("http://").or_else(|| url.strip_prefix("https://")) {
+    let rest = match url
+        .strip_prefix("http://")
+        .or_else(|| url.strip_prefix("https://"))
+    {
         Some(r) => r,
         None => return false,
     };

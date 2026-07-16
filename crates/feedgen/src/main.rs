@@ -6,7 +6,10 @@ use anyhow::Result;
 use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
-#[command(name = "feedgen", about = "Serve and generate local test feeds for feedhub")]
+#[command(
+    name = "feedgen",
+    about = "Serve and generate local test feeds for feedhub"
+)]
 struct Cli {
     #[command(subcommand)]
     command: Command,

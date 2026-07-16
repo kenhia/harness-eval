@@ -49,12 +49,30 @@ pub struct RefreshResult {
 
 impl RefreshResult {
     pub fn ok(feed_id: i64, new_entries: i64) -> Self {
-        Self { feed_id, status: "ok", new_entries, not_modified: None, error: None }
+        Self {
+            feed_id,
+            status: "ok",
+            new_entries,
+            not_modified: None,
+            error: None,
+        }
     }
     pub fn not_modified(feed_id: i64) -> Self {
-        Self { feed_id, status: "ok", new_entries: 0, not_modified: Some(true), error: None }
+        Self {
+            feed_id,
+            status: "ok",
+            new_entries: 0,
+            not_modified: Some(true),
+            error: None,
+        }
     }
     pub fn error(feed_id: i64, msg: impl Into<String>) -> Self {
-        Self { feed_id, status: "error", new_entries: 0, not_modified: None, error: Some(msg.into()) }
+        Self {
+            feed_id,
+            status: "error",
+            new_entries: 0,
+            not_modified: None,
+            error: Some(msg.into()),
+        }
     }
 }

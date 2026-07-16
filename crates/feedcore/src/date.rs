@@ -104,8 +104,7 @@ fn parse_rfc822(s: &str) -> Option<DateTime<Utc>> {
         None => 0,
     };
 
-    let naive = NaiveDate::from_ymd_opt(year, month, day)?
-        .and_hms_opt(hour, minute, second)?;
+    let naive = NaiveDate::from_ymd_opt(year, month, day)?.and_hms_opt(hour, minute, second)?;
     // Convert the wall-clock time at `offset_min` into UTC.
     let utc = naive - chrono::Duration::minutes(offset_min as i64);
     Some(Utc.from_utc_datetime(&utc))
@@ -142,7 +141,10 @@ mod tests {
 
     #[test]
     fn rfc3339_z() {
-        assert_eq!(parse_date("2024-01-02T03:04:05Z"), Some(utc("2024-01-02T03:04:05Z")));
+        assert_eq!(
+            parse_date("2024-01-02T03:04:05Z"),
+            Some(utc("2024-01-02T03:04:05Z"))
+        );
     }
 
     #[test]

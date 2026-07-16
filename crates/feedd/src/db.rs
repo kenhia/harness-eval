@@ -70,14 +70,18 @@ pub enum InsertOutcome {
 /// present.
 pub fn insert_feed(conn: &Connection, url: &str) -> Result<InsertOutcome> {
     let existing: Option<i64> = conn
-        .query_row("SELECT id FROM feeds WHERE url = ?1", params![url], |r| r.get(0))
+        .query_row("SELECT id FROM feeds WHERE url = ?1", params![url], |r| {
+            r.get(0)
+        })
         .optional()?;
     if existing.is_some() {
         return Ok(InsertOutcome::Conflict);
     }
     conn.execute("INSERT INTO feeds (url) VALUES (?1)", params![url])?;
     let id = conn.last_insert_rowid();
-    Ok(InsertOutcome::Created(get_feed(conn, id)?.expect("just inserted")))
+    Ok(InsertOutcome::Created(
+        get_feed(conn, id)?.expect("just inserted"),
+    ))
 }
 
 /// All feeds, ordered by id.
@@ -208,7 +212,14 @@ pub fn upsert_entry(
         conn.execute(
             "UPDATE entries SET title = ?3, link = ?4, summary = ?5, published_at = ?6
              WHERE feed_id = ?1 AND guid = ?2",
-            params![feed_id, item.guid, item.title, item.link, item.summary, published],
+            params![
+                feed_id,
+                item.guid,
+                item.title,
+                item.link,
+                item.summary,
+                published
+            ],
         )?;
         Ok(false)
     } else {
@@ -276,8 +287,7 @@ pub fn query_entries(conn: &Connection, query: &EntryQuery) -> Result<(i64, Vec<
     }
 
     let count_sql = format!("SELECT COUNT(*) FROM entries{where_sql}");
-    let total: i64 =
-        conn.query_row(&count_sql, params_from_iter(args.iter()), |r| r.get(0))?;
+    let total: i64 = conn.query_row(&count_sql, params_from_iter(args.iter()), |r| r.get(0))?;
 
     let mut page_args = args.clone();
     let limit_idx = page_args.len() + 1;

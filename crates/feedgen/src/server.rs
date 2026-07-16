@@ -55,16 +55,11 @@ pub async fn serve_forever(dir: impl Into<PathBuf>, listen: &str) -> Result<()> 
 }
 
 async fn accept_loop(listener: TcpListener, dir: PathBuf) {
-    loop {
-        match listener.accept().await {
-            Ok((stream, _peer)) => {
-                let dir = dir.clone();
-                tokio::spawn(async move {
-                    let _ = handle_conn(stream, &dir).await;
-                });
-            }
-            Err(_) => break,
-        }
+    while let Ok((stream, _peer)) = listener.accept().await {
+        let dir = dir.clone();
+        tokio::spawn(async move {
+            let _ = handle_conn(stream, &dir).await;
+        });
     }
 }
 
@@ -256,8 +251,14 @@ mod tests {
 
     #[test]
     fn mime_by_ext() {
-        assert_eq!(mime_for(&PathBuf::from("a.xml")), "application/xml; charset=utf-8");
-        assert_eq!(mime_for(&PathBuf::from("a.atom")), "application/atom+xml; charset=utf-8");
+        assert_eq!(
+            mime_for(&PathBuf::from("a.xml")),
+            "application/xml; charset=utf-8"
+        );
+        assert_eq!(
+            mime_for(&PathBuf::from("a.atom")),
+            "application/atom+xml; charset=utf-8"
+        );
     }
 
     #[test]
