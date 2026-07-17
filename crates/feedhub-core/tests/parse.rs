@@ -203,6 +203,22 @@ fn malformed_xml_is_an_error() {
 }
 
 #[test]
+fn truncated_document_is_an_error() {
+    // Upstream cut the response off mid-element: the feed opens <rss>, <channel>,
+    // <item>, <title> and then simply ends. This must be reported as malformed,
+    // not silently accepted as a successful empty fetch.
+    let xml = concat!(
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n",
+        "<rss version=\"2.0\"><channel><title>Nightly</title>\n",
+        "<item><guid>n-1</guid><title>Release no",
+    );
+    assert!(matches!(
+        parse_feed(xml.as_bytes()),
+        Err(ParseError::Xml(_))
+    ));
+}
+
+#[test]
 fn non_feed_documents_are_rejected() {
     assert!(matches!(
         parse_feed(b"<html><body>hi</body></html>"),

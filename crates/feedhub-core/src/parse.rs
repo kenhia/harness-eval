@@ -201,7 +201,19 @@ pub fn parse_feed(input: &[u8]) -> Result<ParsedFeed, ParseError> {
     loop {
         match reader.read_event() {
             Err(e) => return Err(ParseError::Xml(e.to_string())),
-            Ok(Event::Eof) => break,
+            Ok(Event::Eof) => {
+                // A well-formed document has closed every element it opened, so
+                // reaching EOF with elements still on the stack means the body
+                // was truncated (e.g. an upstream server cut the response off
+                // mid-element). Treat that as malformed rather than silently
+                // returning whatever was collected before the cut.
+                if let Some(open) = path.last() {
+                    return Err(ParseError::Xml(format!(
+                        "unexpected end of document: <{open}> was not closed"
+                    )));
+                }
+                break;
+            }
             Ok(Event::Start(start)) => {
                 let name = local_name(&start);
                 path.push(name);

@@ -546,6 +546,24 @@ async fn a_broken_feed_does_not_disturb_the_others() {
 }
 
 #[tokio::test]
+async fn a_truncated_feed_is_recorded_as_an_error() {
+    // Upstream cut the response off mid-element. This must be reported as a parse
+    // failure, not a successful empty fetch that leaves the feed looking healthy.
+    let h = Harness::start().await;
+    let (feed, result) = h.add_and_refresh("truncated.xml").await;
+
+    assert_eq!(result.status, "error", "{result:?}");
+    assert_eq!(result.new_entries, 0);
+    assert!(result.error.is_some(), "a message describes the failure");
+
+    let feed = h.feed(feed.id).await;
+    let error = feed.last_error.expect("last_error recorded");
+    assert!(!error.is_empty());
+    assert_eq!(feed.entry_count, 0);
+    h.shutdown().await;
+}
+
+#[tokio::test]
 async fn an_oversized_feed_is_refused_rather_than_buffered() {
     let h = Harness::start().await;
 

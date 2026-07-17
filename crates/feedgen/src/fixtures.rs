@@ -223,6 +223,12 @@ pub const MALFORMED: &str = r#"<?xml version="1.0" encoding="utf-8"?>
 </rss>
 "#;
 
+/// A response the upstream server cut off mid-element: well-formed as far as it
+/// goes, but it never closes `<title>`, `<item>`, `<channel>` or `<rss>`.
+pub const TRUNCATED: &str = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n\
+    <rss version=\"2.0\"><channel><title>Nightly</title>\n\
+    <item><guid>n-1</guid><title>Release no";
+
 /// The whole corpus, in the order `make-fixtures` writes it.
 pub const FIXTURES: &[Fixture] = &[
     Fixture {
@@ -254,6 +260,11 @@ pub const FIXTURES: &[Fixture] = &[
         name: "malformed.xml",
         description: "Not well-formed XML: a mismatched closing tag. Fetching it must record last_error.",
         contents: MALFORMED,
+    },
+    Fixture {
+        name: "truncated.xml",
+        description: "Truncated response: the body ends mid-element with tags left open. Fetching it must record last_error, not report an empty success.",
+        contents: TRUNCATED,
     },
 ];
 
