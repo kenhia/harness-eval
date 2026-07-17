@@ -1,4 +1,4 @@
-# run_02.1 — organic bug-fix round (STATUS: setup)
+# run_02.1 — organic bug-fix round (STATUS: COMPLETE — graded, in final.md)
 
 Six of seven run_02 implementations failed C9/H12 identically (quick-xml
 streaming leniency: truncated/malformed XML silently becomes a

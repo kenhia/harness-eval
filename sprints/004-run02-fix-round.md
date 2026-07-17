@@ -30,9 +30,27 @@ report + 6 prompts (`prompts/NN-fix.md`), addendum tests, tooling
 (`run-eval.sh --tag/--suffix`, `run-acceptance.sh --fix`), `pre-fix`
 tags in all six staging repos, `.scratch/NN-fix-cmds.txt` helpers.
 
-## Remaining
+## Completed (2026-07-17)
 
-1. Six fix runs (Ken, serial, headless).
-2. Fix-delta grading prompts + two graders + short consensus.
-3. Combined report: whitepaper, infographic (with the 03/99 blurb),
-   README results, publish import (post-02.1 so trees include fixes).
+- Six fix runs, headless, zero interventions; all 26/26 + 3/3.
+- Mid-round incident **E1** (Copilot MCP approval gate, misdiagnosed
+  three times before probes isolated it): one run voided + rerun with
+  verified spine; ambient MCP uniformly absent on copilot cells;
+  tooling hardened (token scrubbing, profile logins, void protocol).
+  Full forensics in `_eval/run_02/FIX-ROUND.md`.
+- Delta grading + consensus: zero reconciliations (again). Fix field
+  93.5–99: gstack 99 > bare Claude 98 > kprojects 96 > StarterKit 95 >
+  Phoenix 94.5 > bare Copilot 94 — all four harness/control pairs to
+  the harness.
+- Combined report shipped: whitepaper, infographic (03/99
+  absence-by-passing blurb), lessons 22–33, README rewrite.
+- Publish import: `run-output/run_02/` + `history/run_02/*`,
+  `pre-run/run_02/*`, `pre-fix/run_02/*` refs; secret scan clean.
+
+## Headline findings
+
+The build round's 22.5-point spread traces to one dependency default
+(quick-xml vs roxmltree); six repos shipped and then identically fixed
+the same bug; the fix round inverted the build round (machinery paid on
+resume work). Executable acceptance produced zero grader
+reconciliations across 79 dimension cells in two rounds.

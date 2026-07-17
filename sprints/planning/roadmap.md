@@ -5,27 +5,25 @@
 > `_eval/ADDING-A-HARNESS.md`. Lessons driving all of this:
 > `_eval/run_01/report/lessons-learned.md`.
 
-## Now — run 02 (complex greenfield: feedhub)
+## Now — after run 02: reps and the combined report is shipped
 
-Run 02 is the "do the heavy harnesses pull their weight?" experiment.
-Decisions locked 2026-07-16: **Rust** workspace (feedd/feedctl/feedgen),
-**SQLite pinned**, **all 7 cells**, **headless** (covariate vs run 1).
+Run 02 + fix round 02.1 are COMPLETE and published (2026-07-17): spec,
+executable acceptance, 13 headless runs, zero-reconciliation grading,
+combined whitepaper/infographic/lessons, publish import. Records:
+sprint 004, `_eval/run_02/`, `run-output/run_02/`.
 
-Done in setup (sprint 003): spec with pinned edge semantics
-(`_eval/run_02/prompts/00-project-spec.md`), 7 prompts, executable sealed
-acceptance suite (core C1–C13 + hard H1–H12, hermetic pytest), rubric,
-staging repos (controls pre-run-tagged), cargo/rustup fake-HOME
-passthrough in run-eval.sh.
+Next up (pick per budget):
 
-Remaining (ordered — details in `_eval/run_02/README.md`):
-
-1. **Harness install refresh** into the 5 harness staging repos +
-   profile re-verification (Phoenix + gstack global pieces).
-2. **Dry-run shakedown** — throwaway control run, acceptance suite run
-   against its output (suite hasn't met a real implementation yet);
-   calibrates Rust-task cost/wall-clock.
-3. **Freeze** spec + suite at first real contender run; then execute the
-   field headless, one cell at a time.
+1. **Reps toward N≥3** on the run_02 field — the top-value spend
+   (variance is measured at ±44% wall / rank-affecting; see lessons
+   29). Needs the headless matrix driver (loop run-eval.sh over
+   prefixes.txt), a small tooling sprint.
+2. **v3 preflight hardening**: per-run MCP/tool availability manifest
+   (lesson 30), void protocol codified in ADDING-A-HARNESS (lesson 33).
+3. **Run 03 design**: behavior-preserving refactor or
+   resume-from-handoff cell (lesson 27 says press the resume axis —
+   that's where machinery paid); dependency-decision task idea from
+   lesson 25.
 
 ## Next
 

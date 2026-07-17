@@ -1,4 +1,4 @@
-# run_02 — complex greenfield: feedhub (STATUS: FROZEN — executing)
+# run_02 — complex greenfield: feedhub (STATUS: COMPLETE — build + fix round graded, published)
 
 **Frozen 2026-07-16** (after shakedown validation): the spec
 (`prompts/00-project-spec.md`), the prompt files, and the acceptance
