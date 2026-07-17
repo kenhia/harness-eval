@@ -44,13 +44,6 @@ fix-delta rubric (gstack 99 > bare Claude 98; kprojects 96, StarterKit
 95, Phoenix 94.5 > bare Copilot 94). Machinery that read as ceremony on
 greenfield turned into unprompted regression tests on the resume task.
 
-**Read the full story:**
-
-- 📄 [Run 02 white paper](_eval/run_02/report/whitepaper.md) — method, both rounds, the dependency finding, variance, threats
-- 🏁 [Run 02 final grades](_eval/run_02/grades/final.md) — build + fix consensus, zero reconciliations
-- 📊 [Run 02 infographic](_eval/run_02/report/infographic.html) ([rendered preview](https://htmlpreview.github.io/?https://github.com/kenhia/harness-eval/blob/main/_eval/run_02/report/infographic.html))
-- 🧭 [Run 02 lessons](_eval/run_02/report/lessons-learned.md) — lessons 22–33, input for eval v3
-
 ## Results — runs 1 + 1.5 (2026-07-15, small greenfield CLI)
 
 | rank | harness | repo | runner | score | acceptance | cost† | wall clock |
@@ -78,7 +71,16 @@ spending 3× as much for robustness margins the spec never asked for.
 05-vs-07 isolates the runner effect; 06-vs-07 isolates gstack's
 contribution — see the white paper's "Runner effect" section.
 
-**Read the full story:**
+## Read the full story
+
+### Run 02 + fix round 02.1
+
+- 📄 [White paper](_eval/run_02/report/whitepaper.md) — method, both rounds, the dependency finding, variance, threats
+- 🏁 [Final grades](_eval/run_02/grades/final.md) — build + fix consensus, zero reconciliations
+- 📊 [Infographic](_eval/run_02/report/infographic.html) ([rendered preview](https://htmlpreview.github.io/?https://github.com/kenhia/harness-eval/blob/main/_eval/run_02/report/infographic.html))
+- 🧭 [Lessons learned](_eval/run_02/report/lessons-learned.md) — lessons 22–33, input for eval v3
+
+### Runs 1 + 1.5
 
 - 📄 [White paper](_eval/run_01/report/whitepaper.md) — method, results, per-harness narratives, runner effect, threats to validity
 - 🏁 [Final grades](_eval/run_01/grades/final.md) — consensus scores, per-grader raw scores, reconciliation notes
