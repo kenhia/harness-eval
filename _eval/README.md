@@ -57,10 +57,21 @@ Rules (earned the hard way — see run_01 lessons 1, 16, 17):
   idle while other sessions refreshed the chain can hit "OAuth session
   expired and could not be refreshed". `run-eval.sh` preflight probes
   auth (cheap haiku call) and re-syncs `.credentials.json` from the real
-  `~/.claude` automatically for Claude runners. Copilot's stored token
-  has the same failure mode (plus a fake HOME hides the real
-  `~/.config/gh` fallback) — `run-eval.sh` injects a fresh
-  `COPILOT_GITHUB_TOKEN` from the real `gh auth token` at every launch.
+  `~/.claude` automatically for Claude runners.
+- **Copilot profiles: login + MCP approval are per-profile rituals.**
+  Auth lives in the desktop keyring/session store (do `/login` once per
+  profile, from your terminal); MCP servers imported from a
+  pre-existing `mcp-config.json` are UNAPPROVED until re-added via the
+  CLI's `/mcp add` (an approval gate GitHub enforces since 2026-07-16 —
+  unapproved servers are blocked or silently hidden). gh-token
+  injection (`run-eval.sh --inject-gh-token`) is a last resort: MCP is
+  policy-blocked under gh-CLI tokens.
+- **Fish users: never write `env HOME=~/...`** — fish does not expand
+  `~` after `HOME=`, so the process gets a LITERAL `~` home and mirrors
+  the profile tree into `./~/...` relative to cwd (including auth
+  state, which then "logs out" when you delete the junk dir). Use
+  `env HOME=$HOME/src/...` or an absolute path. `run-eval.sh` is
+  unaffected (absolute paths internally).
 
 ## Tooling (`_eval/bin/`)
 

@@ -87,16 +87,26 @@ bare controls resuming from nothing but the code.
   reset to `pre-fix`** (voided work preserved on branch `void/fix-e1`);
   02 rerun + 04 stay HELD until a profile session shows the servers
   connected again.
-  Impact and handling per cell (FINAL, decided 2026-07-17 — the policy
-  block is not resolvable on our side for now):
-  - **02: voided run stays void** (spineless AND it copied ~300MB of
-    the eval repo — sealed suite included — into its workspace:
-    contaminated regardless). **Rerun approved under the policy
-    caveat**: the fix-round row measures phoenix minus its MCP spine —
-    which is what GitHub policy gives every Copilot CLI user today —
-    while its run-02 build row had the spine. Build-vs-fix comparisons
-    for phoenix carry that confound; caveat travels to final.md, the
-    whitepaper, and the infographic.
+  Impact and handling per cell (FINAL, revised 2026-07-17 after the
+  approval-gate discovery):
+  - **02: voided run stays void (spineless). Rerun proceeds WITH the
+    spine, no caveat needed**: the "policy" turned out to be an
+    approval gate — MCP servers imported from a pre-existing
+    mcp-config.json are untrusted until (re)added through the CLI's own
+    `/mcp add`, which records approval. Re-adding `phoenix` in the real
+    profile restores the harness spine (verified: headless session
+    lists all six phoenix_* tools). klams/korg are deliberately NOT
+    re-approved — ambient MCP stays uniformly absent across the copilot
+    fix cells (parity with 01's kept run). Corrections to earlier E1
+    notes: (a) the `~/` dirs in the 02 staging repo were fish-tilde
+    artifacts — fish does NOT expand `~` in `env HOME=~/...`, so
+    interactive sessions run with a LITERAL `~` HOME and mirror the
+    profile path relative to cwd (~300MB of fresh copilot runtime
+    state, NOT eval-repo content — no sealed material was ever
+    exposed); (b) `/login` state lives in the desktop keyring +
+    session store, which is why fake-HOME logins behave confusingly
+    from non-desktop contexts. Fish-safe form for interactive profile
+    work: `env HOME=$HOME/src/... copilot` (or an absolute path).
   - **01 fix run: stands** — klams/korg ambient MCP absent, but
     StarterKit's machinery is fully repo-local (no MCP dependency).
   - **04: hold LIFTED** — with MCP blocked for every copilot cell, the
