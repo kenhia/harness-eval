@@ -18,6 +18,10 @@ pub enum ParseError {
     /// The underlying XML was malformed.
     #[error("malformed XML: {0}")]
     Xml(#[from] quick_xml::Error),
+    /// The document ended while elements were still open (e.g. a response
+    /// truncated mid-element by a broken upstream server).
+    #[error("malformed XML: unexpected end of document")]
+    Truncated,
     /// The XML did not look like an RSS or Atom feed.
     #[error("unrecognized feed format (expected RSS or Atom)")]
     UnknownFormat,
@@ -88,6 +92,12 @@ pub fn parse_feed(bytes: &[u8]) -> Result<ParsedFeed, ParseError> {
     };
     let mut cur: Option<ItemBuilder> = None;
 
+    // Nesting depth of elements the main loop has opened but not yet closed.
+    // Text elements are balanced internally by `read_text`, so they do not
+    // affect this counter. If EOF is reached with `depth > 0` the document was
+    // truncated mid-element.
+    let mut depth = 0i32;
+
     loop {
         buf.clear();
         let event = reader.read_event_into(&mut buf)?;
@@ -100,10 +110,14 @@ pub fn parse_feed(bytes: &[u8]) -> Result<ParsedFeed, ParseError> {
                 }
                 let fmt = match format {
                     Some(f) => f,
-                    None => continue,
+                    None => {
+                        depth += 1;
+                        continue;
+                    }
                 };
                 if is_container(fmt, &name) {
                     cur = Some(ItemBuilder::default());
+                    depth += 1;
                     continue;
                 }
                 // Atom links carry their target in attributes.
@@ -111,6 +125,7 @@ pub fn parse_feed(bytes: &[u8]) -> Result<ParsedFeed, ParseError> {
                     if let Some(item) = cur.as_mut() {
                         apply_atom_link(item, &e);
                     }
+                    depth += 1;
                     continue;
                 }
                 // Only read text for known leaf elements; containers such as
@@ -118,6 +133,8 @@ pub fn parse_feed(bytes: &[u8]) -> Result<ParsedFeed, ParseError> {
                 if is_text_element(fmt, &name) {
                     let text = read_text(&mut reader, &mut buf)?;
                     assign_text(fmt, &name, &text, &mut feed, &mut cur);
+                } else {
+                    depth += 1;
                 }
             }
             Event::Empty(e) => {
@@ -133,6 +150,7 @@ pub fn parse_feed(bytes: &[u8]) -> Result<ParsedFeed, ParseError> {
             }
             Event::End(e) => {
                 let name = local_name(e.name().as_ref());
+                depth -= 1;
                 if let Some(fmt) = format {
                     if is_container(fmt, &name) {
                         if let Some(item) = cur.take() {
@@ -143,6 +161,10 @@ pub fn parse_feed(bytes: &[u8]) -> Result<ParsedFeed, ParseError> {
             }
             _ => {}
         }
+    }
+
+    if depth > 0 {
+        return Err(ParseError::Truncated);
     }
 
     match format {
@@ -281,7 +303,7 @@ fn read_text(reader: &mut Reader<&[u8]>, buf: &mut Vec<u8>) -> Result<String, Pa
                     break;
                 }
             }
-            Event::Eof => break,
+            Event::Eof => return Err(ParseError::Truncated),
             _ => {}
         }
     }
@@ -377,6 +399,29 @@ mod tests {
     fn malformed_errors() {
         let r = parse_feed(b"<rss><channel><item></wrongtag></channel></rss>");
         assert!(r.is_err());
+    }
+
+    #[test]
+    fn truncated_mid_element_errors() {
+        // Upstream cut the response off mid-tag: well-formed so far, but the
+        // document ends before any element is closed. Must not be treated as a
+        // successful empty fetch.
+        let bytes = concat!(
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n",
+            "<rss version=\"2.0\"><channel><title>Nightly</title>\n",
+            "<item><guid>n-1</guid><title>Release no"
+        );
+        let r = parse_feed(bytes.as_bytes());
+        assert!(matches!(r, Err(ParseError::Truncated)), "got {r:?}");
+    }
+
+    #[test]
+    fn truncated_between_elements_errors() {
+        // Truncated at an element boundary (not mid-text): still open channel
+        // and rss elements at EOF.
+        let bytes = "<rss version=\"2.0\"><channel><title>X</title><item><guid>g</guid></item>";
+        let r = parse_feed(bytes.as_bytes());
+        assert!(matches!(r, Err(ParseError::Truncated)), "got {r:?}");
     }
 
     #[test]

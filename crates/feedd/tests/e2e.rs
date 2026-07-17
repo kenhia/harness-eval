@@ -116,8 +116,8 @@ async fn end_to_end_flow() {
     assert_eq!(r["new_entries"], 0);
     assert_eq!(r["status"], "ok");
 
-    // Add Atom + dates + malformed fixtures, refresh all.
-    for name in ["atom.xml", "dates.xml", "malformed.xml"] {
+    // Add Atom + dates + malformed + truncated fixtures, refresh all.
+    for name in ["atom.xml", "dates.xml", "malformed.xml", "truncated.xml"] {
         http.post(format!("{feedd}/api/feeds"))
             .json(&serde_json::json!({ "url": format!("{gen}/{name}") }))
             .send()
@@ -133,7 +133,7 @@ async fn end_to_end_flow() {
         .await
         .unwrap();
     let arr = results.as_array().unwrap();
-    assert_eq!(arr.len(), 4);
+    assert_eq!(arr.len(), 5);
     // The malformed feed must report an error but not break the others.
     let statuses: Vec<&str> = arr.iter().map(|r| r["status"].as_str().unwrap()).collect();
     assert!(statuses.contains(&"error"), "malformed feed should error");
@@ -155,6 +155,19 @@ async fn end_to_end_flow() {
         .find(|f| f["url"].as_str().unwrap().ends_with("malformed.xml"))
         .unwrap();
     assert!(!malformed["last_error"].is_null());
+
+    // A truncated (well-formed-so-far but cut off mid-element) feed must also
+    // be recorded as an error, not a successful empty fetch.
+    let truncated = feeds
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|f| f["url"].as_str().unwrap().ends_with("truncated.xml"))
+        .unwrap();
+    assert!(
+        !truncated["last_error"].is_null(),
+        "truncated feed should record last_error"
+    );
 
     // Entries: search filter (case-insensitive).
     let entries: Value = http

@@ -43,6 +43,11 @@ pub const FIXTURES: &[Fixture] = &[
         note: "Malformed XML (mismatched tags) — must be recorded as a feed error, not crash.",
         body: MALFORMED,
     },
+    Fixture {
+        name: "truncated.xml",
+        note: "Well-formed XML cut off mid-element (truncated upstream response) — must be recorded as a feed error, not a successful empty fetch.",
+        body: TRUNCATED,
+    },
 ];
 
 /// Write the fixture corpus (and a `README.md` describing it) into `dir`,
@@ -193,6 +198,10 @@ const MALFORMED: &str = r#"<?xml version="1.0" encoding="UTF-8"?>
   </channel>
 </rss>
 "#;
+
+const TRUNCATED: &str = r#"<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"><channel><title>Nightly</title>
+<item><guid>n-1</guid><title>Release no"#;
 
 #[cfg(test)]
 mod tests {

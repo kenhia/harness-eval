@@ -236,6 +236,8 @@ the target directory) covering:
   and a missing/unparseable date (stored as null).
 - `cdata.xml` — CDATA (verbatim) and XML entities (unescaped).
 - `malformed.xml` — malformed XML (recorded as a feed error, never a crash).
+- `truncated.xml` — well-formed XML cut off mid-element (a truncated upstream
+  response); recorded as a feed error, not a successful empty fetch.
 
 ## Project layout
 
