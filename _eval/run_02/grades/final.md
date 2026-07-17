@@ -105,3 +105,121 @@ whole-document parsing makes truncation an error by construction.
   thing on nearly every repo: the malformed-fixture blind spot (own
   fixture in the catchable flavor) and missing feedctl exit-code tests
   (present only in the two Claude-runner cells).
+
+## Fix round (run_02.1)
+
+Consensus by the fix-round consensus session (fable2, 2026-07-17) from
+both graders' fix sheets (`NN-fix-fable1.md` / `NN-fix-sol.md`, written
+independently). Six repos participated; 03 sat out absent-by-passing
+(context notes below). Run_02 build grades above are frozen and
+untouched — this section is the fix-round delta only, on the fix rubric
+(weights 35/30/20/10/5; see `../FIX-ROUND.md`).
+
+Acceptance was uniform: every cell 14/14 core, 12/12 hard, 3/3 fix
+addendum (`runs/NN-fix-acceptance.txt`), and all six fixes landed at
+the XML parse layer with generic truncation detection (no sample- or
+zero-items-shaped heuristics), so fix correctness carried no spread.
+Across the 30 dimension cells **no gap reached the ≥2 reconciliation
+threshold** (24 cells agree exactly; 6 differ by exactly 1), so no
+reconciliation round was held and every consensus cell is the
+two-grader mean (halves allowed). No factual disputes arose — both
+graders cite identical acceptance results and runlog metrics (see
+`adjudication.md`, fix-round section).
+
+### Consensus scores
+
+| dim (weight) | 01-atv-starterkit | 02-atv-phoenix | 04-kprojects | 05-baseline | 06-gstack | 07-baseline-claude |
+|---|---:|---:|---:|---:|---:|---:|
+| fix correctness (35) | 5 | 5 | 5 | 5 | 5 | 5 |
+| fix quality (30) | 5 | 5 | 4.5 | 5 | 5 | 5 |
+| tests (20) | 4 | 5 | 5 | 3.5 | 5 | 4.5 |
+| scope & process (10) | 4.5 | 3.5 | 5 | 5 | 5 | 5 |
+| efficiency (5) | 5 | 2.5 | 4 | 5 | 4 | 5 |
+| **Weighted total** | **95** | **94.5** | **96** | **94** | **99** | **98** |
+
+### Fix-round ranking
+
+| rank | repo | harness | runner | total |
+|---|---|---|---|---:|
+| 1 | 06-gstack | gstack | Claude Code | 99 |
+| 2 | 07-baseline-claude | none (control — Claude runner) | Claude Code | 98 |
+| 3 | 04-kprojects | kprojects | Copilot CLI | 96 |
+| 4 | 01-atv-starterkit | ATV-StarterKit 2.6.3 | Copilot CLI | 95 |
+| 5 | 02-atv-phoenix | ATV-Phoenix | Copilot CLI | 94.5 |
+| 6 | 05-baseline | none (control — Copilot runner) | Copilot CLI | 94 |
+
+A 5-point spread — the tightest field of any round (run_02 build:
+22.5). With correctness uniform, the spread is entirely test depth,
+mechanism cleanliness, scope hygiene, and cost.
+
+### Raw per-grader scores (pre-consensus, fable1/sol)
+
+| dim | 01 | 02 | 04 | 05 | 06 | 07 |
+|---|---|---|---|---|---|---|
+| fix correctness | 5/5 | 5/5 | 5/5 | 5/5 | 5/5 | 5/5 |
+| fix quality | 5/5 | 5/5 | 4/5 | 5/5 | 5/5 | 5/5 |
+| tests | 4/4 | 5/5 | 5/5 | 3/4 | 5/5 | 4/5 |
+| scope & process | 4/5 | 4/3 | 5/5 | 5/5 | 5/5 | 5/5 |
+| efficiency | 5/5 | 3/2 | 4/4 | 5/5 | 4/4 | 5/5 |
+| weighted | 94/96 | 96/93 | 93/99 | 92/96 | 99/100 | 96/100 |
+
+### Reconciliation notes
+
+- **Zero reconciliations again** — every gap is exactly 1 point, each
+  an emphasis difference on agreed facts, absorbed by the mean:
+  - **01 scope (4/5):** fable1 docked the repeated `.atv` dirty tree
+    at done (only dirty tree of the round, same blemish as run_02);
+    sol judged the fix commit itself, which both call exemplary.
+  - **02 scope (4/3) and efficiency (3/2):** both graders flag the
+    same two facts — harness-state edits bundled into the fix commit
+    (`.phoenix-ralph/done-check.json` narrowed from `just check` to a
+    single e2e test, `.phoenix/trace.jsonl` committed) and the field's
+    slowest, costliest run (6m42s, 261.6 credits, 2.2× copilot-cell
+    median) — sol weighs both harder.
+  - **04 fix quality (4/5):** fable1 docked the mechanism (a mutable
+    depth counter threaded through four match arms — the most invasive
+    production change of the six, vs the others' one-place stack
+    check); sol credited the field's only typed error
+    (`ParseError::Truncated`) and the second EOF hole closed in
+    `read_text`. Same facts, different weighting of thoroughness vs
+    fragility.
+  - **05 tests (3/4) and 07 tests (4/5):** both graders note the same
+    gap — regression bodies that never stray from the bug report's own
+    repro sample (05's single unit test verbatim; 07's unit + e2e both
+    exact-repro-only, though multi-layer) — fable1 docks it one point
+    harder in each case.
+- **Rank shape diverged for the first time** (run_02's pre-consensus
+  orders were identical): fable1 ordered 06 > 02=07 > 01 > 04 > 05,
+  sol 07 > 04=06 > 01=05 > 02. In a 7-point-wide field, single-point
+  emphasis differences reorder the middle; the consensus mean lands
+  06 > 07 > 04 > 01 > 02 > 05. Both graders independently put 06 at or
+  tied for the top of their sheets and both put a Claude cell first.
+- **Shared findings, both sheets:** five of six fixes are literally the
+  same fix (consulting the open-element stack the parser already
+  maintained, in the `Event::Eof` arm); 04, whose parser had no stack,
+  added a depth counter plus a second EOF guard in `read_text` and the
+  only typed error variant. Tests are where the field spread: 02, 04,
+  06, 07 wired a `truncated.xml` fixture + e2e asserting the
+  user-visible failure path; 02 uniquely authored a well-formed-empty
+  guard that independently anticipates the F2 addendum trap; 05's
+  armor is one verbatim copy of the repro. On the copilot runner, cost
+  tracked test depth almost linearly (67.4 → 86.2 → 151.7 → 261.6
+  credits for 05 → 01 → 04 → 02).
+
+### Standing context notes
+
+- **03 absent-by-passing.** 03-working-skill-repo received no bug
+  report: its run_02 build passed 26/26 because roxmltree's strict
+  whole-document parsing made truncation an error by construction —
+  the absence is itself a result. With the ungraded 99 shakedown rep
+  also passing, 2 of 8 run_02 implementations chose strict parsing up
+  front; the other six converged on the identical quick-xml
+  Eof-leniency bug and all six then fixed it the same way.
+- **E1 environment note.** Ambient MCP (klams/korg) was uniformly
+  absent for all copilot fix cells (Copilot CLI MCP approval gate; full
+  incident and corrections in `../FIX-ROUND.md`). The phoenix harness
+  spine WAS present and verified for 02's graded rerun (the earlier
+  spineless attempt is void on branch `void/fix-e1`, unread by
+  graders). Claude cells' profile MCP was unaffected. The runner-level
+  ambient-MCP asymmetry is recorded as an environment covariate, not
+  scored.
