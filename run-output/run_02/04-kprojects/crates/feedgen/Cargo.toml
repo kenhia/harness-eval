@@ -1,0 +1,20 @@
+[package]
+name = "feedgen"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[lib]
+name = "feedgen"
+path = "src/lib.rs"
+
+[[bin]]
+name = "feedgen"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = { workspace = true }
+chrono = { workspace = true }
+clap = { workspace = true }
+tokio = { workspace = true }

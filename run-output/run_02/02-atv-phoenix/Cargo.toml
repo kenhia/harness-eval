@@ -1,0 +1,25 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/feedcore",
+    "crates/feedd",
+    "crates/feedctl",
+    "crates/feedgen",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+rust-version = "1.74"
+
+[workspace.dependencies]
+feedcore = { path = "crates/feedcore" }
+rusqlite = { version = "0.31", features = ["bundled"] }
+quick-xml = "0.31"
+chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tiny_http = "0.12"
+ureq = "2"
+clap = { version = "4", features = ["derive"] }

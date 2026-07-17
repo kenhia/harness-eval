@@ -1,0 +1,12 @@
+[package]
+name = "feedcore"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Shared feed parsing and common types for feedhub"
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+chrono = { workspace = true }
+quick-xml = { workspace = true }

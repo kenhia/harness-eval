@@ -1,0 +1,15 @@
+[package]
+name = "feedgen"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "feedhub fixture tool: serves and generates test feeds"
+
+[[bin]]
+name = "feedgen"
+path = "src/main.rs"
+
+[dependencies]
+chrono = { workspace = true }
+tiny_http = { workspace = true }
+clap = { workspace = true }
