@@ -87,16 +87,23 @@ bare controls resuming from nothing but the code.
   reset to `pre-fix`** (voided work preserved on branch `void/fix-e1`);
   02 rerun + 04 stay HELD until a profile session shows the servers
   connected again.
-  Impact and handling per cell:
-  - **02 fix run: ran without the phoenix harness's MCP spine —
-    recommended VOID + rerun after policy is restored** (the round
-    exists to measure harness machinery; phoenix's was off). Run 02
-    main phoenix cell: verified unaffected.
+  Impact and handling per cell (FINAL, decided 2026-07-17 — the policy
+  block is not resolvable on our side for now):
+  - **02: voided run stays void** (spineless AND it copied ~300MB of
+    the eval repo — sealed suite included — into its workspace:
+    contaminated regardless). **Rerun approved under the policy
+    caveat**: the fix-round row measures phoenix minus its MCP spine —
+    which is what GitHub policy gives every Copilot CLI user today —
+    while its run-02 build row had the spine. Build-vs-fix comparisons
+    for phoenix carry that confound; caveat travels to final.md, the
+    whitepaper, and the infographic.
   - **01 fix run: stands** — klams/korg ambient MCP absent, but
-    StarterKit's machinery is fully repo-local (no MCP dependency);
-    noted as covariate.
-  - **04 (kprojects): hold until restored** — its conventions
-    reference korg/klams ambiently.
+    StarterKit's machinery is fully repo-local (no MCP dependency).
+  - **04: hold LIFTED** — with MCP blocked for every copilot cell, the
+    copilot sub-field is uniformly MCP-less (better within-runner
+    parity than a partial restore). kprojects' own "say so up front if
+    korg/klams unavailable" behavior is signal, not noise. Runner-level
+    asymmetry (Claude cells keep profile MCP) noted as covariate.
   - 05/06/07: no harness MCP dependency (Claude cells' profile MCP is
     not subject to GitHub policy); may run, with the runner-side
     ambient-MCP asymmetry noted (lesson 7 again: ambient-service
