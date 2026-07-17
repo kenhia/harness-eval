@@ -156,6 +156,16 @@ pub const MALFORMED: &str = r#"<?xml version="1.0" encoding="UTF-8"?>
 </rss>
 "#;
 
+/// Truncated XML: a broken upstream cut the response off mid-element, so the
+/// document simply stops — no closing tags at all. Distinct from `MALFORMED`,
+/// whose fault is a *mismatched* end tag: `check_end_names` catches that one at
+/// the bad tag, but a document that just ends reaches EOF with its elements
+/// still open. Both must produce a parse error recorded to `last_error`, never
+/// a silently successful empty fetch.
+pub const TRUNCATED: &str = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n\
+<rss version=\"2.0\"><channel><title>Nightly</title>\n\
+<item><guid>n-1</guid><title>Release no";
+
 /// The full corpus.
 pub const CORPUS: &[Fixture] = &[
     Fixture {
@@ -182,6 +192,11 @@ pub const CORPUS: &[Fixture] = &[
         name: "malformed.xml",
         purpose: "Malformed XML: an unclosed <item>. Must set last_error on its feed and leave other feeds untouched.",
         body: MALFORMED,
+    },
+    Fixture {
+        name: "truncated.xml",
+        purpose: "Truncated XML: the body ends mid-element with nothing closed, as a broken origin would leave it. Must set last_error, not report a successful empty fetch.",
+        body: TRUNCATED,
     },
 ];
 
@@ -250,10 +265,10 @@ mod tests {
     }
 
     #[test]
-    fn every_valid_fixture_parses_and_the_malformed_one_does_not() {
+    fn every_valid_fixture_parses_and_the_broken_ones_do_not() {
         for f in CORPUS {
             let result = feedhub_core::parse_feed(f.body.as_bytes());
-            if f.name == "malformed.xml" {
+            if matches!(f.name, "malformed.xml" | "truncated.xml") {
                 assert!(result.is_err(), "{} must not parse", f.name);
             } else {
                 assert!(result.is_ok(), "{} must parse: {:?}", f.name, result.err());

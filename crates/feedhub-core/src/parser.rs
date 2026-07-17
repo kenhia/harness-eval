@@ -390,7 +390,22 @@ pub fn parse_feed(bytes: &[u8]) -> Result<ParseOutcome, ParseError> {
             .map_err(|e| ParseError::Xml(e.to_string()))?;
 
         match event {
-            Event::Eof => break,
+            Event::Eof => {
+                // `check_end_names` only rejects *mismatched* end tags; it does
+                // not fire when the document simply stops. A body truncated
+                // mid-element by a broken origin therefore reaches EOF with its
+                // elements still open, and would otherwise be salvaged as a
+                // successful parse of whatever entries had already closed (often
+                // zero). A well-formed document has popped its root by now, so a
+                // non-empty stack means the document ended early.
+                if !st.stack.is_empty() {
+                    return Err(ParseError::Xml(format!(
+                        "unexpected end of document: unclosed <{}>",
+                        st.stack.last().map(String::as_str).unwrap_or_default()
+                    )));
+                }
+                break;
+            }
             Event::Start(e) => st.open(&e, &ns)?,
             Event::Empty(e) => {
                 // Self-closing: opens and closes in one event.
@@ -615,6 +630,28 @@ mod tests {
     #[test]
     fn malformed_xml_is_an_error() {
         let err = parse_feed(b"<rss><channel><item></channel></rss>").unwrap_err();
+        assert!(matches!(err, ParseError::Xml(_)), "got {err:?}");
+    }
+
+    #[test]
+    fn a_truncated_document_is_an_error_not_an_empty_feed() {
+        // A broken origin cut the response off mid-element. quick-xml reaches
+        // EOF with <rss>/<channel>/<item>/<title> all still open; the item
+        // never closes, so it would otherwise be salvaged as a successful parse
+        // of zero entries — hiding the failure behind last_error: null.
+        let truncated = concat!(
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n",
+            "<rss version=\"2.0\"><channel><title>Nightly</title>\n",
+            "<item><guid>n-1</guid><title>Release no"
+        );
+        let err = parse_feed(truncated.as_bytes()).unwrap_err();
+        assert!(matches!(err, ParseError::Xml(_)), "got {err:?}");
+    }
+
+    #[test]
+    fn an_unclosed_root_element_is_an_error() {
+        // The simplest truncation: the root itself never closes.
+        let err = parse_feed(b"<rss version=\"2.0\"><channel></channel>").unwrap_err();
         assert!(matches!(err, ParseError::Xml(_)), "got {err:?}");
     }
 

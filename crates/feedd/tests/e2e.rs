@@ -337,6 +337,31 @@ async fn a_malformed_feed_records_last_error_and_spares_its_neighbours() {
 }
 
 #[tokio::test]
+async fn a_truncated_feed_body_is_recorded_as_an_error_not_a_healthy_empty_fetch() {
+    // The reported bug: a broken origin returns a body cut off mid-element. It
+    // reaches EOF with its elements still open, so it used to be salvaged as a
+    // successful parse of zero entries — status "ok", last_error null — hiding a
+    // failing feed as a healthy but empty one.
+    let h = harness(true);
+    let id = h.add_fixture("truncated.xml").await;
+
+    let result = h.refresh(id).await;
+    assert_eq!(
+        result["status"], "error",
+        "a truncated body is a parse failure"
+    );
+    assert_eq!(result["new_entries"], 0);
+    assert!(result["error"].is_string());
+
+    let feed = h.feed(id).await;
+    assert!(
+        feed["last_error"].is_string(),
+        "the parse failure must land in last_error, not stay null"
+    );
+    assert_eq!(feed["entry_count"], 0, "no entries were stored");
+}
+
+#[tokio::test]
 async fn an_unreachable_origin_records_last_error_without_crashing_the_server() {
     let h = harness(true);
     // Port 1, not an ephemeral port obtained by bind-then-drop: the OS is free
