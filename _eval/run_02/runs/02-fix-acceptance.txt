@@ -1,0 +1,47 @@
+# acceptance: run_02 / 02-atv-phoenix
+# repo: /home/ken/src/ai-agents/harness-eval-runs/run_02/02-atv-phoenix @ a36d0b2
+# date: 2026-07-17T00:56:43+00:00
+
+============================= test session starts ==============================
+platform linux -- Python 3.13.13, pytest-9.1.1, pluggy-1.6.0 -- /home/ken/.cache/uv/builds-v0/.tmpp0he3o/bin/python
+rootdir: /home/ken/src/ai-agents/harness-eval/_eval/run_02/acceptance
+configfile: pytest.ini
+collecting ... collected 29 items
+
+_eval/run_02/acceptance/test_core.py::test_c2_health PASSED              [  3%]
+_eval/run_02/acceptance/test_core.py::test_c3_add_duplicate_invalid PASSED [  6%]
+_eval/run_02/acceptance/test_core.py::test_c4_rss_ingest PASSED          [ 10%]
+_eval/run_02/acceptance/test_core.py::test_c5_atom_ingest PASSED         [ 13%]
+_eval/run_02/acceptance/test_core.py::test_c6_dedupe PASSED              [ 17%]
+_eval/run_02/acceptance/test_core.py::test_c7_entries_query PASSED       [ 20%]
+_eval/run_02/acceptance/test_core.py::test_c8_delete PASSED              [ 24%]
+_eval/run_02/acceptance/test_core.py::test_c9_failure_isolation PASSED   [ 27%]
+_eval/run_02/acceptance/test_core.py::test_c10_feedctl_basics PASSED     [ 31%]
+_eval/run_02/acceptance/test_core.py::test_c11_feedctl_exit_codes PASSED [ 34%]
+_eval/run_02/acceptance/test_core.py::test_c12a_cargo_test PASSED        [ 37%]
+_eval/run_02/acceptance/test_core.py::test_c12b_fmt PASSED               [ 41%]
+_eval/run_02/acceptance/test_core.py::test_c12c_clippy PASSED            [ 44%]
+_eval/run_02/acceptance/test_core.py::test_c13_feedgen_serves PASSED     [ 48%]
+_eval/run_02/acceptance/test_fix.py::test_f1_alternate_truncation_errors PASSED [ 51%]
+_eval/run_02/acceptance/test_fix.py::test_f2_empty_valid_feed_is_ok PASSED [ 55%]
+_eval/run_02/acceptance/test_fix.py::test_f3_error_clears_on_recovery PASSED [ 58%]
+_eval/run_02/acceptance/test_hard.py::test_h1_rfc822_named_zones PASSED  [ 62%]
+_eval/run_02/acceptance/test_hard.py::test_h2_missing_date PASSED        [ 65%]
+_eval/run_02/acceptance/test_hard.py::test_h3_garbage_date PASSED        [ 68%]
+_eval/run_02/acceptance/test_hard.py::test_h4_atom_offsets PASSED        [ 72%]
+_eval/run_02/acceptance/test_hard.py::test_h5_atom_updated_fallback PASSED [ 75%]
+_eval/run_02/acceptance/test_hard.py::test_h6_half_open_window PASSED    [ 79%]
+_eval/run_02/acceptance/test_hard.py::test_h7_bom_cdata_entities PASSED  [ 82%]
+_eval/run_02/acceptance/test_hard.py::test_h8_update_in_place PASSED     [ 86%]
+_eval/run_02/acceptance/test_hard.py::test_h9_conditional_get PASSED     [ 89%]
+_eval/run_02/acceptance/test_hard.py::test_h10_pagination PASSED         [ 93%]
+_eval/run_02/acceptance/test_hard.py::test_h11_search PASSED             [ 96%]
+_eval/run_02/acceptance/test_hard.py::test_h12_refresh_all_isolation PASSED [100%]
+
+============================= 29 passed in 14.00s ==============================
+
+# exit code: 0
+# tier summary:
+#   core: 14/14
+#   hard: 12/12
+#   fix: 3/3
