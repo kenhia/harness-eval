@@ -178,6 +178,15 @@ pub fn parse(bytes: &[u8]) -> Result<ParsedFeed> {
     if !saw_root {
         return Err(FeedError::Parse("empty or non-XML document".into()));
     }
+    if let Some(open) = stack.last() {
+        // Reached end-of-document with elements still open: the body was
+        // truncated mid-stream (e.g. a broken upstream server cut the
+        // response). quick-xml treats this as a clean EOF, so detect it here
+        // and surface it as a parse failure rather than a healthy empty feed.
+        return Err(FeedError::Parse(format!(
+            "unexpected end of document: <{open}> not closed"
+        )));
+    }
     Ok(feed)
 }
 
@@ -343,5 +352,32 @@ mod tests {
     fn malformed_is_error() {
         assert!(parse(b"not xml at all <<<").is_err() || parse(b"").is_err());
         assert!(parse(b"").is_err());
+    }
+
+    #[test]
+    fn truncated_mid_text_is_error() {
+        // Upstream server cut the response mid-element (the bug report's repro):
+        // the document ends inside <title> with several elements still open.
+        let xml = b"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n\
+            <rss version=\"2.0\"><channel><title>Nightly</title>\n\
+            <item><guid>n-1</guid><title>Release no";
+        assert!(
+            parse(xml).is_err(),
+            "truncated document must be a parse error, not a healthy empty feed"
+        );
+    }
+
+    #[test]
+    fn truncated_unclosed_channel_is_error() {
+        let xml = br#"<rss version="2.0"><channel><title>T</title>"#;
+        assert!(parse(xml).is_err());
+    }
+
+    #[test]
+    fn well_formed_empty_feed_is_ok() {
+        // A complete document with no items is still valid (stack fully closed).
+        let f = parse(br#"<rss version="2.0"><channel><title>T</title></channel></rss>"#).unwrap();
+        assert_eq!(f.title.as_deref(), Some("T"));
+        assert!(f.items.is_empty());
     }
 }

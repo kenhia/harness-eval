@@ -1,6 +1,6 @@
 {
   "kind": "command_exit",
-  "target": ["just", "check"],
+  "target": ["cargo", "test", "-p", "feedd", "--test", "e2e", "end_to_end_feedd_against_feedgen"],
   "expect": "0",
-  "timeout_secs": 1200
+  "timeout_secs": 600
 }

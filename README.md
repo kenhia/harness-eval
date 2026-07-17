@@ -246,6 +246,7 @@ feedgen make-fixtures DIR
   | `dates.xml` | edge-case dates: zone names and a missing date |
   | `cdata.xml` | CDATA content and XML entities |
   | `malformed.xml` | intentionally malformed XML (drives `last_error`) |
+  | `truncated.xml` | a document cut off mid-element (drives `last_error`) |
   | `README.md` | describes the corpus |
 
 ## Project layout

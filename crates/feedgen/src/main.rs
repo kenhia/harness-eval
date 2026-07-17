@@ -176,6 +176,7 @@ fn make_fixtures(dir: &Path) -> i32 {
         ("dates.xml", DATES),
         ("cdata.xml", CDATA),
         ("malformed.xml", MALFORMED),
+        ("truncated.xml", TRUNCATED),
         ("README.md", CORPUS_README),
     ];
     for (name, body) in files {
@@ -287,6 +288,10 @@ const MALFORMED: &str = r#"<?xml version="1.0" encoding="UTF-8"?>
   </channel>
 "#;
 
+const TRUNCATED: &str = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n\
+<rss version=\"2.0\"><channel><title>Nightly</title>\n\
+<item><guid>n-1</guid><title>Release no";
+
 const CORPUS_README: &str = r#"# feedgen fixture corpus
 
 These files are served by `feedgen serve --dir <this dir>` for tests.
@@ -297,7 +302,8 @@ These files are served by `feedgen serve --dir <this dir>` for tests.
 | `atom.xml` | Valid Atom (RFC 4287) feed (alternate link, summary and content fallback). |
 | `dates.xml` | Edge-case dates: zone names (EST, PDT) and one item with a missing date (stored as null). |
 | `cdata.xml` | CDATA content taken verbatim plus XML entities that are unescaped in titles. |
-| `malformed.xml` | Intentionally malformed XML; a fetch of this file records `last_error` and never crashes the server. |
+| `malformed.xml` | Intentionally malformed XML (mismatched tags); a fetch of this file records `last_error` and never crashes the server. |
+| `truncated.xml` | A well-started document cut off mid-element (a broken upstream response); a fetch records `last_error` rather than a silent empty success. |
 
 All timestamps are normalized to UTC (RFC 3339, `Z`) when stored by `feedd`.
 "#;

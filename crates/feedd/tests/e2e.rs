@@ -162,6 +162,7 @@ fn end_to_end_feedd_against_feedgen() {
         "dates.xml",
         "cdata.xml",
         "malformed.xml",
+        "truncated.xml",
     ] {
         assert!(fixtures.join(f).exists(), "missing fixture {f}");
     }
@@ -289,11 +290,27 @@ fn end_to_end_feedd_against_feedgen() {
     assert_eq!(rssfeed["entry_count"], 2);
     assert!(rssfeed["last_error"].is_null());
 
+    // Truncated feed (well-started document cut off mid-element by a broken
+    // upstream) must also error and record last_error — not a silent empty
+    // success — while leaving other feeds untouched.
+    let trunc_id = add_feed(&api, &gen_base, "truncated.xml");
+    let r = refresh(&api, trunc_id);
+    assert_eq!(r["status"], "error", "truncated should error: {r}");
+    assert_eq!(r["new_entries"], 0, "truncated ingests nothing: {r}");
+    let (_c, truncfeed) = get_json(&format!("{api}/api/feeds/{trunc_id}"));
+    assert!(
+        !truncfeed["last_error"].is_null(),
+        "truncated feed must record last_error"
+    );
+    let (_c, rssfeed) = get_json(&format!("{api}/api/feeds/{rss_id}"));
+    assert_eq!(rssfeed["entry_count"], 2);
+    assert!(rssfeed["last_error"].is_null());
+
     // refresh-all returns per-feed results including the feed id.
     let (code, all) = post_empty(&format!("{api}/api/refresh"));
     assert_eq!(code, 200);
     let arr = all.as_array().unwrap();
-    assert_eq!(arr.len(), 4);
+    assert_eq!(arr.len(), 5);
     assert!(arr.iter().all(|r| r.get("feed_id").is_some()));
 
     // Delete cascade: removing the feed removes its entries.
