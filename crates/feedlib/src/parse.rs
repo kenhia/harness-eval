@@ -110,7 +110,14 @@ pub fn parse_feed(bytes: &[u8]) -> Result<ParsedFeed, ParseError> {
     loop {
         match reader.read_event() {
             Err(e) => return Err(ParseError::Xml(e.to_string())),
-            Ok(Event::Eof) => break,
+            Ok(Event::Eof) => {
+                if let Some(open) = stack.last() {
+                    return Err(ParseError::Xml(format!(
+                        "unexpected end of document: <{open}> was never closed"
+                    )));
+                }
+                break;
+            }
             Ok(Event::Start(e)) => {
                 let name = local_lower(e.name().as_ref());
                 let parent = stack.last().cloned();
@@ -449,5 +456,16 @@ mod tests {
     fn malformed_is_error() {
         let bad = b"<rss><channel><item><title>oops</notclosed>";
         assert!(parse_feed(bad).is_err());
+    }
+
+    #[test]
+    fn truncated_document_is_error() {
+        // Upstream server cut the response off mid-element: the document is
+        // not well-formed (elements are left unclosed), so it must be a parse
+        // error rather than a successful empty fetch.
+        let truncated = b"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n\
+            <rss version=\"2.0\"><channel><title>Nightly</title>\n\
+            <item><guid>n-1</guid><title>Release no";
+        assert!(parse_feed(truncated).is_err());
     }
 }
