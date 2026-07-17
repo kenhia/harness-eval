@@ -1,21 +1,57 @@
 # harness-eval
 
 A comparative evaluation of AI coding-agent harnesses: the same model
-(Claude Opus 4.8), the same prompt, the same greenfield project — run once
-under each of five harnesses and twice with no harness at all, across two
-runners (GitHub Copilot CLI and Claude Code CLI), then graded by two
-independent AI reviewers with a consensus pass.
+(Claude Opus 4.8), the same prompt, the same project — run once under
+each of five harnesses and once with no harness per runner (GitHub
+Copilot CLI and Claude Code CLI), graded by two independent AI reviewers
+with a consensus pass. Two runs so far: a small greenfield CLI (run 1),
+and a multi-binary Rust service followed by a fix-your-own-bug round
+(run 02 + 02.1).
 
 > [!IMPORTANT]
-> **These results are from an initial exploration / proof of concept.**
-> What was tested is deliberately narrow: **one run per harness (n = 1)**,
-> each given a **single command** to build a **single small greenfield
-> project**. The spreads on a 100-point scale are inside the noise floor —
-> do not over-read the ranking. I expect higher separation as the
-> evaluation harness improves and covers a wider scope of tasks (bug-fix
-> sessions, refactors, resuming half-finished work, repeated trials).
+> **Preliminary: N = 1 per cell.** Run 02 measured single-run variance
+> directly — the same cell, same frozen prompt, ran twice and spread
+> 44% in wall clock *and* landed on opposite sides of the decisive
+> correctness check. Cross-cutting patterns (the shared bug, the fix
+> round's 4-for-4 direction) are findings; point-level rankings are
+> weather. Reps accumulate as budget allows.
 
-## Results at a glance — runs 1 + 1.5
+## Results at a glance — run 02 + fix round 02.1 (2026-07-17)
+
+**Build** — feedhub, a three-binary Rust feed-aggregation service
+(REST + SQLite + RSS/Atom + hermetic fixture server), headless, under an
+executable sealed acceptance suite (26 tests, core + hard tiers):
+
+| rank | harness | repo | runner | score | acceptance | wall clock |
+|---|---|---|---|---:|---:|---:|
+| 1 | working-skill-repo (KB) | [`03`](run-output/run_02/03-working-skill-repo/) | Copilot CLI | **93.5** | **26/26** | 18m 01s |
+| 2 | none (control) | [`07`](run-output/run_02/07-baseline-claude/) | Claude Code | 84.5 | 24/26 | 36m 09s |
+| 3 | gstack | [`06`](run-output/run_02/06-gstack/) | Claude Code | 82.5 | 24/26 | 48m 11s |
+| 4 | none (control) | [`05`](run-output/run_02/05-baseline/) | Copilot CLI | 77.5 | 24/26 | 19m 35s |
+| 5 | kprojects | [`04`](run-output/run_02/04-kprojects/) | Copilot CLI | 75 | 24/26 | 20m 38s |
+| 6 | ATV-Phoenix | [`02`](run-output/run_02/02-atv-phoenix/) | Copilot CLI | 73.5 | 24/26 | 17m 16s |
+| 7 | ATV-StarterKit 2.6.3 | [`01`](run-output/run_02/01-atv-starterkit/) | Copilot CLI | 71 | 24/26 | 16m 22s |
+
+Six of seven builds shipped the **same bug** — quick-xml's streaming
+EOF read as success, so truncated feeds parsed as valid-and-empty. The
+two implementations that chose strict parsing (03, plus the ungraded
+shakedown rep) were immune by construction: the eval's sharpest
+discriminator was a dependency default. **Fix round (02.1)**: each
+failing repo got a bug report against its own code — all six fixed it
+completely (26/26 + a 3-test sealed addendum), five with literally the
+same fix, and **every harness beat its same-runner control** on the
+fix-delta rubric (gstack 99 > bare Claude 98; kprojects 96, StarterKit
+95, Phoenix 94.5 > bare Copilot 94). Machinery that read as ceremony on
+greenfield turned into unprompted regression tests on the resume task.
+
+**Read the full story:**
+
+- 📄 [Run 02 white paper](_eval/run_02/report/whitepaper.md) — method, both rounds, the dependency finding, variance, threats
+- 🏁 [Run 02 final grades](_eval/run_02/grades/final.md) — build + fix consensus, zero reconciliations
+- 📊 [Run 02 infographic](_eval/run_02/report/infographic.html) ([rendered preview](https://htmlpreview.github.io/?https://github.com/kenhia/harness-eval/blob/main/_eval/run_02/report/infographic.html))
+- 🧭 [Run 02 lessons](_eval/run_02/report/lessons-learned.md) — lessons 22–33, input for eval v3
+
+## Results — runs 1 + 1.5 (2026-07-15, small greenfield CLI)
 
 | rank | harness | repo | runner | score | acceptance | cost† | wall clock |
 |---|---|---|---|---:|---:|---:|---:|
@@ -50,6 +86,14 @@ contribution — see the white paper's "Runner effect" section.
 - 🧭 [Lessons learned](_eval/run_01/report/lessons-learned.md) — what runs 1 and 1.5 taught us about building the eval harness itself
 
 ## How it worked
+
+Run 02 upgraded the method (details in its white paper): **executable
+sealed acceptance** (hermetic pytest, core/hard tiers + fix addendum)
+replaced the prose checklist and grader-authored fixtures — grader
+reconciliations went from one per round to zero; runs went **headless**
+with fake-HOME profiles for both runners; run logs, timing, tokens, and
+versions are captured mechanically (`_eval/bin/`). Run 1 worked as
+follows:
 
 Seven clean repos, one harness installed per repo (committed, then tagged
 `pre-run` so agent-authored work is cleanly diffable); the two controls got
@@ -103,16 +147,23 @@ that agent authored. (Run 02 onward namespaces by run group:
 
 ## Caveats (the honest list)
 
-- n = 1 per harness; single task type; single model.
-- Two runners: cost units aren't comparable across them, and cross-runner
-  score comparisons carry the measured runner effect (05 vs 07: +3).
-- ATV-StarterKit bundles gstack, so runs 01 and 06 share DNA.
+- N = 1 per cell — and run 02 *measured* the consequence: same cell,
+  same prompt, 44% wall-clock spread and opposite outcomes on the
+  decisive correctness check across two reps.
+- Two runners: cost units aren't comparable across them — and Copilot's
+  credit unit itself drifted ~5× between run 1 and run 02 CLI versions
+  (premium requests and wall clock travel best).
+- Auto-updating CLIs mean runner versions drift, including mid-field
+  (recorded per run log).
 - The eval author is also the author of one contender (kprojects).
 - Harness artifacts self-identify, so grader blinding is imperfect.
-- Graders shared the machine environment (klams/korg MCP available to all
-  runs equally).
+- Run 1: klams/korg MCP available to all runs equally; run 02.1: ambient
+  MCP uniformly absent on Copilot cells (approval-gate incident E1 —
+  see `_eval/run_02/FIX-ROUND.md`), Claude cells kept theirs.
+- ATV-StarterKit 2.x bundled gstack in run 1 (01/06 shared DNA); 2.6.3
+  no longer vendors it.
 
-See the white paper's *threats to validity* section for the full treatment.
+See each run's white paper *threats to validity* for the full treatment.
 
 ## License
 
