@@ -1,0 +1,37 @@
+[package]
+name = "feedd"
+description = "The feedhub server: fetches and stores RSS/Atom feeds, exposes a REST API."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[lib]
+name = "feedd"
+path = "src/lib.rs"
+
+[[bin]]
+name = "feedd"
+path = "src/main.rs"
+
+[dependencies]
+feedhub-core.workspace = true
+
+anyhow.workspace = true
+axum.workspace = true
+chrono.workspace = true
+clap.workspace = true
+reqwest.workspace = true
+rusqlite.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+
+[dev-dependencies]
+# Dev-only, so no cycle and nothing test-shaped reaches the release graph.
+feedgen.workspace = true
+reqwest = { workspace = true, features = ["json"] }
+tempfile = "3"

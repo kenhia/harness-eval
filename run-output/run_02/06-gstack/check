@@ -1,0 +1,18 @@
+#!/usr/bin/env sh
+# Every gate feedhub must pass, in the order that fails fastest.
+#
+# Identical to `just check`, but with no dependency beyond cargo — so this is
+# the copy CI and a first-time contributor can both run.
+set -eu
+
+run() {
+    printf '\n\033[1m==> %s\033[0m\n' "$*"
+    "$@"
+}
+
+run cargo fmt --all --check
+run cargo clippy --all-targets -- -D warnings
+run cargo test --workspace
+run cargo build --release
+
+printf '\n\033[32mAll checks passed.\033[0m\n'

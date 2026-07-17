@@ -1,0 +1,6 @@
+01-atv-starterkit|/lfg Fix the reported bug described below.
+02-atv-phoenix|/phoenix-goal "Fix the reported bug described below; done when the expected behavior is verified."
+04-kprojects|Fix the reported bug described below, following this repository's project conventions.
+05-baseline|Fix the reported bug described below.
+06-gstack|/autoplan Fix the reported bug described below; after the autonomous planning completes, implement the fix through to done.
+07-baseline-claude|Fix the reported bug described below.

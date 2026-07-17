@@ -1,0 +1,294 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>harness-eval · run 02 + fix round — results</title>
+<style>
+  :root {
+    color-scheme: light;
+    --page:        #f9f9f7;
+    --surface:     #fcfcfb;
+    --ink:         #0b0b0b;
+    --ink-2:       #52514e;
+    --ink-muted:   #898781;
+    --grid:        #e1e0d9;
+    --baseline:    #c3c2b7;
+    --ring:        rgba(11,11,11,0.10);
+    --score:       #2a78d6;
+    --score-soft:  rgba(42,120,214,0.12);
+    --cost:        #1baf7a;
+    --good:        #006300;
+    --track:       #f0efec;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) {
+      color-scheme: dark;
+      --page:        #0d0d0d;
+      --surface:     #1a1a19;
+      --ink:         #ffffff;
+      --ink-2:       #c3c2b7;
+      --ink-muted:   #898781;
+      --grid:        #2c2c2a;
+      --baseline:    #383835;
+      --ring:        rgba(255,255,255,0.10);
+      --score:       #3987e5;
+      --score-soft:  rgba(57,135,229,0.16);
+      --cost:        #199e70;
+      --good:        #0ca30c;
+      --track:       #232322;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --page:        #0d0d0d;
+    --surface:     #1a1a19;
+    --ink:         #ffffff;
+    --ink-2:       #c3c2b7;
+    --ink-muted:   #898781;
+    --grid:        #2c2c2a;
+    --baseline:    #383835;
+    --ring:        rgba(255,255,255,0.10);
+    --score:       #3987e5;
+    --score-soft:  rgba(57,135,229,0.16);
+    --cost:        #199e70;
+    --good:        #0ca30c;
+    --track:       #232322;
+  }
+  :root[data-theme="light"] {
+    color-scheme: light;
+    --page:        #f9f9f7;
+    --surface:     #fcfcfb;
+    --ink:         #0b0b0b;
+    --ink-2:       #52514e;
+    --ink-muted:   #898781;
+    --grid:        #e1e0d9;
+    --baseline:    #c3c2b7;
+    --ring:        rgba(11,11,11,0.10);
+    --score:       #2a78d6;
+    --score-soft:  rgba(42,120,214,0.12);
+    --cost:        #1baf7a;
+    --good:        #006300;
+    --track:       #f0efec;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--page);
+    color: var(--ink);
+    font: 16px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 48px 24px 72px; display: flex; flex-direction: column; gap: 40px; }
+  .mono { font-family: ui-monospace, "Cascadia Code", "SF Mono", Consolas, monospace; }
+
+  header .eyebrow {
+    font-family: ui-monospace, "Cascadia Code", "SF Mono", Consolas, monospace;
+    font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--ink-muted); margin-bottom: 12px;
+  }
+  header h1 {
+    margin: 0 0 12px; font-size: clamp(26px, 4.5vw, 38px); line-height: 1.15;
+    font-weight: 750; letter-spacing: -0.015em; text-wrap: balance;
+  }
+  header .thesis { margin: 0; max-width: 62ch; color: var(--ink-2); font-size: 17px; }
+  header .thesis strong { color: var(--ink); }
+
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
+  .tile {
+    background: var(--surface); border: 1px solid var(--ring); border-radius: 8px;
+    padding: 16px 18px 14px;
+  }
+  .tile .k { font-size: 30px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.1; }
+  .tile .k small { font-size: 15px; font-weight: 600; color: var(--ink-2); }
+  .tile .l { margin-top: 6px; font-size: 13px; color: var(--ink-muted); line-height: 1.4; }
+
+  section h2 {
+    margin: 0 0 4px; font-size: 19px; font-weight: 700; letter-spacing: -0.01em;
+  }
+  section .sub { margin: 0 0 18px; font-size: 14px; color: var(--ink-muted); max-width: 68ch; }
+
+  .chart { background: var(--surface); border: 1px solid var(--ring); border-radius: 8px; padding: 20px 22px 14px; }
+  .chart + .chart { margin-top: 12px; }
+  .chart .chart-label {
+    font-family: ui-monospace, Consolas, monospace; font-size: 11.5px;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-muted);
+    margin: 0 0 8px;
+  }
+  .row {
+    display: grid; grid-template-columns: 168px 1fr 84px; align-items: center;
+    gap: 12px; padding: 7px 0;
+  }
+  .row + .row { border-top: 1px solid transparent; }
+  .row:hover { background: var(--score-soft); border-radius: 6px; }
+  .row .name { font-size: 14px; font-weight: 600; text-align: right; line-height: 1.25; }
+  .row .name .h { display: block; font-size: 11.5px; font-weight: 500; color: var(--ink-muted); }
+  .track { position: relative; height: 20px; background: var(--track); border-radius: 0 4px 4px 0; }
+  .fill {
+    position: absolute; inset: 0 auto 0 0; border-radius: 0 4px 4px 0;
+    background: var(--score); min-width: 2px;
+  }
+  .fill.cost { background: var(--cost); }
+  .fill.control {
+    background: transparent; border: 2px solid var(--score);
+  }
+  .fill.control.cost { border-color: var(--cost); }
+  .row .val {
+    font-family: ui-monospace, "Cascadia Code", "SF Mono", Consolas, monospace;
+    font-size: 13.5px; font-variant-numeric: tabular-nums; white-space: nowrap;
+  }
+  .row .val small { color: var(--ink-muted); font-size: 11.5px; }
+  .axis {
+    display: grid; grid-template-columns: 168px 1fr 84px; gap: 12px;
+    font-family: ui-monospace, Consolas, monospace; font-size: 11px; color: var(--ink-muted);
+    padding-top: 8px; margin-top: 4px; border-top: 1px solid var(--grid);
+  }
+  .axis .ticks { display: flex; justify-content: space-between; }
+  .chip {
+    display: inline-block; font-family: ui-monospace, Consolas, monospace;
+    font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase;
+    border: 1px solid var(--ring); border-radius: 999px; padding: 1px 8px;
+    color: var(--ink-muted); vertical-align: 1px;
+  }
+
+  .duo { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
+
+  .verdicts { display: flex; flex-direction: column; gap: 8px; }
+  .verdict {
+    display: grid; grid-template-columns: 44px 200px 1fr; gap: 14px; align-items: baseline;
+    background: var(--surface); border: 1px solid var(--ring); border-radius: 8px;
+    padding: 13px 18px;
+  }
+  .verdict .rank {
+    font-family: ui-monospace, Consolas, monospace; font-size: 20px; font-weight: 700;
+    color: var(--score); font-variant-numeric: tabular-nums;
+  }
+  .verdict .who { font-weight: 650; font-size: 14.5px; line-height: 1.3; }
+  .verdict .who .h { display: block; font-weight: 500; font-size: 12px; color: var(--ink-muted); }
+  .verdict .line { font-size: 14.5px; color: var(--ink-2); margin: 0; }
+
+  .callout {
+    background: var(--surface); border: 1px solid var(--ring); border-left: 3px solid var(--score);
+    border-radius: 8px; padding: 16px 20px; font-size: 15px; color: var(--ink-2); max-width: 100%;
+  }
+  .callout strong { color: var(--ink); }
+  .callout code {
+    font-family: ui-monospace, Consolas, monospace; font-size: 13px;
+    background: var(--track); border-radius: 4px; padding: 1px 5px;
+  }
+  .callout .delta {
+    font-family: ui-monospace, Consolas, monospace; font-size: 24px; font-weight: 700;
+    color: var(--ink); display: block; margin-bottom: 6px; font-variant-numeric: tabular-nums;
+  }
+
+  details { border: 1px solid var(--ring); border-radius: 8px; background: var(--surface); }
+  details summary {
+    cursor: pointer; padding: 12px 18px; font-size: 14px; font-weight: 600; color: var(--ink-2);
+  }
+  details[open] summary { border-bottom: 1px solid var(--grid); }
+  .tblwrap { overflow-x: auto; padding: 6px 12px 12px; }
+  table { border-collapse: collapse; font-size: 13.5px; width: 100%; min-width: 760px; }
+  th, td { padding: 7px 10px; text-align: right; font-variant-numeric: tabular-nums; }
+  th:first-child, td:first-child { text-align: left; }
+  thead th { color: var(--ink-muted); font-weight: 600; font-size: 12px; border-bottom: 1px solid var(--grid); }
+  tbody tr + tr td { border-top: 1px solid var(--grid); }
+  td.win { font-weight: 700; }
+
+  footer { font-size: 13px; color: var(--ink-muted); max-width: 72ch; line-height: 1.6; }
+  footer p { margin: 0 0 8px; }
+</style>
+
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">harness-eval · run 02 + fix round 02.1 · 2026-07-17 · kai · headless · Copilot CLI + Claude Code · Claude Opus 4.8</div>
+    <h1>Six of seven shipped the same bug. Then they each fixed their own.</h1>
+    <p class="thesis">Seven identical Rust builds of a three-binary feed service under an executable
+    sealed acceptance suite — then a bug report handed to each failing repo.
+    <strong>The build round's 22.5-point spread traces to one line of Cargo.toml</strong>; the fix
+    round's 5-point spread is pure test discipline, and <strong>every harness beat its
+    same-runner control at fixing its own code</strong>. Preliminary: N=1 per cell.</p>
+  </header>
+
+  <div class="tiles">
+    <div class="tile"><div class="k">6/7</div><div class="l">builds shared one root-cause bug: quick-xml's EOF read as success on truncated feeds</div></div>
+    <div class="tile"><div class="k">22.5 <small>pts</small></div><div class="l">build-round spread (run 1: 4.5) — the hard tier finally discriminated</div></div>
+    <div class="tile"><div class="k">0</div><div class="l">grader reconciliations across both rounds — executable acceptance killed the dispute class</div></div>
+    <div class="tile"><div class="k">4/4</div><div class="l">harness/control pairs where the harness won the fix round</div></div>
+  </div>
+
+  <section>
+    <h2>Build round — consensus weighted score</h2>
+    <p class="sub">Same seven cells as run 1, bigger task, executable acceptance (core 14 + hard 12).
+    Outlined bars are the harness-free controls. Only 03 passed 26/26; the six C9/H12 failures share
+    one root cause.</p>
+    <div class="chart">
+      <p class="chart-label">consensus score /100 · build (run_02)</p>
+      <div class="row"><div class="name">working-skill-repo<span class="h">03 · Copilot · 26/26</span></div><div class="track"><div class="fill" style="width:93.5%"></div></div><div class="val">93.5</div></div>
+      <div class="row"><div class="name">baseline (control)<span class="h">07 · Claude Code · 24/26</span></div><div class="track"><div class="fill control" style="width:84.5%"></div></div><div class="val">84.5</div></div>
+      <div class="row"><div class="name">gstack<span class="h">06 · Claude Code · 24/26</span></div><div class="track"><div class="fill" style="width:82.5%"></div></div><div class="val">82.5</div></div>
+      <div class="row"><div class="name">baseline (control)<span class="h">05 · Copilot · 24/26</span></div><div class="track"><div class="fill control" style="width:77.5%"></div></div><div class="val">77.5</div></div>
+      <div class="row"><div class="name">kprojects<span class="h">04 · Copilot · 24/26</span></div><div class="track"><div class="fill" style="width:75%"></div></div><div class="val">75</div></div>
+      <div class="row"><div class="name">ATV-Phoenix<span class="h">02 · Copilot · 24/26</span></div><div class="track"><div class="fill" style="width:73.5%"></div></div><div class="val">73.5</div></div>
+      <div class="row"><div class="name">ATV-StarterKit<span class="h">01 · Copilot · 24/26</span></div><div class="track"><div class="fill" style="width:71%"></div></div><div class="val">71</div></div>
+      <div class="axis"><span></span><div class="ticks"><span>0</span><span>25</span><span>50</span><span>75</span><span>100</span></div><span></span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Fix round — each agent repairs its own repo</h2>
+    <p class="sub">A realistic bug report (no tests supplied, none requested), fix-delta rubric.
+    All six fixed it completely — 26/26 plus the 3-test sealed addendum — so the spread is
+    unprompted regression tests, scope hygiene, and cost.</p>
+    <div class="chart">
+      <p class="chart-label">consensus score /100 · fix (run_02.1)</p>
+      <div class="row"><div class="name">gstack<span class="h">06 · 3m 44s</span></div><div class="track"><div class="fill" style="width:99%"></div></div><div class="val">99</div></div>
+      <div class="row"><div class="name">baseline (control)<span class="h">07 · 2m 57s</span></div><div class="track"><div class="fill control" style="width:98%"></div></div><div class="val">98</div></div>
+      <div class="row"><div class="name">kprojects<span class="h">04 · 3m 43s</span></div><div class="track"><div class="fill" style="width:96%"></div></div><div class="val">96</div></div>
+      <div class="row"><div class="name">ATV-StarterKit<span class="h">01 · 1m 53s</span></div><div class="track"><div class="fill" style="width:95%"></div></div><div class="val">95</div></div>
+      <div class="row"><div class="name">ATV-Phoenix<span class="h">02 · 6m 42s</span></div><div class="track"><div class="fill" style="width:94.5%"></div></div><div class="val">94.5</div></div>
+      <div class="row"><div class="name">baseline (control)<span class="h">05 · 1m 29s</span></div><div class="track"><div class="fill control" style="width:94%"></div></div><div class="val">94</div></div>
+      <div class="axis"><span></span><div class="ticks"><span>0</span><span>25</span><span>50</span><span>75</span><span>100</span></div><span></span></div>
+    </div>
+  </section>
+
+  <div class="callout">
+    <span class="delta">2 of 8</span>
+    <strong>Where was 03 in the fix round? It had nothing to fix.</strong> Its build chose
+    <code>roxmltree</code> — strict whole-document parsing that makes truncated XML an error
+    <em>by construction</em> — and passed all 26 checks, so it never received a bug report. The
+    ungraded shakedown rep (99, bare Claude) independently made the same choice and also passed:
+    2 of 8 implementations dodged the trap at <code>Cargo.toml</code> time. The other six picked
+    <code>quick-xml</code>, hand-rolled the same event loop, wrote the same too-friendly fixture,
+    and shipped the same bug — then produced <em>literally the same fix</em>. The eval's sharpest
+    discriminator was a dependency default, not reasoning depth.
+  </div>
+
+  <div class="callout">
+    <span class="delta">±44%</span>
+    <strong>Why "preliminary":</strong> the control cell ran twice with the identical frozen prompt
+    (shakedown + cell 07): 52m vs 36m wall at identical token throughput — and the two reps landed
+    on opposite sides of the decisive C9 check. Single-run rankings sit inside trajectory variance;
+    the shared-bug finding and the fix round's 4-for-4 direction are the robust results. N≥3 reps
+    accumulate as budget allows.
+  </div>
+
+  <section>
+    <h2>Verdicts</h2>
+    <div class="verdicts">
+      <div class="verdict"><div class="rank">1</div><div class="who">working-skill-repo (KB)<span class="h">build 93.5 · fix —</span></div><p class="line">Only full pass; cleanest workspace; sat out the fix round by having nothing to fix.</p></div>
+      <div class="verdict"><div class="rank">2</div><div class="who">bare Claude Code<span class="h">build 84.5 · fix 98</span></div><p class="line">Strongest bare configuration in both rounds — but its fix tests never left the bug report's sample.</p></div>
+      <div class="verdict"><div class="rank">3</div><div class="who">gstack<span class="h">build 82.5 · fix 99</span></div><p class="line">Still spends 2× tokens; this time the spending bought the build's best tests and the fix round's win.</p></div>
+      <div class="verdict"><div class="rank">4</div><div class="who">bare Copilot<span class="h">build 77.5 · fix 94</span></div><p class="line">Second-best build value; fix-round floor — bare models fix bugs fine but don't armor them.</p></div>
+      <div class="verdict"><div class="rank">5</div><div class="who">kprojects<span class="h">build 75 · fix 96</span></div><p class="line">Mid-field build; best Copilot fix cell — sprint machinery finally paid on the resume task.</p></div>
+      <div class="verdict"><div class="rank">6</div><div class="who">ATV-Phoenix<span class="h">build 73.5 · fix 94.5</span></div><p class="line">Build indistinguishable from control; solid fix marred by harness state in the commit at 2.2× median cost.</p></div>
+      <div class="verdict"><div class="rank">7</div><div class="who">ATV-StarterKit<span class="h">build 71 · fix 95</span></div><p class="line">Weakest build tests and a dirty-tree habit; crisp minimal fix — machinery idle either way.</p></div>
+    </div>
+  </section>
+
+  <footer>
+    <p>Method: frozen spec with pinned edge semantics; hermetic executable acceptance (sealed, two
+    tiers + fix addendum); headless zero-intervention runs; two independent LLM graders calibrated
+    from prior sheets; consensus with frozen priors. Cost units are per-runner and drifted between
+    CLI versions — premium requests and wall clock travel best.</p>
+    <p class="mono">method &amp; caveats: _eval/run_02/report/whitepaper.md · grades: _eval/run_02/grades/final.md · incident log: _eval/run_02/FIX-ROUND.md</p>
+  </footer>
+
+</div>

@@ -1,0 +1,17 @@
+# 06-gstack — grader: sol
+| dim | score /5 | note |
+|---|---:|---|
+| correctness | 3 | The supplied acceptance result is core 13/14 and hard 11/12. The core failure mechanically caps the score at 3: truncated malformed XML reaches `Event::Eof` and is accepted, so both single-feed and refresh-all failure isolation report success instead of recording `last_error`. |
+| code quality | 4 | The workspace is strongly structured, with explicit models, namespace-aware parsing, true-instant integer query keys, disciplined SQLite transactions, and thin binary shims. It is also the field's largest implementation at 9,108 added lines, with an 886-line parser and 629-line client library; most complexity is reasoned, but the missing stack check at EOF is a central parser invariant despite comments claiming malformed documents cannot be salvaged. |
+| tests | 4 | The 149-test suite is exceptionally broad: it covers every pinned date zone, sub-second windows, dedupe counts, delete/refresh races, conditional request headers, polling, CLI exits, and several real local-HTTP end-to-end paths. Its malformed fixture contains mismatched closing tags, however, so the failure-isolation tests never exercise a document that simply ends with open elements and miss the acceptance defect. |
+| docs | 5 | `README.md` is sufficient to build, install, run, and operate all three binaries and documents every endpoint, object, fixture, query rule, and exit code. `PLAN.md` is also a substantive design record explaining revised storage, parser, and concurrency decisions, although its assertion that an unclosed tag still errors is disproved by acceptance. |
+| process | 5 | Ten focused commits progress through core, feedgen, feedd, feedctl, docs, and multiple review-driven fixes. The later parser, race, and test-stability commits show the plan and independent review changing shipped behavior rather than serving as empty ceremony. |
+| efficiency | 4 | Wall clock was 48m11s, 1.33× the 36m09s Claude control, which falls in the rubric's ≤1.5× band. Output tokens were nearly 2× control at 284.3k, consistent with the much larger artifact, but not enough to move it below the prescribed wall-clock band. |
+| autonomy | 5 | The run was headless with no human interventions. The agent declared completion and committed the final state itself. |
+**Weighted total:** 79/100
+
+**Best thing:** Independent review produced concrete fixes for namespace collisions, empty-field poisoning, date/storage consistency, store-error recording, and delete-during-refresh races.
+
+**Worst thing:** Despite extensive parser analysis and 149 tests, it never checked that the XML element stack is empty at EOF, so a basic malformed-document form is silently accepted.
+
+**Narrative (≤150 words):** This is a deeply engineered implementation whose design record, commit history, and tests show real review work rather than superficial harness ceremony. It handles namespaces, date precision, conditional requests, SQLite counting, races, and CLI behavior with unusual care. The cost is size and complexity, but most of it has a documented purpose and remains readable. The decisive miss is striking precisely because malformed XML is repeatedly claimed and tested: both parser and fixture tests use mismatched closing tags, while truncated XML reaches EOF without validating the remaining stack. That root cause loses one core and one hard acceptance check and caps correctness at 3. Relative to the Claude control, the run remains within 1.5× wall clock, earning efficiency 4.

@@ -1,0 +1,31 @@
+[package]
+name = "feedctl"
+description = "Command line client for the feedhub API."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[lib]
+name = "feedctl"
+path = "src/lib.rs"
+
+[[bin]]
+name = "feedctl"
+path = "src/main.rs"
+
+[dependencies]
+feedhub-core.workspace = true
+
+clap.workspace = true
+reqwest = { workspace = true, features = ["json"] }
+serde_json.workspace = true
+tokio.workspace = true
+
+[dev-dependencies]
+# Dev-only: lets the CLI tests serve a real feedd in-process. `CARGO_BIN_EXE_*`
+# is only injected for the package's own binaries, so there is no other way to
+# get a live server under `cargo test -p feedctl`.
+feedd.workspace = true
+feedgen.workspace = true
+tempfile = "3"

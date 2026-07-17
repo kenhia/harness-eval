@@ -1,0 +1,57 @@
+# Roadmap
+
+> The general plan for harness-eval. Detail lives in the sprint records;
+> the eval's own design docs are `_eval/README.md` and
+> `_eval/ADDING-A-HARNESS.md`. Lessons driving all of this:
+> `_eval/run_01/report/lessons-learned.md`.
+
+## Now — after run 02: reps and the combined report is shipped
+
+Run 02 + fix round 02.1 are COMPLETE and published (2026-07-17): spec,
+executable acceptance, 13 headless runs, zero-reconciliation grading,
+combined whitepaper/infographic/lessons, publish import. Records:
+sprint 004, `_eval/run_02/`, `run-output/run_02/`.
+
+Next up (pick per budget):
+
+1. **Reps toward N≥3** on the run_02 field — the top-value spend
+   (variance is measured at ±44% wall / rank-affecting; see lessons
+   29). Needs the headless matrix driver (loop run-eval.sh over
+   prefixes.txt), a small tooling sprint.
+2. **v3 preflight hardening**: per-run MCP/tool availability manifest
+   (lesson 30), void protocol codified in ADDING-A-HARNESS (lesson 33).
+3. **Run 03 design**: behavior-preserving refactor or
+   resume-from-handoff cell (lesson 27 says press the resume axis —
+   that's where machinery paid); dependency-decision task idea from
+   lesson 25.
+
+## Next
+
+- **Task-type matrix, one cell per run group** (v2 design; run_02.1
+  covered the bug-fix cell organically):
+  - run 03: **behavior-preserving refactor** on a messy repo, or
+    **resume-from-handoff** (a deliberately half-finished run 02 repo) —
+    lesson 27 argues for pressing the resume axis first;
+  - lesson 25 task idea: a build where a load-bearing dependency
+    decision is explicit and scoreable.
+
+## Later / Ideas
+
+- **N ≥ 3 reps per cell**; medians + spread, not single runs. Variance
+  is now measured, not hypothetical: the run 02 control cell ran twice
+  (99-shakedown vs 07) at 52m/207k vs 36m/145k output tokens — 44%
+  wall-clock spread, identical throughput, leakage forensically ruled
+  out. Personal-project budget means ≈21+ runs will take **weeks**:
+  publish run 02 as preliminary N=1 (caveat stated prominently), then
+  accumulate reps as time/money allow and refine. Needs the headless
+  matrix driver (a justfile/script looping run-eval.sh `--headless`) —
+  mechanics exist, orchestration doesn't.
+- **Harness × runner axis** where dual-target harnesses exist (kprojects,
+  possibly others) — lesson 15 showed the runner effect is as large as
+  the harness effect.
+- Third grader identity, or CI-run acceptance so graders never touch
+  objective checks at all.
+- Model axis (same harness, different model) once per-cell costs are
+  understood.
+- Automated secret-scan step folded into the publish-import tooling.
+
