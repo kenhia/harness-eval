@@ -37,6 +37,30 @@ Next up (pick per budget):
 
 ## Later / Ideas
 
+- **ksandbox runs** (proposed 2026-07-17): containerize cells on the
+  ksandbox Docker host (kvllm precedent: docker context over ssh,
+  per-episode containers, MaxStartups fix known). Kills the environment
+  hoops structurally: image-pinned runner versions (no more mid-field
+  CLI drift), no ambient env leaks, mechanical environment manifest
+  (image digest), safe parallel reps, blast-radius isolation for
+  model-generated code. Path: `run-eval.sh --sandbox`, pilot Claude
+  cells (file-based auth — trivial), spike Copilot auth in a headless
+  container (keyring-less login fallback + does /mcp add approval
+  survive?) before that side. Containers, not VMs; needs egress (API,
+  crates.io, tailnet MCP) so isolation ≠ hermeticity.
+- **Model-capability axis** (Mark's question, 2026-07-17): does harness
+  value grow as model capability drops — or is there a floor where
+  machinery hurts? Each tier = its own field with own controls, ranked
+  independently; cross-tier statistic = harness-minus-control DELTA;
+  executable acceptance tallies compare objectively across tiers.
+  Rung 1 (cheap, no infra): Haiku 4.5 tier on existing runners via
+  --model. Rung 2: local models via Copilot CLI BYOK -> kvllm's vLLM
+  endpoint (same runner + harnesses, only the model swaps); gate each
+  model on a bare-control tool-loop shakedown. Use run 1's loglens spec
+  for lower tiers (feedhub would zero them out) — port it an executable
+  acceptance suite. Synergy: free local inference + ksandbox
+  parallelism = the affordable place to pioneer N>=3 reps.
+
 - **N ≥ 3 reps per cell**; medians + spread, not single runs. Variance
   is now measured, not hypothetical: the run 02 control cell ran twice
   (99-shakedown vs 07) at 52m/207k vs 36m/145k output tokens — 44%
