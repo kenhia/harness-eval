@@ -1,0 +1,7 @@
+01-atv-starterkit|/lfg Build the loglens CLI described below, start to finish.
+02-atv-phoenix|/phoenix-goal "Build the loglens CLI described below to the stated definition of done."
+03-working-skill-repo|kb-start "Build the loglens CLI described below, start to finish."
+04-kprojects|Build the loglens CLI described below, start to finish, following this repository's project conventions.
+05-baseline|Build the loglens CLI described below, start to finish.
+06-gstack|/autoplan Build the loglens CLI described below, start to finish; after the autonomous planning completes, implement the plan through to the definition of done.
+07-baseline-claude|Build the loglens CLI described below, start to finish.
