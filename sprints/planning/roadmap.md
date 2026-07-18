@@ -5,27 +5,37 @@
 > `_eval/ADDING-A-HARNESS.md`. Lessons driving all of this:
 > `_eval/run_01/report/lessons-learned.md`.
 
-## Now — after run 02: reps and the combined report is shipped
+## Now — sprint 005: reps infrastructure + the Haiku tier (decided 2026-07-18)
 
-Run 02 + fix round 02.1 are COMPLETE and published (2026-07-17): spec,
-executable acceptance, 13 headless runs, zero-reconciliation grading,
-combined whitepaper/infographic/lessons, publish import. Records:
-sprint 004, `_eval/run_02/`, `run-output/run_02/`.
+One unit: exercise new isolation on cheap runs, produce the first reps,
+answer Mark's rung-1 question.
 
-Next up (pick per budget):
+1. **Matrix driver** — loop run-eval.sh over a run group's prefixes,
+   serial by default; **model + provider endpoint are parameters** (the
+   gemma tier next sprint must be a config change, not a tooling
+   change).
+2. **ksandbox pilot** — `run-eval.sh --sandbox` with Claude cells
+   first. Auth: one-time `claude setup-token` on kai → long-lived token
+   in the sandbox env (no per-run manual auth, no credential-snapshot
+   rotation). Copilot side: one-container auth spike (keyring-less
+   login persistence + does /mcp add approval survive?) before
+   committing it.
+3. **Haiku 4.5 tier on the run_01 loglens scenario** (per Ken: stick to
+   loglens for sub-frontier tiers; revisit feedhub only if Haiku rocks
+   it). Prereq: **port loglens acceptance to an executable suite**
+   (run_02 pytest pattern, core + hard tiers) and validate it against
+   the seven graded `run-output/run_01/` trees — which doubles as a
+   retroactive would-it-have-discriminated-run-1 finding.
 
-1. **Reps toward N≥3** on the run_02 field — the top-value spend
-   (variance is measured at ±44% wall / rank-affecting; see lessons
-   29). Needs the headless matrix driver (loop run-eval.sh over
-   prefixes.txt), a small tooling sprint.
-2. **v3 preflight hardening**: per-run MCP/tool availability manifest
-   (lesson 30), void protocol codified in ADDING-A-HARNESS (lesson 33).
-3. **Run 03 design**: behavior-preserving refactor or
-   resume-from-handoff cell (lesson 27 says press the resume axis —
-   that's where machinery paid); dependency-decision task idea from
-   lesson 25.
+## Next — sprint 006: BYOK-kvllm-gemma tier
 
-## Next
+Copilot CLI BYOK -> kvllm's vLLM endpoint serving Gemma on the 5090:
+same runner + harnesses, only the model swaps. Gate on a bare-control
+tool-loop shakedown; own controls, own scale, harness-minus-control
+delta is the cross-tier statistic; loglens scenario; free inference +
+ksandbox parallelism make this the N>=3 reps proving ground.
+
+## Later — task-type matrix
 
 - **Task-type matrix, one cell per run group** (v2 design; run_02.1
   covered the bug-fix cell organically):
