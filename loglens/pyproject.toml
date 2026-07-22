@@ -1,0 +1,36 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "loglens"
+version = "0.1.0"
+description = "Web access log analysis CLI tool"
+requires-python = ">=3.12"
+authors = [
+    {name = "Copilot", email = "223556219+Copilot@users.noreply.github.com"}
+]
+dependencies = [
+    "click>=8.1.0",
+]
+
+[project.scripts]
+loglens = "loglens.cli:main"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "ruff>=0.1.0",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
