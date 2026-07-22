@@ -1,0 +1,6 @@
+{
+  "kind": "command_exit",
+  "target": ["sh", "-c", "python -m pytest tests/ -q && python -m ruff check . && loglens --help >/dev/null 2>&1"],
+  "expect": 0,
+  "cwd": "/home/ken/src/ai-agents/harness-eval-runs/run_03/02-atv-phoenix"
+}
