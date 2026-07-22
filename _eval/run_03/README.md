@@ -26,20 +26,26 @@ across tiers.
 - `rubric.md` — run_02 structure, correctness mapping for 12-core/9-hard
 - `runs/`, `grades/` — as usual
 
+## Setup status (2026-07-18)
+
+- **Staging DONE** — all 7 repos at `pre-run`, clean trees, in
+  `~/src/ai-agents/harness-eval-runs/run_03/`. Harness versions match
+  run_02 exactly (StarterKit 2.6.3, KB source @ 34804ea, kprojects
+  current, gstack 1.60.1.0, phoenix profile MCP verified) — so run_03
+  vs run_01/02 isolates **model capability**, harness version held.
+- **Haiku id CONFIRMED** — `claude-haiku-4.5` is in Copilot's own
+  bundled model registry (`.cache/copilot/pkg/.../definitions/`); the
+  Claude-runner cells use `claude-haiku-4-5-20251001`. cells.tsv is
+  correct.
+- Real-HOME leak check clean.
+
 ## Remaining before the field runs
 
-1. **Staging repos + harness install refresh** — `new-run.sh run_03 …`
-   × 7, install the five harnesses at current versions (same process as
-   run_02's refresh; record versions), tag `pre-run`.
-2. **Verify the Copilot Haiku model id** (`claude-haiku-4.5` in
-   cells.tsv is inferred from the opus naming pattern — confirm via
-   `/model` or a cheap `-p` probe; fix the manifest if wrong).
-3. **Model-mismatch guard**: after the first cell, check the runlog's
-   session-metrics model line matches the manifest (Haiku, not a
-   silent fallback to a default model).
-4. **Freeze** prompts + suite at first contender run; then
+1. **Model-mismatch guard**: after the first cell, check the runlog's
+   session-metrics model line is Haiku, not a silent default fallback.
+2. **Freeze** prompts + suite at first contender run; then
    `run-matrix.sh run_03` (resumable; serial).
-5. Grading: fresh grader sessions, **calibrate to this tier's own
+3. Grading: fresh grader sessions, **calibrate to this tier's own
    controls** — do NOT anchor to run_01/run_02 sheets (different
    capability class); precedents still apply.
 

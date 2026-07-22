@@ -28,15 +28,35 @@ BYOK-kvllm-gemma (tooling here stays model/provider-agnostic for it).*
   README with pre-registered expected shapes for Mark's hypothesis vs
   the capability-floor story.
 
+## ksandbox — corrected + descoped (2026-07-18)
+
+Investigated the two failing Ken-commands; both were my error and they
+reframed the design (full note: `_eval/KSANDBOX.md`). Reality: **kai is
+the controller, ksandbox a Docker host driven over ssh** (context on
+kai, verified `docker -c sandbox run` works; ksandbox has no
+claude/copilot by design — runners live in images, auth injected). The
+`claude setup-token` action runs **on kai**, not ksandbox.
+
+**Descoped from this sprint.** run_03 is 5/7 Copilot cells, and
+Copilot-in-container auth is the unsolved spike (E1's keyring/approval
+tangle). A Claude-only sandbox can't run the majority-Copilot field, so
+fake-HOME stays the only full-field path. ksandbox becomes its own
+track (Claude-side proof + Copilot spike); it does not block run_03.
+
+## run_03 staging — DONE (2026-07-18)
+
+All 7 repos staged, `pre-run` tagged, harness versions held identical to
+run_02 (so the tier comparison isolates model capability). Haiku id
+confirmed from Copilot's bundled registry. Details in
+`_eval/run_03/README.md`.
+
 ## Remaining
 
-1. **ksandbox pilot** — `run-eval.sh --sandbox` + Claude runner image.
-   Ken actions: `claude setup-token` (one-time, interactive) and
-   confirm `docker context sandbox` reachable from kai. Then the
-   Copilot spike (keyring-less login persistence, /mcp approval
-   survival) gates that runner's containerization.
-2. **run_03 staging**: 7 staging repos + harness install refresh at
-   current versions; verify Copilot's Haiku model id (manifest guess:
-   `claude-haiku-4.5`); model-mismatch check on first cell.
-3. **Freeze + execute** the Haiku field (`run-matrix.sh run_03`),
-   grade against tier-own controls.
+1. **Execute the Haiku field**: `run-matrix.sh run_03` (Ken — needs
+   Copilot profile logins per E1; serial, resumable). Model-mismatch
+   check on cell 1.
+2. **Grade** against tier-own controls; report the cross-tier
+   harness-minus-control delta vs run_01's frontier deltas (Mark's
+   question).
+3. (Own track) ksandbox Claude-side proof + Copilot-in-container auth
+   spike.
