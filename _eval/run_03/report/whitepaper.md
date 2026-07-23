@@ -8,7 +8,7 @@ acceptance semantics all held constant. Preliminary: N=1 per cell.*
 
 ## The question
 
-Mark Rytting (author of working-skill-repo) asked the obvious question
+Mark (author of working-skill-repo) asked the obvious question
 after run 02: harnesses looked like ceremony at the frontier — but
 frontier models don't need much help. **Does harness value grow as
 model capability drops?** Runs 1 and 02 couldn't answer it: every cell
