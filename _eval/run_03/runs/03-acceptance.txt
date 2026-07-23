@@ -1,0 +1,81 @@
+# acceptance: run_03 / 03-working-skill-repo
+# repo: /home/ken/src/ai-agents/harness-eval-runs/run_03/03-working-skill-repo @ d958fd5
+# date: 2026-07-23T05:45:33+00:00
+
+============================= test session starts ==============================
+platform linux -- Python 3.13.13, pytest-9.1.1, pluggy-1.6.0 -- /home/ken/.cache/uv/builds-v0/.tmpdx1aLP/bin/python
+rootdir: /home/ken/src/ai-agents/harness-eval/_eval/run_03/acceptance
+configfile: pytest.ini
+collecting ... collected 21 items
+
+_eval/run_03/acceptance/test_core.py::test_a1_entrypoint PASSED          [  4%]
+_eval/run_03/acceptance/test_core.py::test_a2_summary_text PASSED        [  9%]
+_eval/run_03/acceptance/test_core.py::test_a3_summary_json PASSED        [ 14%]
+_eval/run_03/acceptance/test_core.py::test_a4_top_tiebreak PASSED        [ 19%]
+_eval/run_03/acceptance/test_core.py::test_a5_errors_window PASSED       [ 23%]
+_eval/run_03/acceptance/test_core.py::test_a6_hourly PASSED              [ 28%]
+_eval/run_03/acceptance/test_core.py::test_a7_malformed_stderr PASSED    [ 33%]
+_eval/run_03/acceptance/test_core.py::test_a8_exit_codes PASSED          [ 38%]
+_eval/run_03/acceptance/test_core.py::test_a9_pytest PASSED              [ 42%]
+_eval/run_03/acceptance/test_core.py::test_a10_ruff PASSED               [ 47%]
+_eval/run_03/acceptance/test_core.py::test_a11_fixture_delivered PASSED  [ 52%]
+_eval/run_03/acceptance/test_core.py::test_a12_one_command_check PASSED  [ 57%]
+_eval/run_03/acceptance/test_hard.py::test_h1_mixed_offsets_summary PASSED [ 61%]
+_eval/run_03/acceptance/test_hard.py::test_h2_aware_window_filter PASSED [ 66%]
+_eval/run_03/acceptance/test_hard.py::test_h3_z_suffix PASSED            [ 71%]
+_eval/run_03/acceptance/test_hard.py::test_h4_boundary_convention PASSED [ 76%]
+_eval/run_03/acceptance/test_hard.py::test_h5_hourly_across_days PASSED  [ 80%]
+_eval/run_03/acceptance/test_hard.py::test_h6_empty_window PASSED        [ 85%]
+_eval/run_03/acceptance/test_hard.py::test_h7_json_everywhere PASSED     [ 90%]
+_eval/run_03/acceptance/test_hard.py::test_h8_dash_bytes PASSED          [ 95%]
+_eval/run_03/acceptance/test_hard.py::test_h9_naive_since FAILED         [100%]
+
+=================================== FAILURES ===================================
+_____________________________ test_h9_naive_since ______________________________
+
+loglens = <function loglens.<locals>.run at 0x7c30a9dea2a0>
+mixed_tz_log = PosixPath('/tmp/pytest-of-ken/pytest-395/fixture1/mixed_tz.log')
+
+    def test_h9_naive_since(loglens, mixed_tz_log):
+        r = loglens("errors", str(mixed_tz_log), "--since", "2026-07-12T06:00:00")
+>       assert "Traceback" not in r.err, (
+            f"naive --since crashed with a traceback:\n{r.err[-800:]}"
+        )
+E       AssertionError: naive --since crashed with a traceback:
+E         3/03-working-skill-repo/loglens/.venv/lib/python3.12/site-packages/click/decorators.py", line 34, in new_func
+E             return f(get_current_context(), *args, **kwargs)
+E                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           File "/home/ken/src/ai-agents/harness-eval-runs/run_03/03-working-skill-repo/loglens/loglens/cli.py", line 116, in errors
+E             data = errors_cmd(entries, since=since_dt, until=until_dt)
+E                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           File "/home/ken/src/ai-agents/harness-eval-runs/run_03/03-working-skill-repo/loglens/loglens/commands.py", line 61, in errors
+E             error_entries = [e for e in error_entries if e.timestamp >= since]
+E                                                          ^^^^^^^^^^^^^^^^^^^^
+E         TypeError: can't compare offset-naive and offset-aware datetimes
+E         
+E       assert 'Traceback' not in 'Traceback (... datetimes\n'
+E         
+E         'Traceback' is contained here:
+E           Traceback (most recent call last):
+E         ? +++++++++
+E             File "/home/ken/src/ai-agents/harness-eval-runs/run_03/03-working-skill-repo/loglens/.venv/bin/loglens", line 10, in <module>
+E               sys.exit(main())
+E                        ^^^^^^...
+E         
+E         ...Full output truncated (27 lines hidden), use '-vv' to show
+
+_eval/run_03/acceptance/test_hard.py:116: AssertionError
+=============================== warnings summary ===============================
+test_core.py::test_a1_entrypoint
+  /home/ken/src/ai-agents/harness-eval/_eval/run_03/acceptance/conftest.py:63: UserWarning: LAYOUT: project nested at loglens/ rather than the repo root — scoreable process observation, not a correctness failure
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED _eval/run_03/acceptance/test_hard.py::test_h9_naive_since - AssertionE...
+=================== 1 failed, 20 passed, 1 warning in 1.49s ====================
+
+# exit code: 1
+# tier summary:
+#   core: 12/12
+#   hard: 8/9

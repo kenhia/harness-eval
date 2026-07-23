@@ -1,0 +1,4 @@
+interface:
+  display_name: "KB Task"
+  short_description: "First-principles task runner"
+  default_prompt: "Use $kb-task to reason from first principles, choose the right KB route, and continue until the task is verified or blocked."

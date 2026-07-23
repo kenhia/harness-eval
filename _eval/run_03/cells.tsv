@@ -1,0 +1,8 @@
+# cell|runner|profile|model|prompt_file   — run_03: Haiku 4.5 tier, loglens scenario
+01-atv-starterkit|copilot|clean|claude-haiku-4.5|01-atv-starterkit.md
+02-atv-phoenix|copilot|phoenix|claude-haiku-4.5|02-atv-phoenix.md
+03-working-skill-repo|copilot|clean|claude-haiku-4.5|03-working-skill-repo.md
+04-kprojects|copilot|clean|claude-haiku-4.5|04-kprojects.md
+05-baseline|copilot|clean|claude-haiku-4.5|05-baseline.md
+06-gstack|claude|claude-gstack|claude-haiku-4-5-20251001|06-gstack.md
+07-baseline-claude|claude|claude-clean|claude-haiku-4-5-20251001|07-baseline-claude.md

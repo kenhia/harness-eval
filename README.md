@@ -4,9 +4,10 @@ A comparative evaluation of AI coding-agent harnesses: the same model
 (Claude Opus 4.8), the same prompt, the same project — run once under
 each of five harnesses and once with no harness per runner (GitHub
 Copilot CLI and Claude Code CLI), graded by two independent AI reviewers
-with a consensus pass. Two runs so far: a small greenfield CLI (run 1),
-and a multi-binary Rust service followed by a fix-your-own-bug round
-(run 02 + 02.1).
+with a consensus pass. Three runs so far: a small greenfield CLI
+(run 1), a multi-binary Rust service plus a fix-your-own-bug round
+(run 02 + 02.1), and a **model-capability axis** re-running run 1's task
+on a weaker model (run 03).
 
 > [!IMPORTANT]
 > **Preliminary: N = 1 per cell.** Run 02 measured single-run variance
@@ -16,7 +17,39 @@ and a multi-binary Rust service followed by a fix-your-own-bug round
 > round's 4-for-4 direction) are findings; point-level rankings are
 > weather. Reps accumulate as budget allows.
 
-## Results at a glance — run 02 + fix round 02.1 (2026-07-17)
+## Results at a glance — run 03: the model-capability axis (2026-07-23)
+
+**Does harness value grow as the model gets weaker?** Run 03 re-runs
+run 1's frozen loglens spec with the same seven cells and the same
+harness versions, changing **one variable: the model** (Claude Haiku 4.5).
+Each harness is scored against its own same-runner control, and the
+cross-tier statistic is the **harness-minus-control delta** — raw totals
+are not comparable across capability tiers.
+
+| harness | delta at frontier | delta at Haiku 4.5 | shift |
+|---|---:|---:|---:|
+| working-skill-repo (KB) | 0 | **+15.25** | **+15.25** |
+| kprojects | +0.5 | **+7.75** | +7.25 |
+| ATV-StarterKit | −4 | −2.75 | +1.25 |
+| gstack | −8 | −9.25 | −1.25 |
+| ATV-Phoenix | −3 | **−12** | −9 |
+
+**Yes — but it splits by harness weight.** Harnesses that *encode
+knowledge* (conventions, skills, review habits) supply what a weaker
+model lacks and gained sharply. Harnesses that *demand the model drive
+an autonomous process* need capability it doesn't have, so the process
+becomes overhead it must service. Actionable version: **the weaker your
+model, the more you want conventions and the less you want ceremony.**
+
+This tier's own field (not comparable point-for-point to other runs):
+KB 77.5 · kprojects 70 · bare Claude control 66 · bare Copilot control
+62.25 · StarterKit 59.5 · gstack 56.75 · Phoenix 50.25. Only one repo
+passed all 12 core acceptance checks, where the frontier field went
+7-for-7 — and the tier's signature failure was universal: **every repo
+solved exactly half the naive/aware timezone problem**, in
+complementary halves.
+
+## Results — run 02 + fix round 02.1 (2026-07-17)
 
 **Build** — feedhub, a three-binary Rust feed-aggregation service
 (REST + SQLite + RSS/Atom + hermetic fixture server), headless, under an
@@ -72,6 +105,14 @@ spending 3× as much for robustness margins the spec never asked for.
 contribution — see the white paper's "Runner effect" section.
 
 ## Read the full story
+
+### Run 03 — model-capability axis
+
+- 📄 [White paper](_eval/run_03/report/whitepaper.md) — the cross-tier statistic, the tier signature, threats
+- 🏁 [Final grades](_eval/run_03/grades/final.md) — consensus, deltas vs control, zero reconciliations
+- 📊 [Infographic](_eval/run_03/report/infographic.html) ([rendered preview](https://htmlpreview.github.io/?https://github.com/kenhia/harness-eval/blob/main/_eval/run_03/report/infographic.html))
+- 🧭 [Lessons learned](_eval/run_03/report/lessons-learned.md) — lessons 34–44
+- 🐛 [Defect log](_eval/run_03/DEFECTS.md) — S1/S2 suite defects and the I1 interrupted run
 
 ### Run 02 + fix round 02.1
 
@@ -164,6 +205,9 @@ that agent authored. (Run 02 onward namespaces by run group:
   see `_eval/run_02/FIX-ROUND.md`), Claude cells kept theirs.
 - ATV-StarterKit 2.x bundled gstack in run 1 (01/06 shared DNA); 2.6.3
   no longer vendors it.
+- Scores are calibrated **within** a run; totals from different runs
+  (and especially different capability tiers) are not comparable
+  point-for-point. Cross-tier claims use harness-minus-control deltas.
 
 See each run's white paper *threats to validity* for the full treatment.
 

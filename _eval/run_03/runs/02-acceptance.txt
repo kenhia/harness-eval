@@ -1,0 +1,258 @@
+# acceptance: run_03 / 02-atv-phoenix
+# repo: /home/ken/src/ai-agents/harness-eval-runs/run_03/02-atv-phoenix @ f1e330d
+# date: 2026-07-23T05:45:31+00:00
+
+============================= test session starts ==============================
+platform linux -- Python 3.13.13, pytest-9.1.1, pluggy-1.6.0 -- /home/ken/.cache/uv/builds-v0/.tmpU7NQsj/bin/python
+rootdir: /home/ken/src/ai-agents/harness-eval/_eval/run_03/acceptance
+configfile: pytest.ini
+collecting ... collected 21 items
+
+_eval/run_03/acceptance/test_core.py::test_a1_entrypoint PASSED          [  4%]
+_eval/run_03/acceptance/test_core.py::test_a2_summary_text PASSED        [  9%]
+_eval/run_03/acceptance/test_core.py::test_a3_summary_json PASSED        [ 14%]
+_eval/run_03/acceptance/test_core.py::test_a4_top_tiebreak PASSED        [ 19%]
+_eval/run_03/acceptance/test_core.py::test_a5_errors_window FAILED       [ 23%]
+_eval/run_03/acceptance/test_core.py::test_a6_hourly PASSED              [ 28%]
+_eval/run_03/acceptance/test_core.py::test_a7_malformed_stderr FAILED    [ 33%]
+_eval/run_03/acceptance/test_core.py::test_a8_exit_codes PASSED          [ 38%]
+_eval/run_03/acceptance/test_core.py::test_a9_pytest PASSED              [ 42%]
+_eval/run_03/acceptance/test_core.py::test_a10_ruff PASSED               [ 47%]
+_eval/run_03/acceptance/test_core.py::test_a11_fixture_delivered PASSED  [ 52%]
+_eval/run_03/acceptance/test_core.py::test_a12_one_command_check FAILED  [ 57%]
+_eval/run_03/acceptance/test_hard.py::test_h1_mixed_offsets_summary PASSED [ 61%]
+_eval/run_03/acceptance/test_hard.py::test_h2_aware_window_filter FAILED [ 66%]
+_eval/run_03/acceptance/test_hard.py::test_h3_z_suffix FAILED            [ 71%]
+_eval/run_03/acceptance/test_hard.py::test_h4_boundary_convention FAILED [ 76%]
+_eval/run_03/acceptance/test_hard.py::test_h5_hourly_across_days PASSED  [ 80%]
+_eval/run_03/acceptance/test_hard.py::test_h6_empty_window FAILED        [ 85%]
+_eval/run_03/acceptance/test_hard.py::test_h7_json_everywhere FAILED     [ 90%]
+_eval/run_03/acceptance/test_hard.py::test_h8_dash_bytes PASSED          [ 95%]
+_eval/run_03/acceptance/test_hard.py::test_h9_naive_since PASSED         [100%]
+
+=================================== FAILURES ===================================
+____________________________ test_a5_errors_window _____________________________
+
+loglens = <function loglens.<locals>.run at 0x730633e6e160>
+logfile = PosixPath('/tmp/pytest-of-ken/pytest-393/fixture0/sealed.log')
+
+    def test_a5_errors_window(loglens, logfile):
+        r = loglens("errors", str(logfile))
+        assert r.rc == 0, r.err[-500:]
+        (status, path), count = fx.TOP_ERROR_GROUP
+        assert str(status) in r.out and path in r.out, f"top group {status} {path} missing:\n{r.out}"
+        first_group_pos = r.out.find(str(status))
+        for s, _p in fx.ERROR_GROUPS:
+            if s != status and (opos := r.out.find(str(s))) >= 0:
+                assert first_group_pos <= opos, f"most-frequent group not first:\n{r.out}"
+    
+        r = loglens("errors", str(logfile), "--since", fx.WINDOW_SINCE, "--until", fx.WINDOW_UNTIL)
+>       assert r.rc == 0, f"windowed errors failed: {r.err[-500:]}"
+E       AssertionError: windowed errors failed: ^^^^
+E           File "/home/ken/src/ai-agents/harness-eval-runs/run_03/02-atv-phoenix/src/loglens/cli.py", line 62, in main
+E             exit_code, output = errors(
+E                                 ^^^^^^^
+E           File "/home/ken/src/ai-agents/harness-eval-runs/run_03/02-atv-phoenix/src/loglens/commands.py", line 112, in errors
+E             line for line in filtered_lines if line['timestamp'] >= since_dt
+E                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E         TypeError: can't compare offset-naive and offset-aware datetimes
+E         
+E       assert 1 == 0
+E        +  where 1 = <conftest.Result object at 0x730633e486b0>.rc
+
+_eval/run_03/acceptance/test_core.py:66: AssertionError
+___________________________ test_a7_malformed_stderr ___________________________
+
+loglens_json = <function loglens_json.<locals>.run at 0x730633e6eca0>
+logfile = PosixPath('/tmp/pytest-of-ken/pytest-393/fixture0/sealed.log')
+
+    def test_a7_malformed_stderr(loglens_json, logfile):
+        r = loglens_json("summary", str(logfile))
+        assert r.rc == 0
+        r.json()  # stdout must remain a single valid JSON doc
+>       assert str(fx.N_MALFORMED) in r.err, (
+            f"malformed count {fx.N_MALFORMED} not on stderr (stderr: {r.err[:300]!r})"
+        )
+E       AssertionError: malformed count 2 not on stderr (stderr: '')
+E       assert '2' in ''
+E        +  where '2' = str(2)
+E        +    where 2 = fx.N_MALFORMED
+E        +  and   '' = <conftest.Result object at 0x730633e64b50>.err
+
+_eval/run_03/acceptance/test_core.py:86: AssertionError
+__________________________ test_a12_one_command_check __________________________
+
+repo = PosixPath('/home/ken/src/ai-agents/harness-eval-runs/run_03/02-atv-phoenix')
+
+    def test_a12_one_command_check(repo):
+        # `just` itself accepts justfile/Justfile/.justfile — the check must
+        # too (defect S2b: a capital-J repo was failed on the filename alone)
+        jf = [p for p in ("justfile", "Justfile", ".justfile", "JUSTFILE")
+              if (repo / p).is_file()]
+        assert jf, "no justfile — README-documented equivalent requires manual review"
+        r = subprocess.run(["just", "check"], cwd=repo,
+                           capture_output=True, text=True, timeout=600, env=clean_env())
+>       assert r.returncode == 0, f"just check failed:\n{r.stdout[-1500:]}\n{r.stderr[-500:]}"
+E       AssertionError: just check failed:
+E         Running tests...
+E         
+E         ==================================== ERRORS ====================================
+E         ____________________ ERROR collecting tests/test_parser.py _____________________
+E         ImportError while importing test module '/home/ken/src/ai-agents/harness-eval-runs/run_03/02-atv-phoenix/tests/test_parser.py'.
+E         Hint: make sure your test modules/packages have valid Python names.
+E         Traceback:
+E         /home/ken/.local/share/uv/python/cpython-3.13.13-linux-x86_64-gnu/lib/python3.13/importlib/__init__.py:88: in import_module
+E             return _bootstrap._gcd_import(name[level:], package, level)
+E                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E         tests/test_parser.py:4: in <module>
+E             from loglens.parser import parse_line, parse_log_file
+E         E   ModuleNotFoundError: No module named 'loglens'
+E         =========================== short test summary info ============================
+E         ERROR tests/test_parser.py
+E         !!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+E         1 error in 0.03s
+E         
+E         #!/bin/bash
+E         set -e
+E         echo "Running tests..."
+E         python -m pytest tests/ -q
+E         echo "Running ruff check..."
+E         python -m ruff check .
+E         echo "Checking CLI help..."
+E         loglens --help > /dev/null
+E         echo "All checks passed!"
+E         error: Recipe `check` failed with exit code 2
+E         
+E       assert 2 == 0
+E        +  where 2 = CompletedProcess(args=['just', 'check'], returncode=2, stdout="Running tests...\n\n==================================== ERRORS ====================================\n____________________ ERROR collecting tests/test_parser.py _____________________\nImportError while importing test module '/home/ken/src/ai-agents/harness-eval-runs/run_03/02-atv-phoenix/tests/test_parser.py'.\nHint: make sure your test modules/packages have valid Python names.\nTraceback:\n/home/ken/.local/share/uv/python/cpython-3.13.13-linux-x86_64-gnu/lib/python3.13/importlib/__init__.py:88: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\ntests/test_parser.py:4: in <module>\n    from loglens.parser import parse_line, parse_log_file\nE   ModuleNotFoundError: No module named 'loglens'\n=========================== short test summary info ============================\nERROR tests/test_parser.py\n!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!\n1 error in 0.03s\n", stderr='#!/bin/bash\nset -e\necho "Running tests..."\npython -m pytest tests/ -q\necho "Running ruff check..."\npython -m ruff check .\necho "Checking CLI help..."\nloglens --help > /dev/null\necho "All checks passed!"\nerror: Recipe `check` failed with exit code 2\n').returncode
+
+_eval/run_03/acceptance/test_core.py:150: AssertionError
+_________________________ test_h2_aware_window_filter __________________________
+
+loglens = <function loglens.<locals>.run at 0x730633e6e160>
+mixed_tz_log = PosixPath('/tmp/pytest-of-ken/pytest-393/fixture1/mixed_tz.log')
+
+    def test_h2_aware_window_filter(loglens, mixed_tz_log):
+        r = loglens("errors", str(mixed_tz_log),
+                    "--since", "2026-07-12T06:00:00+00:00",
+                    "--until", "2026-07-12T09:00:00+00:00")
+>       assert r.rc == 0, f"aware/naive datetime crash: {r.err[-800:]}"
+E       AssertionError: aware/naive datetime crash: Traceback (most recent call last):
+E           File "/home/ken/src/ai-agents/harness-eval-runs/run_03/02-atv-phoenix/.venv/bin/loglens", line 10, in <module>
+E             sys.exit(main())
+E                      ^^^^^^
+E           File "/home/ken/src/ai-agents/harness-eval-runs/run_03/02-atv-phoenix/src/loglens/cli.py", line 62, in main
+E             exit_code, output = errors(
+E                                 ^^^^^^^
+E           File "/home/ken/src/ai-agents/harness-eval-runs/run_03/02-atv-phoenix/src/loglens/commands.py", line 112, in errors
+E             line for line in filtered_lines if line['timestamp'] >= since_dt
+E                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E         TypeError: can't compare offset-naive and offset-aware datetimes
+E         
+E       assert 1 == 0
+E        +  where 1 = <conftest.Result object at 0x730633e335f0>.rc
+
+_eval/run_03/acceptance/test_hard.py:29: AssertionError
+_______________________________ test_h3_z_suffix _______________________________
+
+loglens = <function loglens.<locals>.run at 0x730633e6e160>
+mixed_tz_log = PosixPath('/tmp/pytest-of-ken/pytest-393/fixture1/mixed_tz.log')
+
+    def test_h3_z_suffix(loglens, mixed_tz_log):
+        r = loglens("errors", str(mixed_tz_log),
+                    "--since", "2026-07-12T06:00:00Z", "--until", "2026-07-12T09:00:00Z")
+>       assert r.rc == 0, f"Z-suffix ISO 8601 rejected/crashed: {r.err[-500:]}"
+E       AssertionError: Z-suffix ISO 8601 rejected/crashed: ^^^^
+E           File "/home/ken/src/ai-agents/harness-eval-runs/run_03/02-atv-phoenix/src/loglens/cli.py", line 62, in main
+E             exit_code, output = errors(
+E                                 ^^^^^^^
+E           File "/home/ken/src/ai-agents/harness-eval-runs/run_03/02-atv-phoenix/src/loglens/commands.py", line 112, in errors
+E             line for line in filtered_lines if line['timestamp'] >= since_dt
+E                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E         TypeError: can't compare offset-naive and offset-aware datetimes
+E         
+E       assert 1 == 0
+E        +  where 1 = <conftest.Result object at 0x730633dfae10>.rc
+
+_eval/run_03/acceptance/test_hard.py:39: AssertionError
+_________________________ test_h4_boundary_convention __________________________
+
+loglens = <function loglens.<locals>.run at 0x730633e6e160>
+boundary_log = PosixPath('/tmp/pytest-of-ken/pytest-393/fixture2/boundary.log')
+
+    def test_h4_boundary_convention(loglens, boundary_log):
+        r = loglens("errors", str(boundary_log),
+                    "--since", "2026-07-12T06:00:00+00:00",
+                    "--until", "2026-07-12T09:00:00+00:00")
+>       assert r.rc == 0, r.err[-500:]
+E       AssertionError: ^^^^
+E           File "/home/ken/src/ai-agents/harness-eval-runs/run_03/02-atv-phoenix/src/loglens/cli.py", line 62, in main
+E             exit_code, output = errors(
+E                                 ^^^^^^^
+E           File "/home/ken/src/ai-agents/harness-eval-runs/run_03/02-atv-phoenix/src/loglens/commands.py", line 112, in errors
+E             line for line in filtered_lines if line['timestamp'] >= since_dt
+E                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E         TypeError: can't compare offset-naive and offset-aware datetimes
+E         
+E       assert 1 == 0
+E        +  where 1 = <conftest.Result object at 0x730633dfb050>.rc
+
+_eval/run_03/acceptance/test_hard.py:50: AssertionError
+_____________________________ test_h6_empty_window _____________________________
+
+loglens = <function loglens.<locals>.run at 0x730633e6e160>
+logfile = PosixPath('/tmp/pytest-of-ken/pytest-393/fixture0/sealed.log')
+
+    def test_h6_empty_window(loglens, logfile):
+        r = loglens("errors", str(logfile),
+                    "--since", "1971-01-01T00:00:00+00:00",
+                    "--until", "1971-01-02T00:00:00+00:00")
+>       assert r.rc == 0, f"empty window must not error (rc={r.rc}): {r.err[-500:]}"
+E       AssertionError: empty window must not error (rc=1): ^^^^
+E           File "/home/ken/src/ai-agents/harness-eval-runs/run_03/02-atv-phoenix/src/loglens/cli.py", line 62, in main
+E             exit_code, output = errors(
+E                                 ^^^^^^^
+E           File "/home/ken/src/ai-agents/harness-eval-runs/run_03/02-atv-phoenix/src/loglens/commands.py", line 112, in errors
+E             line for line in filtered_lines if line['timestamp'] >= since_dt
+E                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E         TypeError: can't compare offset-naive and offset-aware datetimes
+E         
+E       assert 1 == 0
+E        +  where 1 = <conftest.Result object at 0x730633d18c00>.rc
+
+_eval/run_03/acceptance/test_hard.py:80: AssertionError
+___________________________ test_h7_json_everywhere ____________________________
+
+loglens_json = <function loglens_json.<locals>.run at 0x730633e6eca0>
+logfile = PosixPath('/tmp/pytest-of-ken/pytest-393/fixture0/sealed.log')
+
+    def test_h7_json_everywhere(loglens_json, logfile):
+        for args in (
+            ("errors", str(logfile), "--since", fx.WINDOW_SINCE, "--until", fx.WINDOW_UNTIL),
+            ("top", str(logfile), "--by", "status"),
+            ("hourly", str(logfile)),
+        ):
+            r = loglens_json(*args)
+>           assert r.rc == 0, f"{args[0]} json rc={r.rc}: {r.err[-300:]}"
+E           AssertionError: errors json rc=2: usage: loglens [-h] [--format {text,json}] {summary,top,errors,hourly} ...
+E             loglens: error: unrecognized arguments: --format json
+E             
+E           assert 2 == 0
+E            +  where 2 = <conftest.Result object at 0x730633cc5590>.rc
+
+_eval/run_03/acceptance/test_hard.py:92: AssertionError
+=========================== short test summary info ============================
+FAILED _eval/run_03/acceptance/test_core.py::test_a5_errors_window - Assertio...
+FAILED _eval/run_03/acceptance/test_core.py::test_a7_malformed_stderr - Asser...
+FAILED _eval/run_03/acceptance/test_core.py::test_a12_one_command_check - Ass...
+FAILED _eval/run_03/acceptance/test_hard.py::test_h2_aware_window_filter - As...
+FAILED _eval/run_03/acceptance/test_hard.py::test_h3_z_suffix - AssertionErro...
+FAILED _eval/run_03/acceptance/test_hard.py::test_h4_boundary_convention - As...
+FAILED _eval/run_03/acceptance/test_hard.py::test_h6_empty_window - Assertion...
+FAILED _eval/run_03/acceptance/test_hard.py::test_h7_json_everywhere - Assert...
+========================= 8 failed, 13 passed in 1.34s =========================
+
+# exit code: 1
+# tier summary:
+#   core: 9/12
+#   hard: 4/9
