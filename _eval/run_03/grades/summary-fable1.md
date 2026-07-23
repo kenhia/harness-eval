@@ -8,29 +8,31 @@ the rubric's (core, hard) mapping. Weights: 30/20/15/10/10/10/5.
 |---|---|---|---|---|---|---|---|---|---|---|
 | 01-atv-starterkit | 3 | 3 | 3 | 4 | 2 | 2 | 4 | 11/12 | 4/9 | **59** |
 | 02-atv-phoenix | 2 | 2 | 2 | 3 | 2 | 4 | 4 | 9/12 | 4/9 | **48** |
-| 03-working-skill-repo | 2.5 | 4 | 3 | 3 | 2 | 5 | 4 | 10/12 | 6/9 | **64** |
+| 03-working-skill-repo | 5 | 4 | 3 | 3 | 2 | 5 | 4 | 12/12 | 8/9 | **79** |
 | 04-kprojects | 3.5 | 3 | 3 | 4 | 3 | 5 | 4 | 11/12 | 8/9 | **70** |
 | 05-baseline (Copilot ctl) | 2 | 3 | 3 | 4 | 3 | 5 | 5 | 9/12 | 4/9 | **62** |
-| 06-gstack | 1.5 | 3 | 3 | 4 | 3 | 2 | 5 | 8/12 | 6/9 | **53** |
+| 06-gstack | 2.5 | 3 | 3 | 4 | 3 | 2 | 5 | 9/12 | 8/9 | **59** |
 | 07-baseline-claude (Claude ctl) | 3 | 3 | 3 | 4 | 2 | 5 | 5 | 11/12 | 4/9 | **66** |
 
-Ranking: 04 (70) > 07 (66) > 03 (64) > 05 (62) > 01 (59) > 06 (53) > 02 (48).
+Ranking: 03 (79) > 04 (70) > 07 (66) > 05 (62) > 01 (59) = 06 (59) > 02 (48).
+
+> Cells 03 and 06 re-scored after suite defect S2 (see DEFECTS.md): the
+> `loglens_json` fixture's argparse-specific retry failed click repos on
+> JSON checks they pass; S2b made the A12 justfile probe case-tolerant.
+> Corrected tallies: 03 → 12/12, 8/9; 06 → 9/12, 8/9. Other rows frozen.
 
 ## Grader notes
 
-- **Candidate suite defect (flagged for adjudication, scores unchanged).**
-  The `loglens_json` fixture tries trailing `--format json` and falls back
-  to the leading form only when stderr contains "unrecognized" — argparse's
-  error wording. Click emits "No such option", so the fallback never fires
-  for click repos even where the leading form works (verified by running
-  both clones: 03 and 06 return rc 0 with valid JSON on
-  `loglens --format json summary FILE`). Implicated: A3, A7, H7, H8 in
-  repos 03 and 06 (same reasoning class as S1). Tempering facts: 03's own
-  README documents the trailing form its CLI rejects (agent-owned doc bug);
-  06's README documents the working leading form. Also noted: A12 probes
-  lowercase `justfile` only — 06 ships capital-J `Justfile` (which `just`
-  accepts), though its recipes use bare `pytest`/`ruff` and would fail from
-  a clean env anyway.
+- **Suite defect S2 — flagged by this grader, since adjudicated and fixed**
+  (see DEFECTS.md §S2). The `loglens_json` fixture's leading-form fallback
+  keyed on argparse's "unrecognized" wording, which click never emits, so
+  click repos failed JSON checks they pass. Cells 03 and 06 were re-graded
+  under the corrected tallies (03: A3/A7/H7/H8 flipped; 06: A3/H7/H8).
+  Agent-owned residue stands as scored: 03's README documents the trailing
+  `--format` form its own CLI rejects; 06 suppresses the required stderr
+  malformed count in json mode (`fmt == "text"` guard, residual A7) and
+  its dev-extras layout breaks clean-env `pytest`/`just check` (A9, A12)
+  regardless of S2b's now-case-tolerant justfile probe.
 - **Tier-wide finding:** no repo normalized naive/aware datetimes on both
   sides. The naive-parser repos (01, 02, 05, 07) crash on aware
   `--since/--until` (A5 + H2/H3/H4/H6/H7); the aware-parser repos (03, 04,
