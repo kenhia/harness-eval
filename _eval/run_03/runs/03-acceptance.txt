@@ -1,9 +1,9 @@
 # acceptance: run_03 / 03-working-skill-repo
 # repo: /home/ken/src/ai-agents/harness-eval-runs/run_03/03-working-skill-repo @ d958fd5
-# date: 2026-07-23T04:39:50+00:00
+# date: 2026-07-23T05:04:00+00:00
 
 ============================= test session starts ==============================
-platform linux -- Python 3.13.13, pytest-9.1.1, pluggy-1.6.0 -- /home/ken/.cache/uv/builds-v0/.tmpfyYxWp/bin/python
+platform linux -- Python 3.13.13, pytest-9.1.1, pluggy-1.6.0 -- /home/ken/.cache/uv/builds-v0/.tmpMcqzrf/bin/python
 rootdir: /home/ken/src/ai-agents/harness-eval/_eval/run_03/acceptance
 configfile: pytest.ini
 collecting ... collected 21 items
@@ -33,8 +33,8 @@ _eval/run_03/acceptance/test_hard.py::test_h9_naive_since FAILED         [100%]
 =================================== FAILURES ===================================
 _____________________________ test_a3_summary_json _____________________________
 
-loglens_json = <function loglens_json.<locals>.run at 0x7e2399b12ca0>
-logfile = PosixPath('/tmp/pytest-of-ken/pytest-364/fixture0/sealed.log')
+loglens_json = <function loglens_json.<locals>.run at 0x768031992e80>
+logfile = PosixPath('/tmp/pytest-of-ken/pytest-383/fixture0/sealed.log')
 
     def test_a3_summary_json(loglens_json, logfile):
         r = loglens_json("summary", str(logfile))
@@ -45,25 +45,25 @@ E
 E         Error: No such option '--format'.
 E         
 E       assert 2 == 0
-E        +  where 2 = <conftest.Result object at 0x7e2399ac25d0>.rc
+E        +  where 2 = <conftest.Result object at 0x7680319425d0>.rc
 
 _eval/run_03/acceptance/test_core.py:35: AssertionError
 ___________________________ test_a7_malformed_stderr ___________________________
 
-loglens_json = <function loglens_json.<locals>.run at 0x7e2399b12ca0>
-logfile = PosixPath('/tmp/pytest-of-ken/pytest-364/fixture0/sealed.log')
+loglens_json = <function loglens_json.<locals>.run at 0x768031992e80>
+logfile = PosixPath('/tmp/pytest-of-ken/pytest-383/fixture0/sealed.log')
 
     def test_a7_malformed_stderr(loglens_json, logfile):
         r = loglens_json("summary", str(logfile))
 >       assert r.rc == 0
 E       assert 2 == 0
-E        +  where 2 = <conftest.Result object at 0x7e2399aecaf0>.rc
+E        +  where 2 = <conftest.Result object at 0x76803196caf0>.rc
 
 _eval/run_03/acceptance/test_core.py:84: AssertionError
 ___________________________ test_h7_json_everywhere ____________________________
 
-loglens_json = <function loglens_json.<locals>.run at 0x7e2399b12ca0>
-logfile = PosixPath('/tmp/pytest-of-ken/pytest-364/fixture0/sealed.log')
+loglens_json = <function loglens_json.<locals>.run at 0x768031992e80>
+logfile = PosixPath('/tmp/pytest-of-ken/pytest-383/fixture0/sealed.log')
 
     def test_h7_json_everywhere(loglens_json, logfile):
         for args in (
@@ -79,13 +79,13 @@ E
 E             Error: No such option '--format'.
 E             
 E           assert 2 == 0
-E            +  where 2 = <conftest.Result object at 0x7e2399994890>.rc
+E            +  where 2 = <conftest.Result object at 0x76803180c890>.rc
 
 _eval/run_03/acceptance/test_hard.py:92: AssertionError
 ______________________________ test_h8_dash_bytes ______________________________
 
-loglens_json = <function loglens_json.<locals>.run at 0x7e2399b12ca0>
-tmp_path = PosixPath('/tmp/pytest-of-ken/pytest-364/test_h8_dash_bytes0')
+loglens_json = <function loglens_json.<locals>.run at 0x768031992e80>
+tmp_path = PosixPath('/tmp/pytest-of-ken/pytest-383/test_h8_dash_bytes0')
 
     def test_h8_dash_bytes(loglens_json, tmp_path):
         f = tmp_path / "dash.log"
@@ -98,13 +98,13 @@ E
 E         Error: No such option '--format'.
 E         
 E       assert 2 == 0
-E        +  where 2 = <conftest.Result object at 0x7e2399994b50>.rc
+E        +  where 2 = <conftest.Result object at 0x76803180cb50>.rc
 
 _eval/run_03/acceptance/test_hard.py:102: AssertionError
 _____________________________ test_h9_naive_since ______________________________
 
-loglens = <function loglens.<locals>.run at 0x7e2399b12160>
-mixed_tz_log = PosixPath('/tmp/pytest-of-ken/pytest-364/fixture1/mixed_tz.log')
+loglens = <function loglens.<locals>.run at 0x7680319922a0>
+mixed_tz_log = PosixPath('/tmp/pytest-of-ken/pytest-383/fixture1/mixed_tz.log')
 
     def test_h9_naive_since(loglens, mixed_tz_log):
         r = loglens("errors", str(mixed_tz_log), "--since", "2026-07-12T06:00:00")
@@ -135,13 +135,19 @@ E
 E         ...Full output truncated (27 lines hidden), use '-vv' to show
 
 _eval/run_03/acceptance/test_hard.py:116: AssertionError
+=============================== warnings summary ===============================
+test_core.py::test_a1_entrypoint
+  /home/ken/src/ai-agents/harness-eval/_eval/run_03/acceptance/conftest.py:63: UserWarning: LAYOUT: project nested at loglens/ rather than the repo root — scoreable process observation, not a correctness failure
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
 =========================== short test summary info ============================
 FAILED _eval/run_03/acceptance/test_core.py::test_a3_summary_json - Assertion...
 FAILED _eval/run_03/acceptance/test_core.py::test_a7_malformed_stderr - asser...
 FAILED _eval/run_03/acceptance/test_hard.py::test_h7_json_everywhere - Assert...
 FAILED _eval/run_03/acceptance/test_hard.py::test_h8_dash_bytes - AssertionEr...
 FAILED _eval/run_03/acceptance/test_hard.py::test_h9_naive_since - AssertionE...
-========================= 5 failed, 16 passed in 1.17s =========================
+=================== 5 failed, 16 passed, 1 warning in 1.13s ====================
 
 # exit code: 1
 # tier summary:

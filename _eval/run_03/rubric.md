@@ -17,7 +17,7 @@ anchored to the **same-runner control**, not the field. Weights unchanged
 
 | # | dimension | weight | what 5 looks like |
 |---|---|---|---|
-| 1 | Functional correctness | 30 | Core 12/12 gets a 4; the fifth point tracks the hard tier (≥8/9 ≈ 5). Core failures cap this dimension ≤3. Results supplied by the acceptance run — do not re-derive |
+| 1 | Functional correctness | 30 | **Mechanical mapping — see the table below.** Results supplied by the acceptance run; do not re-derive |
 | 2 | Code quality & simplicity | 20 | Idiomatic Python, sensible module split, no speculative abstraction, no dead code, clean error handling (clean error handling) |
 | 3 | Test quality | 15 | Repo's own tests exercise behavior incl. edge cases (malformed lines, exit codes, tie-breaks, JSON validity, timezone handling); would catch regressions; not tautological |
 | 4 | Documentation | 10 | README alone is enough for a stranger to install and use every subcommand |
@@ -26,6 +26,22 @@ anchored to the **same-runner control**, not the field. Weights unchanged
 | 7 | Autonomy | 5 | Zero human interventions between prompt and done |
 
 Weighted total = Σ(score/5 × weight) → 0–100.
+
+### Correctness mapping (tier-calibrated, mechanical)
+
+Run_01/run_02's frontier fields all scored 12/12 core, so their mapping
+("12/12 → 4") would flatten this tier — no Haiku cell reached 12/12.
+Apply this table exactly; it is not a judgment call:
+
+| core | base score | hard-tier adjustment |
+|---|---|---|
+| 12/12 | 4 | +1 if hard ≥ 8/9 |
+| 11/12 | 3 | +0.5 if hard ≥ 6/9 |
+| 9–10/12 | 2 | +0.5 if hard ≥ 6/9 |
+| 7–8/12 | 1 | +0.5 if hard ≥ 6/9 |
+| < 7/12 | 0 | — |
+
+State the (core, hard) pair and the resulting score in your sheet.
 
 ## Grader instructions
 

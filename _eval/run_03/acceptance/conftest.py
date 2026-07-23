@@ -15,6 +15,7 @@ calibrated against the seven graded run_01 trees.
 import json
 import os
 import subprocess
+import warnings
 from pathlib import Path
 
 import pytest
@@ -57,8 +58,13 @@ def repo() -> Path:
     assert REPO.is_dir(), f"ACCEPTANCE_REPO not set or not a dir: {REPO!r}"
     root, nested = find_project_root(REPO)
     if nested:
-        print(f"\nNOTE: project nested at {root.relative_to(REPO)}/ "
-              f"(not repo root) — scoreable process observation, not a failure")
+        # warnings survive into the archived pytest output; a bare print
+        # is swallowed unless a test fails (S1 observability fix).
+        warnings.warn(
+            f"LAYOUT: project nested at {root.relative_to(REPO)}/ rather than the "
+            f"repo root — scoreable process observation, not a correctness failure",
+            stacklevel=1,
+        )
     proc = subprocess.run(
         ["uv", "sync"], cwd=root, capture_output=True, text=True,
         timeout=SYNC_TIMEOUT, env=clean_env(),
