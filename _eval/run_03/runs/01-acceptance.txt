@@ -1,9 +1,9 @@
 # acceptance: run_03 / 01-atv-starterkit
 # repo: /home/ken/src/ai-agents/harness-eval-runs/run_03/01-atv-starterkit @ db8c6b2
-# date: 2026-07-23T05:03:58+00:00
+# date: 2026-07-23T05:45:29+00:00
 
 ============================= test session starts ==============================
-platform linux -- Python 3.13.13, pytest-9.1.1, pluggy-1.6.0 -- /home/ken/.cache/uv/builds-v0/.tmptIfxIg/bin/python
+platform linux -- Python 3.13.13, pytest-9.1.1, pluggy-1.6.0 -- /home/ken/.cache/uv/builds-v0/.tmpfQ50xi/bin/python
 rootdir: /home/ken/src/ai-agents/harness-eval/_eval/run_03/acceptance
 configfile: pytest.ini
 collecting ... collected 21 items
@@ -33,8 +33,8 @@ _eval/run_03/acceptance/test_hard.py::test_h9_naive_since PASSED         [100%]
 =================================== FAILURES ===================================
 ____________________________ test_a5_errors_window _____________________________
 
-loglens = <function loglens.<locals>.run at 0x772ce85a1800>
-logfile = PosixPath('/tmp/pytest-of-ken/pytest-380/fixture0/sealed.log')
+loglens = <function loglens.<locals>.run at 0x792eee5262a0>
+logfile = PosixPath('/tmp/pytest-of-ken/pytest-390/fixture0/sealed.log')
 
     def test_a5_errors_window(loglens, logfile):
         r = loglens("errors", str(logfile))
@@ -57,13 +57,13 @@ E                                                        ^^^^^^^^^^^^^^^^^^^^^^^
 E         TypeError: can't compare offset-naive and offset-aware datetimes
 E         
 E       assert 1 == 0
-E        +  where 1 = <conftest.Result object at 0x772ce85809e0>.rc
+E        +  where 1 = <conftest.Result object at 0x792eee5006b0>.rc
 
 _eval/run_03/acceptance/test_core.py:66: AssertionError
 _________________________ test_h2_aware_window_filter __________________________
 
-loglens = <function loglens.<locals>.run at 0x772ce85a1800>
-mixed_tz_log = PosixPath('/tmp/pytest-of-ken/pytest-380/fixture1/mixed_tz.log')
+loglens = <function loglens.<locals>.run at 0x792eee5262a0>
+mixed_tz_log = PosixPath('/tmp/pytest-of-ken/pytest-390/fixture1/mixed_tz.log')
 
     def test_h2_aware_window_filter(loglens, mixed_tz_log):
         r = loglens("errors", str(mixed_tz_log),
@@ -85,13 +85,13 @@ E                                                        ^^^^^^^^^^^^^^^^^^^^^^^
 E         TypeError: can't compare offset-naive and offset-aware datetimes
 E         
 E       assert 1 == 0
-E        +  where 1 = <conftest.Result object at 0x772ce857cef0>.rc
+E        +  where 1 = <conftest.Result object at 0x792eee4eba00>.rc
 
 _eval/run_03/acceptance/test_hard.py:29: AssertionError
 _______________________________ test_h3_z_suffix _______________________________
 
-loglens = <function loglens.<locals>.run at 0x772ce85a1800>
-mixed_tz_log = PosixPath('/tmp/pytest-of-ken/pytest-380/fixture1/mixed_tz.log')
+loglens = <function loglens.<locals>.run at 0x792eee5262a0>
+mixed_tz_log = PosixPath('/tmp/pytest-of-ken/pytest-390/fixture1/mixed_tz.log')
 
     def test_h3_z_suffix(loglens, mixed_tz_log):
         r = loglens("errors", str(mixed_tz_log),
@@ -106,13 +106,13 @@ E                                                        ^^^^^^^^^^^^^^^^^^^^^^^
 E         TypeError: can't compare offset-naive and offset-aware datetimes
 E         
 E       assert 1 == 0
-E        +  where 1 = <conftest.Result object at 0x772ce851ea50>.rc
+E        +  where 1 = <conftest.Result object at 0x792eee4b2990>.rc
 
 _eval/run_03/acceptance/test_hard.py:39: AssertionError
 _________________________ test_h4_boundary_convention __________________________
 
-loglens = <function loglens.<locals>.run at 0x772ce85a1800>
-boundary_log = PosixPath('/tmp/pytest-of-ken/pytest-380/fixture2/boundary.log')
+loglens = <function loglens.<locals>.run at 0x792eee5262a0>
+boundary_log = PosixPath('/tmp/pytest-of-ken/pytest-390/fixture2/boundary.log')
 
     def test_h4_boundary_convention(loglens, boundary_log):
         r = loglens("errors", str(boundary_log),
@@ -128,13 +128,13 @@ E                                                        ^^^^^^^^^^^^^^^^^^^^^^^
 E         TypeError: can't compare offset-naive and offset-aware datetimes
 E         
 E       assert 1 == 0
-E        +  where 1 = <conftest.Result object at 0x772ce851eed0>.rc
+E        +  where 1 = <conftest.Result object at 0x792eee4b2e10>.rc
 
 _eval/run_03/acceptance/test_hard.py:50: AssertionError
 _____________________________ test_h6_empty_window _____________________________
 
-loglens = <function loglens.<locals>.run at 0x772ce85a1800>
-logfile = PosixPath('/tmp/pytest-of-ken/pytest-380/fixture0/sealed.log')
+loglens = <function loglens.<locals>.run at 0x792eee5262a0>
+logfile = PosixPath('/tmp/pytest-of-ken/pytest-390/fixture0/sealed.log')
 
     def test_h6_empty_window(loglens, logfile):
         r = loglens("errors", str(logfile),
@@ -150,13 +150,13 @@ E                                                        ^^^^^^^^^^^^^^^^^^^^^^^
 E         TypeError: can't compare offset-naive and offset-aware datetimes
 E         
 E       assert 1 == 0
-E        +  where 1 = <conftest.Result object at 0x772ce8438c00>.rc
+E        +  where 1 = <conftest.Result object at 0x792eee3ccaa0>.rc
 
 _eval/run_03/acceptance/test_hard.py:80: AssertionError
 ___________________________ test_h7_json_everywhere ____________________________
 
-loglens_json = <function loglens_json.<locals>.run at 0x772ce85a23e0>
-logfile = PosixPath('/tmp/pytest-of-ken/pytest-380/fixture0/sealed.log')
+loglens_json = <function loglens_json.<locals>.run at 0x792eee526e80>
+logfile = PosixPath('/tmp/pytest-of-ken/pytest-390/fixture0/sealed.log')
 
     def test_h7_json_everywhere(loglens_json, logfile):
         for args in (
@@ -166,13 +166,11 @@ logfile = PosixPath('/tmp/pytest-of-ken/pytest-380/fixture0/sealed.log')
         ):
             r = loglens_json(*args)
 >           assert r.rc == 0, f"{args[0]} json rc={r.rc}: {r.err[-300:]}"
-E           AssertionError: errors json rc=1: val-runs/run_03/01-atv-starterkit/loglens/loglens/handlers.py", line 70, in filter_errors
-E                 filtered = [entry for entry in filtered if entry.timestamp >= since]
-E                                                            ^^^^^^^^^^^^^^^^^^^^^^^^
-E             TypeError: can't compare offset-naive and offset-aware datetimes
+E           AssertionError: errors json rc=2: usage: loglens [-h] [--format {text,json}] {summary,top,errors,hourly} ...
+E             loglens: error: unrecognized arguments: --format json
 E             
-E           assert 1 == 0
-E            +  where 1 = <conftest.Result object at 0x772ce84093b0>.rc
+E           assert 2 == 0
+E            +  where 2 = <conftest.Result object at 0x792eee379130>.rc
 
 _eval/run_03/acceptance/test_hard.py:92: AssertionError
 =============================== warnings summary ===============================

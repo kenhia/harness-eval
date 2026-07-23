@@ -1,9 +1,9 @@
 # acceptance: run_03 / 05-baseline
 # repo: /home/ken/src/ai-agents/harness-eval-runs/run_03/05-baseline @ 06a3cb8
-# date: 2026-07-23T04:47:31+00:00
+# date: 2026-07-23T05:45:36+00:00
 
 ============================= test session starts ==============================
-platform linux -- Python 3.13.13, pytest-9.1.1, pluggy-1.6.0 -- /home/ken/.cache/uv/builds-v0/.tmpEBKoaR/bin/python
+platform linux -- Python 3.13.13, pytest-9.1.1, pluggy-1.6.0 -- /home/ken/.cache/uv/builds-v0/.tmp6KDiyx/bin/python
 rootdir: /home/ken/src/ai-agents/harness-eval/_eval/run_03/acceptance
 configfile: pytest.ini
 collecting ... collected 21 items
@@ -33,8 +33,8 @@ _eval/run_03/acceptance/test_hard.py::test_h9_naive_since PASSED         [100%]
 =================================== FAILURES ===================================
 ____________________________ test_a5_errors_window _____________________________
 
-loglens = <function loglens.<locals>.run at 0x773bfed12200>
-logfile = PosixPath('/tmp/pytest-of-ken/pytest-366/fixture0/sealed.log')
+loglens = <function loglens.<locals>.run at 0x78aae8992160>
+logfile = PosixPath('/tmp/pytest-of-ken/pytest-397/fixture0/sealed.log')
 
     def test_a5_errors_window(loglens, logfile):
         r = loglens("errors", str(logfile))
@@ -58,7 +58,7 @@ E                                      ^^^^^^^^^^^^^^^^^^^^^^^
 E         TypeError: can't compare offset-naive and offset-aware datetimes
 E         
 E       assert 1 == 0
-E        +  where 1 = <conftest.Result object at 0x773bfeca39b0>.rc
+E        +  where 1 = <conftest.Result object at 0x78aae8923ad0>.rc
 
 _eval/run_03/acceptance/test_core.py:66: AssertionError
 ________________________________ test_a9_pytest ________________________________
@@ -91,10 +91,10 @@ E         E   ModuleNotFoundError: No module named 'click'
 E         =========================== short test summary info ============================
 E         ERROR tests/test_loglens.py
 E         !!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
-E         =============================== 1 error in 0.04s ===============================
+E         =============================== 1 error in 0.03s ===============================
 E         
 E       assert 2 == 0
-E        +  where 2 = CompletedProcess(args=['uv', 'run', 'pytest', '-q'], returncode=2, stdout="============================= test session starts ==============================\nplatform linux -- Python 3.13.13, pytest-9.1.1, pluggy-1.6.0\nrootdir: /home/ken/src/ai-agents/harness-eval-runs/run_03/05-baseline\nconfigfile: pyproject.toml\ntestpaths: tests\ncollected 0 items / 1 error\n\n==================================== ERRORS ====================================\n____________________ ERROR collecting tests/test_loglens.py ____________________\nImportError while importing test module '/home/ken/src/ai-agents/harness-eval-runs/run_03/05-baseline/tests/test_loglens.py'.\nHint: make sure your test modules/packages have valid Python names.\nTraceback:\n/home/ken/.local/share/uv/python/cpython-3.13.13-linux-x86_64-gnu/lib/python3.13/importlib/__init__.py:88: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\ntests/test_loglens.py:5: in <module>\n    from click.testing import CliRunner\nE   ModuleNotFoundError: No module named 'click'\n=========================== short test summary info ============================\nERROR tests/test_loglens.py\n!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!\n=============================== 1 error in 0.04s ===============================\n", stderr='').returncode
+E        +  where 2 = CompletedProcess(args=['uv', 'run', 'pytest', '-q'], returncode=2, stdout="============================= test session starts ==============================\nplatform linux -- Python 3.13.13, pytest-9.1.1, pluggy-1.6.0\nrootdir: /home/ken/src/ai-agents/harness-eval-runs/run_03/05-baseline\nconfigfile: pyproject.toml\ntestpaths: tests\ncollected 0 items / 1 error\n\n==================================== ERRORS ====================================\n____________________ ERROR collecting tests/test_loglens.py ____________________\nImportError while importing test module '/home/ken/src/ai-agents/harness-eval-runs/run_03/05-baseline/tests/test_loglens.py'.\nHint: make sure your test modules/packages have valid Python names.\nTraceback:\n/home/ken/.local/share/uv/python/cpython-3.13.13-linux-x86_64-gnu/lib/python3.13/importlib/__init__.py:88: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\ntests/test_loglens.py:5: in <module>\n    from click.testing import CliRunner\nE   ModuleNotFoundError: No module named 'click'\n=========================== short test summary info ============================\nERROR tests/test_loglens.py\n!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!\n=============================== 1 error in 0.03s ===============================\n", stderr='').returncode
 
 _eval/run_03/acceptance/test_core.py:106: AssertionError
 __________________________ test_a12_one_command_check __________________________
@@ -102,9 +102,11 @@ __________________________ test_a12_one_command_check __________________________
 repo = PosixPath('/home/ken/src/ai-agents/harness-eval-runs/run_03/05-baseline')
 
     def test_a12_one_command_check(repo):
-        assert (repo / "justfile").is_file(), (
-            "no justfile — README-documented equivalent requires manual review"
-        )
+        # `just` itself accepts justfile/Justfile/.justfile — the check must
+        # too (defect S2b: a capital-J repo was failed on the filename alone)
+        jf = [p for p in ("justfile", "Justfile", ".justfile", "JUSTFILE")
+              if (repo / p).is_file()]
+        assert jf, "no justfile — README-documented equivalent requires manual review"
         r = subprocess.run(["just", "check"], cwd=repo,
                            capture_output=True, text=True, timeout=600, env=clean_env())
 >       assert r.returncode == 0, f"just check failed:\n{r.stdout[-1500:]}\n{r.stderr[-500:]}"
@@ -141,13 +143,13 @@ E         uv run pytest tests/ -v
 E         error: Recipe `check` failed on line 5 with exit code 2
 E         
 E       assert 2 == 0
-E        +  where 2 = CompletedProcess(args=['just', 'check'], returncode=2, stdout="============================= test session starts ==============================\nplatform linux -- Python 3.13.13, pytest-9.1.1, pluggy-1.6.0 -- /home/ken/.cache/uv/builds-v0/.tmpEBKoaR/bin/python\ncachedir: .pytest_cache\nrootdir: /home/ken/src/ai-agents/harness-eval-runs/run_03/05-baseline\nconfigfile: pyproject.toml\ncollecting ... collected 0 items / 1 error\n\n==================================== ERRORS ====================================\n____________________ ERROR collecting tests/test_loglens.py ____________________\nImportError while importing test module '/home/ken/src/ai-agents/harness-eval-runs/run_03/05-baseline/tests/test_loglens.py'.\nHint: make sure your test modules/packages have valid Python names.\nTraceback:\n/home/ken/.cache/uv/archive-v0/9OiMNOQH-0TsWfRp/lib/python3.13/site-packages/_pytest/python.py:508: in importtestmodule\n    mod = import_path(\n/home/ken/.cache/uv/archive-v0/9OiMNOQH-0TsWfRp/lib/python3.13/site-packages/_pytest/pathlib.py:596: in import_path\n    importlib.import_module(module_name)\n/home/ken/.local/share/uv/python/cpython-3.13.13-linux-x86_64-gnu/lib/python3.13/importlib/__init__.py:88: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n<frozen importlib._bootstrap>:1395: in _gcd_import\n    ???\n<frozen importlib._bootstrap>:1360: in _find_and_load\n    ???\n<frozen importlib._bootstrap>:1331: in _find_and_load_unlocked\n    ???\n<frozen importlib._bootstrap>:935: in _load_unlocked\n    ???\n/home/ken/.cache/uv/archive-v0/9OiMNOQH-0TsWfRp/lib/python3.13/site-packages/_pytest/assertion/rewrite.py:188: in exec_module\n    exec(co, module.__dict__)\ntests/test_loglens.py:5: in <module>\n    from click.testing import CliRunner\nE   ModuleNotFoundError: No module named 'click'\n=========================== short test summary info ============================\nERROR tests/test_loglens.py\n!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!\n=============================== 1 error in 0.05s ===============================\n", stderr='uv run pytest tests/ -v\nerror: Recipe `check` failed on line 5 with exit code 2\n').returncode
+E        +  where 2 = CompletedProcess(args=['just', 'check'], returncode=2, stdout="============================= test session starts ==============================\nplatform linux -- Python 3.13.13, pytest-9.1.1, pluggy-1.6.0 -- /home/ken/.cache/uv/builds-v0/.tmp6KDiyx/bin/python\ncachedir: .pytest_cache\nrootdir: /home/ken/src/ai-agents/harness-eval-runs/run_03/05-baseline\nconfigfile: pyproject.toml\ncollecting ... collected 0 items / 1 error\n\n==================================== ERRORS ====================================\n____________________ ERROR collecting tests/test_loglens.py ____________________\nImportError while importing test module '/home/ken/src/ai-agents/harness-eval-runs/run_03/05-baseline/tests/test_loglens.py'.\nHint: make sure your test modules/packages have valid Python names.\nTraceback:\n/home/ken/.cache/uv/archive-v0/9OiMNOQH-0TsWfRp/lib/python3.13/site-packages/_pytest/python.py:508: in importtestmodule\n    mod = import_path(\n/home/ken/.cache/uv/archive-v0/9OiMNOQH-0TsWfRp/lib/python3.13/site-packages/_pytest/pathlib.py:596: in import_path\n    importlib.import_module(module_name)\n/home/ken/.local/share/uv/python/cpython-3.13.13-linux-x86_64-gnu/lib/python3.13/importlib/__init__.py:88: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n<frozen importlib._bootstrap>:1395: in _gcd_import\n    ???\n<frozen importlib._bootstrap>:1360: in _find_and_load\n    ???\n<frozen importlib._bootstrap>:1331: in _find_and_load_unlocked\n    ???\n<frozen importlib._bootstrap>:935: in _load_unlocked\n    ???\n/home/ken/.cache/uv/archive-v0/9OiMNOQH-0TsWfRp/lib/python3.13/site-packages/_pytest/assertion/rewrite.py:188: in exec_module\n    exec(co, module.__dict__)\ntests/test_loglens.py:5: in <module>\n    from click.testing import CliRunner\nE   ModuleNotFoundError: No module named 'click'\n=========================== short test summary info ============================\nERROR tests/test_loglens.py\n!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!\n=============================== 1 error in 0.05s ===============================\n", stderr='uv run pytest tests/ -v\nerror: Recipe `check` failed on line 5 with exit code 2\n').returncode
 
-_eval/run_03/acceptance/test_core.py:148: AssertionError
+_eval/run_03/acceptance/test_core.py:150: AssertionError
 _________________________ test_h2_aware_window_filter __________________________
 
-loglens = <function loglens.<locals>.run at 0x773bfed12200>
-mixed_tz_log = PosixPath('/tmp/pytest-of-ken/pytest-366/fixture1/mixed_tz.log')
+loglens = <function loglens.<locals>.run at 0x78aae8992160>
+mixed_tz_log = PosixPath('/tmp/pytest-of-ken/pytest-397/fixture1/mixed_tz.log')
 
     def test_h2_aware_window_filter(loglens, mixed_tz_log):
         r = loglens("errors", str(mixed_tz_log),
@@ -168,13 +170,13 @@ E                                      ^^^^^^^^^^^^^^^^^^^^^^^
 E         TypeError: can't compare offset-naive and offset-aware datetimes
 E         
 E       assert 1 == 0
-E        +  where 1 = <conftest.Result object at 0x773bfeb29a90>.rc
+E        +  where 1 = <conftest.Result object at 0x78aae89a5b70>.rc
 
 _eval/run_03/acceptance/test_hard.py:29: AssertionError
 _______________________________ test_h3_z_suffix _______________________________
 
-loglens = <function loglens.<locals>.run at 0x773bfed12200>
-mixed_tz_log = PosixPath('/tmp/pytest-of-ken/pytest-366/fixture1/mixed_tz.log')
+loglens = <function loglens.<locals>.run at 0x78aae8992160>
+mixed_tz_log = PosixPath('/tmp/pytest-of-ken/pytest-397/fixture1/mixed_tz.log')
 
     def test_h3_z_suffix(loglens, mixed_tz_log):
         r = loglens("errors", str(mixed_tz_log),
@@ -190,13 +192,13 @@ E                                      ^^^^^^^^^^^^^^^^^^^^^^^
 E         TypeError: can't compare offset-naive and offset-aware datetimes
 E         
 E       assert 1 == 0
-E        +  where 1 = <conftest.Result object at 0x773bfeb2a5f0>.rc
+E        +  where 1 = <conftest.Result object at 0x78aae89a66d0>.rc
 
 _eval/run_03/acceptance/test_hard.py:39: AssertionError
 _________________________ test_h4_boundary_convention __________________________
 
-loglens = <function loglens.<locals>.run at 0x773bfed12200>
-boundary_log = PosixPath('/tmp/pytest-of-ken/pytest-366/fixture2/boundary.log')
+loglens = <function loglens.<locals>.run at 0x78aae8992160>
+boundary_log = PosixPath('/tmp/pytest-of-ken/pytest-397/fixture2/boundary.log')
 
     def test_h4_boundary_convention(loglens, boundary_log):
         r = loglens("errors", str(boundary_log),
@@ -213,13 +215,13 @@ E                                      ^^^^^^^^^^^^^^^^^^^^^^^
 E         TypeError: can't compare offset-naive and offset-aware datetimes
 E         
 E       assert 1 == 0
-E        +  where 1 = <conftest.Result object at 0x773bfeba61a0>.rc
+E        +  where 1 = <conftest.Result object at 0x78aae880a1a0>.rc
 
 _eval/run_03/acceptance/test_hard.py:50: AssertionError
 _____________________________ test_h6_empty_window _____________________________
 
-loglens = <function loglens.<locals>.run at 0x773bfed12200>
-logfile = PosixPath('/tmp/pytest-of-ken/pytest-366/fixture0/sealed.log')
+loglens = <function loglens.<locals>.run at 0x78aae8992160>
+logfile = PosixPath('/tmp/pytest-of-ken/pytest-397/fixture0/sealed.log')
 
     def test_h6_empty_window(loglens, logfile):
         r = loglens("errors", str(logfile),
@@ -236,13 +238,13 @@ E                                      ^^^^^^^^^^^^^^^^^^^^^^^
 E         TypeError: can't compare offset-naive and offset-aware datetimes
 E         
 E       assert 1 == 0
-E        +  where 1 = <conftest.Result object at 0x773bfec9f1d0>.rc
+E        +  where 1 = <conftest.Result object at 0x78aae891f350>.rc
 
 _eval/run_03/acceptance/test_hard.py:80: AssertionError
 ___________________________ test_h7_json_everywhere ____________________________
 
-loglens_json = <function loglens_json.<locals>.run at 0x773bfed12de0>
-logfile = PosixPath('/tmp/pytest-of-ken/pytest-366/fixture0/sealed.log')
+loglens_json = <function loglens_json.<locals>.run at 0x78aae8992ca0>
+logfile = PosixPath('/tmp/pytest-of-ken/pytest-397/fixture0/sealed.log')
 
     def test_h7_json_everywhere(loglens_json, logfile):
         for args in (
@@ -259,7 +261,7 @@ E                                          ^^^^^^^^^^^^^^^^^^^^^^^
 E             TypeError: can't compare offset-naive and offset-aware datetimes
 E             
 E           assert 1 == 0
-E            +  where 1 = <conftest.Result object at 0x773bfeb619c0>.rc
+E            +  where 1 = <conftest.Result object at 0x78aae880ce10>.rc
 
 _eval/run_03/acceptance/test_hard.py:92: AssertionError
 =========================== short test summary info ============================
@@ -271,7 +273,7 @@ FAILED _eval/run_03/acceptance/test_hard.py::test_h3_z_suffix - AssertionErro...
 FAILED _eval/run_03/acceptance/test_hard.py::test_h4_boundary_convention - As...
 FAILED _eval/run_03/acceptance/test_hard.py::test_h6_empty_window - Assertion...
 FAILED _eval/run_03/acceptance/test_hard.py::test_h7_json_everywhere - Assert...
-========================= 8 failed, 13 passed in 1.28s =========================
+========================= 8 failed, 13 passed in 1.25s =========================
 
 # exit code: 1
 # tier summary:

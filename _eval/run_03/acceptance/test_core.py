@@ -140,9 +140,11 @@ def test_a11_fixture_delivered(repo):
 
 # A12 — one-command check
 def test_a12_one_command_check(repo):
-    assert (repo / "justfile").is_file(), (
-        "no justfile — README-documented equivalent requires manual review"
-    )
+    # `just` itself accepts justfile/Justfile/.justfile — the check must
+    # too (defect S2b: a capital-J repo was failed on the filename alone)
+    jf = [p for p in ("justfile", "Justfile", ".justfile", "JUSTFILE")
+          if (repo / p).is_file()]
+    assert jf, "no justfile — README-documented equivalent requires manual review"
     r = subprocess.run(["just", "check"], cwd=repo,
                        capture_output=True, text=True, timeout=600, env=clean_env())
     assert r.returncode == 0, f"just check failed:\n{r.stdout[-1500:]}\n{r.stderr[-500:]}"

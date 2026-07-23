@@ -127,8 +127,14 @@ def loglens_json(loglens):
 
     def run(*args: str) -> Result:
         r = loglens(*args, "--format", "json")
-        if r.rc != 0 and "unrecognized" in r.err:
-            r = loglens("--format", "json", *args)
+        # Retry on ANY nonzero exit, not on a parser-specific phrase:
+        # argparse says "unrecognized arguments", click says "No such
+        # option", others differ again (defect S2 — matching argparse's
+        # wording silently failed every click-based repo).
+        if r.rc != 0:
+            alt = loglens("--format", "json", *args)
+            if alt.rc == 0:
+                return alt
         return r
 
     return run

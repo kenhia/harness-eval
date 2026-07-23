@@ -1,16 +1,16 @@
 # acceptance: run_03 / 06-gstack
 # repo: /home/ken/src/ai-agents/harness-eval-runs/run_03/06-gstack @ 749c971
-# date: 2026-07-23T04:54:24+00:00
+# date: 2026-07-23T05:45:37+00:00
 
 ============================= test session starts ==============================
-platform linux -- Python 3.13.13, pytest-9.1.1, pluggy-1.6.0 -- /home/ken/.cache/uv/builds-v0/.tmpsmrU9R/bin/python
+platform linux -- Python 3.13.13, pytest-9.1.1, pluggy-1.6.0 -- /home/ken/.cache/uv/builds-v0/.tmpbtEJ8N/bin/python
 rootdir: /home/ken/src/ai-agents/harness-eval/_eval/run_03/acceptance
 configfile: pytest.ini
 collecting ... collected 21 items
 
 _eval/run_03/acceptance/test_core.py::test_a1_entrypoint PASSED          [  4%]
 _eval/run_03/acceptance/test_core.py::test_a2_summary_text PASSED        [  9%]
-_eval/run_03/acceptance/test_core.py::test_a3_summary_json FAILED        [ 14%]
+_eval/run_03/acceptance/test_core.py::test_a3_summary_json PASSED        [ 14%]
 _eval/run_03/acceptance/test_core.py::test_a4_top_tiebreak PASSED        [ 19%]
 _eval/run_03/acceptance/test_core.py::test_a5_errors_window PASSED       [ 23%]
 _eval/run_03/acceptance/test_core.py::test_a6_hourly PASSED              [ 28%]
@@ -26,40 +26,30 @@ _eval/run_03/acceptance/test_hard.py::test_h3_z_suffix PASSED            [ 71%]
 _eval/run_03/acceptance/test_hard.py::test_h4_boundary_convention PASSED [ 76%]
 _eval/run_03/acceptance/test_hard.py::test_h5_hourly_across_days PASSED  [ 80%]
 _eval/run_03/acceptance/test_hard.py::test_h6_empty_window PASSED        [ 85%]
-_eval/run_03/acceptance/test_hard.py::test_h7_json_everywhere FAILED     [ 90%]
-_eval/run_03/acceptance/test_hard.py::test_h8_dash_bytes FAILED          [ 95%]
+_eval/run_03/acceptance/test_hard.py::test_h7_json_everywhere PASSED     [ 90%]
+_eval/run_03/acceptance/test_hard.py::test_h8_dash_bytes PASSED          [ 95%]
 _eval/run_03/acceptance/test_hard.py::test_h9_naive_since FAILED         [100%]
 
 =================================== FAILURES ===================================
-_____________________________ test_a3_summary_json _____________________________
-
-loglens_json = <function loglens_json.<locals>.run at 0x7adcfd912de0>
-logfile = PosixPath('/tmp/pytest-of-ken/pytest-373/fixture0/sealed.log')
-
-    def test_a3_summary_json(loglens_json, logfile):
-        r = loglens_json("summary", str(logfile))
->       assert r.rc == 0, r.err[-500:]
-E       AssertionError: Usage: loglens summary [OPTIONS] LOGFILE
-E         Try 'loglens summary --help' for help.
-E         
-E         Error: No such option '--format'.
-E         
-E       assert 2 == 0
-E        +  where 2 = <conftest.Result object at 0x7adcfd8c25d0>.rc
-
-_eval/run_03/acceptance/test_core.py:35: AssertionError
 ___________________________ test_a7_malformed_stderr ___________________________
 
-loglens_json = <function loglens_json.<locals>.run at 0x7adcfd912de0>
-logfile = PosixPath('/tmp/pytest-of-ken/pytest-373/fixture0/sealed.log')
+loglens_json = <function loglens_json.<locals>.run at 0x734a3fbcaca0>
+logfile = PosixPath('/tmp/pytest-of-ken/pytest-398/fixture0/sealed.log')
 
     def test_a7_malformed_stderr(loglens_json, logfile):
         r = loglens_json("summary", str(logfile))
->       assert r.rc == 0
-E       assert 2 == 0
-E        +  where 2 = <conftest.Result object at 0x7adcfd8e8af0>.rc
+        assert r.rc == 0
+        r.json()  # stdout must remain a single valid JSON doc
+>       assert str(fx.N_MALFORMED) in r.err, (
+            f"malformed count {fx.N_MALFORMED} not on stderr (stderr: {r.err[:300]!r})"
+        )
+E       AssertionError: malformed count 2 not on stderr (stderr: '')
+E       assert '2' in ''
+E        +  where '2' = str(2)
+E        +    where 2 = fx.N_MALFORMED
+E        +  and   '' = <conftest.Result object at 0x734a3fbc0950>.err
 
-_eval/run_03/acceptance/test_core.py:84: AssertionError
+_eval/run_03/acceptance/test_core.py:86: AssertionError
 ________________________________ test_a9_pytest ________________________________
 
 repo = PosixPath('/home/ken/src/ai-agents/harness-eval-runs/run_03/06-gstack')
@@ -100,10 +90,10 @@ E         ERROR tests/test_analyzers.py
 E         ERROR tests/test_cli.py
 E         ERROR tests/test_parser.py
 E         !!!!!!!!!!!!!!!!!!! Interrupted: 3 errors during collection !!!!!!!!!!!!!!!!!!!!
-E         3 errors in 0.04s
+E         3 errors in 0.03s
 E         
 E       assert 2 == 0
-E        +  where 2 = CompletedProcess(args=['uv', 'run', 'pytest', '-q'], returncode=2, stdout="\n==================================== ERRORS ====================================\n___________________ ERROR collecting tests/test_analyzers.py ___________________\nImportError while importing test module '/home/ken/src/ai-agents/harness-eval-runs/run_03/06-gstack/tests/test_analyzers.py'.\nHint: make sure your test modules/packages have valid Python names.\nTraceback:\n/home/ken/.local/share/uv/python/cpython-3.13.13-linux-x86_64-gnu/lib/python3.13/importlib/__init__.py:88: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\ntests/test_analyzers.py:5: in <module>\n    from loglens.analyzers.errors import ErrorsAnalyzer\nE   ModuleNotFoundError: No module named 'loglens'\n______________________ ERROR collecting tests/test_cli.py ______________________\nImportError while importing test module '/home/ken/src/ai-agents/harness-eval-runs/run_03/06-gstack/tests/test_cli.py'.\nHint: make sure your test modules/packages have valid Python names.\nTraceback:\n/home/ken/.local/share/uv/python/cpython-3.13.13-linux-x86_64...vel:], package, level)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\ntests/test_cli.py:6: in <module>\n    from click.testing import CliRunner\nE   ModuleNotFoundError: No module named 'click'\n____________________ ERROR collecting tests/test_parser.py _____________________\nImportError while importing test module '/home/ken/src/ai-agents/harness-eval-runs/run_03/06-gstack/tests/test_parser.py'.\nHint: make sure your test modules/packages have valid Python names.\nTraceback:\n/home/ken/.local/share/uv/python/cpython-3.13.13-linux-x86_64-gnu/lib/python3.13/importlib/__init__.py:88: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\ntests/test_parser.py:3: in <module>\n    from loglens.parser import LogEntry, parse_log_file, parse_timestamp\nE   ModuleNotFoundError: No module named 'loglens'\n=========================== short test summary info ============================\nERROR tests/test_analyzers.py\nERROR tests/test_cli.py\nERROR tests/test_parser.py\n!!!!!!!!!!!!!!!!!!! Interrupted: 3 errors during collection !!!!!!!!!!!!!!!!!!!!\n3 errors in 0.04s\n", stderr='').returncode
+E        +  where 2 = CompletedProcess(args=['uv', 'run', 'pytest', '-q'], returncode=2, stdout="\n==================================== ERRORS ====================================\n___________________ ERROR collecting tests/test_analyzers.py ___________________\nImportError while importing test module '/home/ken/src/ai-agents/harness-eval-runs/run_03/06-gstack/tests/test_analyzers.py'.\nHint: make sure your test modules/packages have valid Python names.\nTraceback:\n/home/ken/.local/share/uv/python/cpython-3.13.13-linux-x86_64-gnu/lib/python3.13/importlib/__init__.py:88: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\ntests/test_analyzers.py:5: in <module>\n    from loglens.analyzers.errors import ErrorsAnalyzer\nE   ModuleNotFoundError: No module named 'loglens'\n______________________ ERROR collecting tests/test_cli.py ______________________\nImportError while importing test module '/home/ken/src/ai-agents/harness-eval-runs/run_03/06-gstack/tests/test_cli.py'.\nHint: make sure your test modules/packages have valid Python names.\nTraceback:\n/home/ken/.local/share/uv/python/cpython-3.13.13-linux-x86_64...vel:], package, level)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\ntests/test_cli.py:6: in <module>\n    from click.testing import CliRunner\nE   ModuleNotFoundError: No module named 'click'\n____________________ ERROR collecting tests/test_parser.py _____________________\nImportError while importing test module '/home/ken/src/ai-agents/harness-eval-runs/run_03/06-gstack/tests/test_parser.py'.\nHint: make sure your test modules/packages have valid Python names.\nTraceback:\n/home/ken/.local/share/uv/python/cpython-3.13.13-linux-x86_64-gnu/lib/python3.13/importlib/__init__.py:88: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\ntests/test_parser.py:3: in <module>\n    from loglens.parser import LogEntry, parse_log_file, parse_timestamp\nE   ModuleNotFoundError: No module named 'loglens'\n=========================== short test summary info ============================\nERROR tests/test_analyzers.py\nERROR tests/test_cli.py\nERROR tests/test_parser.py\n!!!!!!!!!!!!!!!!!!! Interrupted: 3 errors during collection !!!!!!!!!!!!!!!!!!!!\n3 errors in 0.03s\n", stderr='').returncode
 
 _eval/run_03/acceptance/test_core.py:106: AssertionError
 __________________________ test_a12_one_command_check __________________________
@@ -111,60 +101,54 @@ __________________________ test_a12_one_command_check __________________________
 repo = PosixPath('/home/ken/src/ai-agents/harness-eval-runs/run_03/06-gstack')
 
     def test_a12_one_command_check(repo):
->       assert (repo / "justfile").is_file(), (
-            "no justfile — README-documented equivalent requires manual review"
-        )
-E       AssertionError: no justfile — README-documented equivalent requires manual review
-E       assert False
-E        +  where False = is_file()
-E        +    where is_file = (PosixPath('/home/ken/src/ai-agents/harness-eval-runs/run_03/06-gstack') / 'justfile').is_file
-
-_eval/run_03/acceptance/test_core.py:143: AssertionError
-___________________________ test_h7_json_everywhere ____________________________
-
-loglens_json = <function loglens_json.<locals>.run at 0x7adcfd912de0>
-logfile = PosixPath('/tmp/pytest-of-ken/pytest-373/fixture0/sealed.log')
-
-    def test_h7_json_everywhere(loglens_json, logfile):
-        for args in (
-            ("errors", str(logfile), "--since", fx.WINDOW_SINCE, "--until", fx.WINDOW_UNTIL),
-            ("top", str(logfile), "--by", "status"),
-            ("hourly", str(logfile)),
-        ):
-            r = loglens_json(*args)
->           assert r.rc == 0, f"{args[0]} json rc={r.rc}: {r.err[-300:]}"
-E           AssertionError: errors json rc=2: Usage: loglens errors [OPTIONS] LOGFILE
-E             Try 'loglens errors --help' for help.
-E             
-E             Error: No such option '--format'.
-E             
-E           assert 2 == 0
-E            +  where 2 = <conftest.Result object at 0x7adcfd7757b0>.rc
-
-_eval/run_03/acceptance/test_hard.py:92: AssertionError
-______________________________ test_h8_dash_bytes ______________________________
-
-loglens_json = <function loglens_json.<locals>.run at 0x7adcfd912de0>
-tmp_path = PosixPath('/tmp/pytest-of-ken/pytest-373/test_h8_dash_bytes0')
-
-    def test_h8_dash_bytes(loglens_json, tmp_path):
-        f = tmp_path / "dash.log"
-        f.write_text(fx.DASH_BYTES + fx.clf_line("192.0.2.9", "/b", 200, 10, 7, 0) + "\n")
-        r = loglens_json("summary", str(f))
->       assert r.rc == 0, f"dash-bytes line crashed summary: {r.err[-500:]}"
-E       AssertionError: dash-bytes line crashed summary: Usage: loglens summary [OPTIONS] LOGFILE
-E         Try 'loglens summary --help' for help.
+        # `just` itself accepts justfile/Justfile/.justfile — the check must
+        # too (defect S2b: a capital-J repo was failed on the filename alone)
+        jf = [p for p in ("justfile", "Justfile", ".justfile", "JUSTFILE")
+              if (repo / p).is_file()]
+        assert jf, "no justfile — README-documented equivalent requires manual review"
+        r = subprocess.run(["just", "check"], cwd=repo,
+                           capture_output=True, text=True, timeout=600, env=clean_env())
+>       assert r.returncode == 0, f"just check failed:\n{r.stdout[-1500:]}\n{r.stderr[-500:]}"
+E       AssertionError: just check failed:
+E         -gstack/tests/test_cli.py'.
+E         Hint: make sure your test modules/packages have valid Python names.
+E         Traceback:
+E         /home/ken/.local/share/uv/python/cpython-3.13.13-linux-x86_64-gnu/lib/python3.13/importlib/__init__.py:88: in import_module
+E             return _bootstrap._gcd_import(name[level:], package, level)
+E                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E         tests/test_cli.py:6: in <module>
+E             from click.testing import CliRunner
+E         E   ModuleNotFoundError: No module named 'click'
+E         ____________________ ERROR collecting tests/test_parser.py _____________________
+E         ImportError while importing test module '/home/ken/src/ai-agents/harness-eval-runs/run_03/06-gstack/tests/test_parser.py'.
+E         Hint: make sure your test modules/packages have valid Python names.
+E         Traceback:
+E         /home/ken/.local/share/uv/python/cpython-3.13.13-linux-x86_64-gnu/lib/python3.13/importlib/__init__.py:88: in import_module
+E             return _bootstrap._gcd_import(name[level:], package, level)
+E                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E         tests/test_parser.py:3: in <module>
+E             from loglens.parser import LogEntry, parse_log_file, parse_timestamp
+E         E   ModuleNotFoundError: No module named 'loglens'
+E         =========================== short test summary info ============================
+E         ERROR tests/test_analyzers.py
+E         ERROR tests/test_cli.py
+E         ERROR tests/test_parser.py
+E         !!!!!!!!!!!!!!!!!!! Interrupted: 3 errors during collection !!!!!!!!!!!!!!!!!!!!
+E         ============================== 3 errors in 0.03s ===============================
 E         
-E         Error: No such option '--format'.
+E         ruff check src/ tests/
+E         ruff format --check src/ tests/
+E         pytest -v
+E         error: Recipe `test` failed on line 18 with exit code 2
 E         
 E       assert 2 == 0
-E        +  where 2 = <conftest.Result object at 0x7adcfd775b20>.rc
+E        +  where 2 = CompletedProcess(args=['just', 'check'], returncode=2, stdout="All checks passed!\n14 files already formatted\n============================= test session starts ==============================\nplatform linux -- Python 3.13.13, pytest-9.1.1, pluggy-1.6.0 -- /home/ken/.cache/uv/builds-v0/.tmpbtEJ8N/bin/python\ncachedir: .pytest_cache\nrootdir: /home/ken/src/ai-agents/harness-eval-runs/run_03/06-gstack\nconfigfile: pyproject.toml\ntestpaths: tests\ncollecting ... collected 0 items / 3 errors\n\n==================================== ERRORS ====================================\n___________________ ERROR collecting tests/test_analyzers.py ___________________\nImportError while importing test module '/home/ken/src/ai-agents/harness-eval-runs/run_03/06-gstack/tests/test_analyzers.py'.\nHint: make sure your test modules/packages have valid Python names.\nTraceback:\n/home/ken/.local/share/uv/python/cpython-3.13.13-linux-x86_64-gnu/lib/python3.13/importlib/__init__.py:88: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\ntests/test_analyzers.py:5: in <module>\n    from loglens.analyzers.errors ... No module named 'click'\n____________________ ERROR collecting tests/test_parser.py _____________________\nImportError while importing test module '/home/ken/src/ai-agents/harness-eval-runs/run_03/06-gstack/tests/test_parser.py'.\nHint: make sure your test modules/packages have valid Python names.\nTraceback:\n/home/ken/.local/share/uv/python/cpython-3.13.13-linux-x86_64-gnu/lib/python3.13/importlib/__init__.py:88: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\ntests/test_parser.py:3: in <module>\n    from loglens.parser import LogEntry, parse_log_file, parse_timestamp\nE   ModuleNotFoundError: No module named 'loglens'\n=========================== short test summary info ============================\nERROR tests/test_analyzers.py\nERROR tests/test_cli.py\nERROR tests/test_parser.py\n!!!!!!!!!!!!!!!!!!! Interrupted: 3 errors during collection !!!!!!!!!!!!!!!!!!!!\n============================== 3 errors in 0.03s ===============================\n", stderr='ruff check src/ tests/\nruff format --check src/ tests/\npytest -v\nerror: Recipe `test` failed on line 18 with exit code 2\n').returncode
 
-_eval/run_03/acceptance/test_hard.py:102: AssertionError
+_eval/run_03/acceptance/test_core.py:150: AssertionError
 _____________________________ test_h9_naive_since ______________________________
 
-loglens = <function loglens.<locals>.run at 0x7adcfd912200>
-mixed_tz_log = PosixPath('/tmp/pytest-of-ken/pytest-373/fixture1/mixed_tz.log')
+loglens = <function loglens.<locals>.run at 0x734a3fbca160>
+mixed_tz_log = PosixPath('/tmp/pytest-of-ken/pytest-398/fixture1/mixed_tz.log')
 
     def test_h9_naive_since(loglens, mixed_tz_log):
         r = loglens("errors", str(mixed_tz_log), "--since", "2026-07-12T06:00:00")
@@ -198,16 +182,13 @@ E         ...Full output truncated (24 lines hidden), use '-vv' to show
 
 _eval/run_03/acceptance/test_hard.py:116: AssertionError
 =========================== short test summary info ============================
-FAILED _eval/run_03/acceptance/test_core.py::test_a3_summary_json - Assertion...
-FAILED _eval/run_03/acceptance/test_core.py::test_a7_malformed_stderr - asser...
+FAILED _eval/run_03/acceptance/test_core.py::test_a7_malformed_stderr - Asser...
 FAILED _eval/run_03/acceptance/test_core.py::test_a9_pytest - AssertionError:...
 FAILED _eval/run_03/acceptance/test_core.py::test_a12_one_command_check - Ass...
-FAILED _eval/run_03/acceptance/test_hard.py::test_h7_json_everywhere - Assert...
-FAILED _eval/run_03/acceptance/test_hard.py::test_h8_dash_bytes - AssertionEr...
 FAILED _eval/run_03/acceptance/test_hard.py::test_h9_naive_since - AssertionE...
-========================= 7 failed, 14 passed in 1.24s =========================
+========================= 4 failed, 17 passed in 1.56s =========================
 
 # exit code: 1
 # tier summary:
-#   core: 8/12
-#   hard: 6/9
+#   core: 9/12
+#   hard: 8/9

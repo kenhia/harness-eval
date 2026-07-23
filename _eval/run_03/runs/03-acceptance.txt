@@ -1,20 +1,20 @@
 # acceptance: run_03 / 03-working-skill-repo
 # repo: /home/ken/src/ai-agents/harness-eval-runs/run_03/03-working-skill-repo @ d958fd5
-# date: 2026-07-23T05:04:00+00:00
+# date: 2026-07-23T05:45:33+00:00
 
 ============================= test session starts ==============================
-platform linux -- Python 3.13.13, pytest-9.1.1, pluggy-1.6.0 -- /home/ken/.cache/uv/builds-v0/.tmpMcqzrf/bin/python
+platform linux -- Python 3.13.13, pytest-9.1.1, pluggy-1.6.0 -- /home/ken/.cache/uv/builds-v0/.tmpdx1aLP/bin/python
 rootdir: /home/ken/src/ai-agents/harness-eval/_eval/run_03/acceptance
 configfile: pytest.ini
 collecting ... collected 21 items
 
 _eval/run_03/acceptance/test_core.py::test_a1_entrypoint PASSED          [  4%]
 _eval/run_03/acceptance/test_core.py::test_a2_summary_text PASSED        [  9%]
-_eval/run_03/acceptance/test_core.py::test_a3_summary_json FAILED        [ 14%]
+_eval/run_03/acceptance/test_core.py::test_a3_summary_json PASSED        [ 14%]
 _eval/run_03/acceptance/test_core.py::test_a4_top_tiebreak PASSED        [ 19%]
 _eval/run_03/acceptance/test_core.py::test_a5_errors_window PASSED       [ 23%]
 _eval/run_03/acceptance/test_core.py::test_a6_hourly PASSED              [ 28%]
-_eval/run_03/acceptance/test_core.py::test_a7_malformed_stderr FAILED    [ 33%]
+_eval/run_03/acceptance/test_core.py::test_a7_malformed_stderr PASSED    [ 33%]
 _eval/run_03/acceptance/test_core.py::test_a8_exit_codes PASSED          [ 38%]
 _eval/run_03/acceptance/test_core.py::test_a9_pytest PASSED              [ 42%]
 _eval/run_03/acceptance/test_core.py::test_a10_ruff PASSED               [ 47%]
@@ -26,85 +26,15 @@ _eval/run_03/acceptance/test_hard.py::test_h3_z_suffix PASSED            [ 71%]
 _eval/run_03/acceptance/test_hard.py::test_h4_boundary_convention PASSED [ 76%]
 _eval/run_03/acceptance/test_hard.py::test_h5_hourly_across_days PASSED  [ 80%]
 _eval/run_03/acceptance/test_hard.py::test_h6_empty_window PASSED        [ 85%]
-_eval/run_03/acceptance/test_hard.py::test_h7_json_everywhere FAILED     [ 90%]
-_eval/run_03/acceptance/test_hard.py::test_h8_dash_bytes FAILED          [ 95%]
+_eval/run_03/acceptance/test_hard.py::test_h7_json_everywhere PASSED     [ 90%]
+_eval/run_03/acceptance/test_hard.py::test_h8_dash_bytes PASSED          [ 95%]
 _eval/run_03/acceptance/test_hard.py::test_h9_naive_since FAILED         [100%]
 
 =================================== FAILURES ===================================
-_____________________________ test_a3_summary_json _____________________________
-
-loglens_json = <function loglens_json.<locals>.run at 0x768031992e80>
-logfile = PosixPath('/tmp/pytest-of-ken/pytest-383/fixture0/sealed.log')
-
-    def test_a3_summary_json(loglens_json, logfile):
-        r = loglens_json("summary", str(logfile))
->       assert r.rc == 0, r.err[-500:]
-E       AssertionError: Usage: loglens summary [OPTIONS] LOGFILE
-E         Try 'loglens summary --help' for help.
-E         
-E         Error: No such option '--format'.
-E         
-E       assert 2 == 0
-E        +  where 2 = <conftest.Result object at 0x7680319425d0>.rc
-
-_eval/run_03/acceptance/test_core.py:35: AssertionError
-___________________________ test_a7_malformed_stderr ___________________________
-
-loglens_json = <function loglens_json.<locals>.run at 0x768031992e80>
-logfile = PosixPath('/tmp/pytest-of-ken/pytest-383/fixture0/sealed.log')
-
-    def test_a7_malformed_stderr(loglens_json, logfile):
-        r = loglens_json("summary", str(logfile))
->       assert r.rc == 0
-E       assert 2 == 0
-E        +  where 2 = <conftest.Result object at 0x76803196caf0>.rc
-
-_eval/run_03/acceptance/test_core.py:84: AssertionError
-___________________________ test_h7_json_everywhere ____________________________
-
-loglens_json = <function loglens_json.<locals>.run at 0x768031992e80>
-logfile = PosixPath('/tmp/pytest-of-ken/pytest-383/fixture0/sealed.log')
-
-    def test_h7_json_everywhere(loglens_json, logfile):
-        for args in (
-            ("errors", str(logfile), "--since", fx.WINDOW_SINCE, "--until", fx.WINDOW_UNTIL),
-            ("top", str(logfile), "--by", "status"),
-            ("hourly", str(logfile)),
-        ):
-            r = loglens_json(*args)
->           assert r.rc == 0, f"{args[0]} json rc={r.rc}: {r.err[-300:]}"
-E           AssertionError: errors json rc=2: Usage: loglens errors [OPTIONS] LOGFILE
-E             Try 'loglens errors --help' for help.
-E             
-E             Error: No such option '--format'.
-E             
-E           assert 2 == 0
-E            +  where 2 = <conftest.Result object at 0x76803180c890>.rc
-
-_eval/run_03/acceptance/test_hard.py:92: AssertionError
-______________________________ test_h8_dash_bytes ______________________________
-
-loglens_json = <function loglens_json.<locals>.run at 0x768031992e80>
-tmp_path = PosixPath('/tmp/pytest-of-ken/pytest-383/test_h8_dash_bytes0')
-
-    def test_h8_dash_bytes(loglens_json, tmp_path):
-        f = tmp_path / "dash.log"
-        f.write_text(fx.DASH_BYTES + fx.clf_line("192.0.2.9", "/b", 200, 10, 7, 0) + "\n")
-        r = loglens_json("summary", str(f))
->       assert r.rc == 0, f"dash-bytes line crashed summary: {r.err[-500:]}"
-E       AssertionError: dash-bytes line crashed summary: Usage: loglens summary [OPTIONS] LOGFILE
-E         Try 'loglens summary --help' for help.
-E         
-E         Error: No such option '--format'.
-E         
-E       assert 2 == 0
-E        +  where 2 = <conftest.Result object at 0x76803180cb50>.rc
-
-_eval/run_03/acceptance/test_hard.py:102: AssertionError
 _____________________________ test_h9_naive_since ______________________________
 
-loglens = <function loglens.<locals>.run at 0x7680319922a0>
-mixed_tz_log = PosixPath('/tmp/pytest-of-ken/pytest-383/fixture1/mixed_tz.log')
+loglens = <function loglens.<locals>.run at 0x7c30a9dea2a0>
+mixed_tz_log = PosixPath('/tmp/pytest-of-ken/pytest-395/fixture1/mixed_tz.log')
 
     def test_h9_naive_since(loglens, mixed_tz_log):
         r = loglens("errors", str(mixed_tz_log), "--since", "2026-07-12T06:00:00")
@@ -142,14 +72,10 @@ test_core.py::test_a1_entrypoint
 
 -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
 =========================== short test summary info ============================
-FAILED _eval/run_03/acceptance/test_core.py::test_a3_summary_json - Assertion...
-FAILED _eval/run_03/acceptance/test_core.py::test_a7_malformed_stderr - asser...
-FAILED _eval/run_03/acceptance/test_hard.py::test_h7_json_everywhere - Assert...
-FAILED _eval/run_03/acceptance/test_hard.py::test_h8_dash_bytes - AssertionEr...
 FAILED _eval/run_03/acceptance/test_hard.py::test_h9_naive_since - AssertionE...
-=================== 5 failed, 16 passed, 1 warning in 1.13s ====================
+=================== 1 failed, 20 passed, 1 warning in 1.49s ====================
 
 # exit code: 1
 # tier summary:
-#   core: 10/12
-#   hard: 6/9
+#   core: 12/12
+#   hard: 8/9

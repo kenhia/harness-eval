@@ -45,6 +45,56 @@ failure on the same repos as before).
 behavior worth reporting — no run_01/run_02 frontier cell did it, two
 of four Haiku cells did.
 
+## S2 — `--format` fallback matched argparse's wording only (2026-07-22)
+
+**Found by grader fable1 during grading** (flagged for adjudication
+rather than self-adjudicated — correct protocol), independently
+corroborated: sol's sheets criticized the same repos for "unsupported
+acceptance placement of `--format`".
+
+**Symptom.** The `loglens_json` fixture ran `<cmd> … --format json` and
+retried with the leading form `--format json <cmd> …` **only when
+stderr contained "unrecognized"** — argparse's phrasing. Click emits
+`Error: No such option '--format'.`, so the retry never fired for
+click-based repos, failing them on JSON checks they actually pass.
+
+**Verified empirically** (03, 06): trailing form → rc=2, `No such
+option`; leading form → rc=0 and valid JSON. The spec calls `--format`
+a **global option**, and accepting a global option before the
+subcommand is the conventional reading — these repos were right and the
+suite was wrong. Same class as S1.
+
+**Fix.** Retry on ANY nonzero exit and keep the alternative only if it
+succeeds (parser-agnostic). Plus **S2b**: A12 asserted a lowercase
+`justfile`, while `just` itself accepts `justfile`/`Justfile`/
+`.justfile` — 06 ships `Justfile`; the check is now case-tolerant.
+Regression-checked against the run_01 trees: unchanged.
+
+**Impact — re-run of all seven cells** (pre-S2 archives in
+`.scratch/run_03-pre-S2/`):
+
+| cell | before | after | flipped to PASS |
+|---|---|---|---|
+| 03-working-skill-repo | 10/12, 6/9 | **12/12, 8/9** | A3, A7, H7, H8 |
+| 06-gstack | 8/12, 6/9 | **9/12, 8/9** | A3, H7, H8 |
+| 01, 02, 04, 05, 07 | — | unchanged | — |
+
+Correctness mapping consequence: 03 → 5 (was 2.5), 06 → 2.5 (was 1.5).
+Residual genuine failures stand: 03 still fails H9 (naive `--since`);
+06 still fails A7, A9, A12, H9 (JSON malformed accounting, its own
+test suite from a clean env, `just check`).
+
+**Agent-owned residue not excused by S2:** 03's README documents the
+trailing `--format` form its own CLI rejects (a real docs defect);
+06's dependency layout breaks `uv run pytest` and its `just check`
+from a clean environment regardless of filename case.
+
+**Grading consequence.** Both graders scored 03 and 06 against the
+pre-S2 tallies, and their non-correctness notes partly rest on
+S2-caused failures. Correctness is mechanical (mapping table) and can
+be recomputed; the other dimensions need a targeted delta re-grade of
+those two cells. See the sprint record for the chosen handling.
+
 ## I1 — interrupted run, cell 05 (2026-07-22)
 
 The matrix stopped after cell 04: cell 05-baseline was mid-run when the

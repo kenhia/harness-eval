@@ -1,9 +1,9 @@
 # acceptance: run_03 / 04-kprojects
 # repo: /home/ken/src/ai-agents/harness-eval-runs/run_03/04-kprojects @ b4b2b05
-# date: 2026-07-23T04:39:51+00:00
+# date: 2026-07-23T05:45:34+00:00
 
 ============================= test session starts ==============================
-platform linux -- Python 3.13.13, pytest-9.1.1, pluggy-1.6.0 -- /home/ken/.cache/uv/builds-v0/.tmpZZYz6s/bin/python
+platform linux -- Python 3.13.13, pytest-9.1.1, pluggy-1.6.0 -- /home/ken/.cache/uv/builds-v0/.tmpJUgyFx/bin/python
 rootdir: /home/ken/src/ai-agents/harness-eval/_eval/run_03/acceptance
 configfile: pytest.ini
 collecting ... collected 21 items
@@ -33,20 +33,20 @@ _eval/run_03/acceptance/test_hard.py::test_h9_naive_since FAILED         [100%]
 =================================== FAILURES ===================================
 ______________________________ test_a1_entrypoint ______________________________
 
-loglens = <function loglens.<locals>.run at 0x771dd5792160>
+loglens = <function loglens.<locals>.run at 0x7e1a0e712160>
 
     def test_a1_entrypoint(loglens):
         r = loglens("--help")
 >       assert r.rc == 0, f"loglens --help rc={r.rc}: {r.err[-500:]}"
 E       AssertionError: loglens --help rc=1: 
 E       assert 1 == 0
-E        +  where 1 = <conftest.Result object at 0x771dd572a510>.rc
+E        +  where 1 = <conftest.Result object at 0x7e1a0e6aa510>.rc
 
 _eval/run_03/acceptance/test_core.py:17: AssertionError
 _____________________________ test_h9_naive_since ______________________________
 
-loglens = <function loglens.<locals>.run at 0x771dd5792160>
-mixed_tz_log = PosixPath('/tmp/pytest-of-ken/pytest-365/fixture1/mixed_tz.log')
+loglens = <function loglens.<locals>.run at 0x7e1a0e712160>
+mixed_tz_log = PosixPath('/tmp/pytest-of-ken/pytest-396/fixture1/mixed_tz.log')
 
     def test_h9_naive_since(loglens, mixed_tz_log):
         r = loglens("errors", str(mixed_tz_log), "--since", "2026-07-12T06:00:00")
@@ -83,7 +83,7 @@ _eval/run_03/acceptance/test_hard.py:116: AssertionError
 =========================== short test summary info ============================
 FAILED _eval/run_03/acceptance/test_core.py::test_a1_entrypoint - AssertionEr...
 FAILED _eval/run_03/acceptance/test_hard.py::test_h9_naive_since - AssertionE...
-========================= 2 failed, 19 passed in 1.10s =========================
+========================= 2 failed, 19 passed in 1.14s =========================
 
 # exit code: 1
 # tier summary:
