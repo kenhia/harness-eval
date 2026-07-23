@@ -1,0 +1,91 @@
+# acceptance: run_03 / 04-kprojects
+# repo: /home/ken/src/ai-agents/harness-eval-runs/run_03/04-kprojects @ b4b2b05
+# date: 2026-07-23T04:39:51+00:00
+
+============================= test session starts ==============================
+platform linux -- Python 3.13.13, pytest-9.1.1, pluggy-1.6.0 -- /home/ken/.cache/uv/builds-v0/.tmpZZYz6s/bin/python
+rootdir: /home/ken/src/ai-agents/harness-eval/_eval/run_03/acceptance
+configfile: pytest.ini
+collecting ... collected 21 items
+
+_eval/run_03/acceptance/test_core.py::test_a1_entrypoint FAILED          [  4%]
+_eval/run_03/acceptance/test_core.py::test_a2_summary_text PASSED        [  9%]
+_eval/run_03/acceptance/test_core.py::test_a3_summary_json PASSED        [ 14%]
+_eval/run_03/acceptance/test_core.py::test_a4_top_tiebreak PASSED        [ 19%]
+_eval/run_03/acceptance/test_core.py::test_a5_errors_window PASSED       [ 23%]
+_eval/run_03/acceptance/test_core.py::test_a6_hourly PASSED              [ 28%]
+_eval/run_03/acceptance/test_core.py::test_a7_malformed_stderr PASSED    [ 33%]
+_eval/run_03/acceptance/test_core.py::test_a8_exit_codes PASSED          [ 38%]
+_eval/run_03/acceptance/test_core.py::test_a9_pytest PASSED              [ 42%]
+_eval/run_03/acceptance/test_core.py::test_a10_ruff PASSED               [ 47%]
+_eval/run_03/acceptance/test_core.py::test_a11_fixture_delivered PASSED  [ 52%]
+_eval/run_03/acceptance/test_core.py::test_a12_one_command_check PASSED  [ 57%]
+_eval/run_03/acceptance/test_hard.py::test_h1_mixed_offsets_summary PASSED [ 61%]
+_eval/run_03/acceptance/test_hard.py::test_h2_aware_window_filter PASSED [ 66%]
+_eval/run_03/acceptance/test_hard.py::test_h3_z_suffix PASSED            [ 71%]
+_eval/run_03/acceptance/test_hard.py::test_h4_boundary_convention PASSED [ 76%]
+_eval/run_03/acceptance/test_hard.py::test_h5_hourly_across_days PASSED  [ 80%]
+_eval/run_03/acceptance/test_hard.py::test_h6_empty_window PASSED        [ 85%]
+_eval/run_03/acceptance/test_hard.py::test_h7_json_everywhere PASSED     [ 90%]
+_eval/run_03/acceptance/test_hard.py::test_h8_dash_bytes PASSED          [ 95%]
+_eval/run_03/acceptance/test_hard.py::test_h9_naive_since FAILED         [100%]
+
+=================================== FAILURES ===================================
+______________________________ test_a1_entrypoint ______________________________
+
+loglens = <function loglens.<locals>.run at 0x771dd5792160>
+
+    def test_a1_entrypoint(loglens):
+        r = loglens("--help")
+>       assert r.rc == 0, f"loglens --help rc={r.rc}: {r.err[-500:]}"
+E       AssertionError: loglens --help rc=1: 
+E       assert 1 == 0
+E        +  where 1 = <conftest.Result object at 0x771dd572a510>.rc
+
+_eval/run_03/acceptance/test_core.py:17: AssertionError
+_____________________________ test_h9_naive_since ______________________________
+
+loglens = <function loglens.<locals>.run at 0x771dd5792160>
+mixed_tz_log = PosixPath('/tmp/pytest-of-ken/pytest-365/fixture1/mixed_tz.log')
+
+    def test_h9_naive_since(loglens, mixed_tz_log):
+        r = loglens("errors", str(mixed_tz_log), "--since", "2026-07-12T06:00:00")
+>       assert "Traceback" not in r.err, (
+            f"naive --since crashed with a traceback:\n{r.err[-800:]}"
+        )
+E       AssertionError: naive --since crashed with a traceback:
+E         /loglens", line 10, in <module>
+E             sys.exit(main())
+E                      ^^^^^^
+E           File "/home/ken/src/ai-agents/harness-eval-runs/run_03/04-kprojects/loglens/cli.py", line 230, in main
+E             exit_code = cmd_errors(logfile, since, until, output_format)
+E                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           File "/home/ken/src/ai-agents/harness-eval-runs/run_03/04-kprojects/loglens/cli.py", line 129, in cmd_errors
+E             errors = get_errors(entries, since_dt, until_dt)
+E                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           File "/home/ken/src/ai-agents/harness-eval-runs/run_03/04-kprojects/loglens/analysis.py", line 71, in get_errors
+E             and (since is None or e.timestamp >= since)
+E                                   ^^^^^^^^^^^^^^^^^^^^
+E         TypeError: can't compare offset-naive and offset-aware datetimes
+E         
+E       assert 'Traceback' not in 'Traceback (... datetimes\n'
+E         
+E         'Traceback' is contained here:
+E           Traceback (most recent call last):
+E         ? +++++++++
+E             File "/home/ken/src/ai-agents/harness-eval-runs/run_03/04-kprojects/.venv/bin/loglens", line 10, in <module>
+E               sys.exit(main())
+E                        ^^^^^^...
+E         
+E         ...Full output truncated (10 lines hidden), use '-vv' to show
+
+_eval/run_03/acceptance/test_hard.py:116: AssertionError
+=========================== short test summary info ============================
+FAILED _eval/run_03/acceptance/test_core.py::test_a1_entrypoint - AssertionEr...
+FAILED _eval/run_03/acceptance/test_hard.py::test_h9_naive_since - AssertionE...
+========================= 2 failed, 19 passed in 1.10s =========================
+
+# exit code: 1
+# tier summary:
+#   core: 11/12
+#   hard: 8/9

@@ -1,0 +1,190 @@
+# acceptance: run_03 / 01-atv-starterkit
+# repo: /home/ken/src/ai-agents/harness-eval-runs/run_03/01-atv-starterkit @ db8c6b2
+# date: 2026-07-23T04:39:46+00:00
+
+============================= test session starts ==============================
+platform linux -- Python 3.13.13, pytest-9.1.1, pluggy-1.6.0 -- /home/ken/.cache/uv/builds-v0/.tmpWQ1q9M/bin/python
+rootdir: /home/ken/src/ai-agents/harness-eval/_eval/run_03/acceptance
+configfile: pytest.ini
+collecting ... collected 21 items
+
+_eval/run_03/acceptance/test_core.py::test_a1_entrypoint PASSED          [  4%]
+_eval/run_03/acceptance/test_core.py::test_a2_summary_text PASSED        [  9%]
+_eval/run_03/acceptance/test_core.py::test_a3_summary_json PASSED        [ 14%]
+_eval/run_03/acceptance/test_core.py::test_a4_top_tiebreak PASSED        [ 19%]
+_eval/run_03/acceptance/test_core.py::test_a5_errors_window FAILED       [ 23%]
+_eval/run_03/acceptance/test_core.py::test_a6_hourly PASSED              [ 28%]
+_eval/run_03/acceptance/test_core.py::test_a7_malformed_stderr PASSED    [ 33%]
+_eval/run_03/acceptance/test_core.py::test_a8_exit_codes PASSED          [ 38%]
+_eval/run_03/acceptance/test_core.py::test_a9_pytest PASSED              [ 42%]
+_eval/run_03/acceptance/test_core.py::test_a10_ruff PASSED               [ 47%]
+_eval/run_03/acceptance/test_core.py::test_a11_fixture_delivered PASSED  [ 52%]
+_eval/run_03/acceptance/test_core.py::test_a12_one_command_check PASSED  [ 57%]
+_eval/run_03/acceptance/test_hard.py::test_h1_mixed_offsets_summary PASSED [ 61%]
+_eval/run_03/acceptance/test_hard.py::test_h2_aware_window_filter FAILED [ 66%]
+_eval/run_03/acceptance/test_hard.py::test_h3_z_suffix FAILED            [ 71%]
+_eval/run_03/acceptance/test_hard.py::test_h4_boundary_convention FAILED [ 76%]
+_eval/run_03/acceptance/test_hard.py::test_h5_hourly_across_days PASSED  [ 80%]
+_eval/run_03/acceptance/test_hard.py::test_h6_empty_window FAILED        [ 85%]
+_eval/run_03/acceptance/test_hard.py::test_h7_json_everywhere FAILED     [ 90%]
+_eval/run_03/acceptance/test_hard.py::test_h8_dash_bytes PASSED          [ 95%]
+_eval/run_03/acceptance/test_hard.py::test_h9_naive_since PASSED         [100%]
+
+=================================== FAILURES ===================================
+____________________________ test_a5_errors_window _____________________________
+
+loglens = <function loglens.<locals>.run at 0x721c785ca160>
+logfile = PosixPath('/tmp/pytest-of-ken/pytest-359/fixture0/sealed.log')
+
+    def test_a5_errors_window(loglens, logfile):
+        r = loglens("errors", str(logfile))
+        assert r.rc == 0, r.err[-500:]
+        (status, path), count = fx.TOP_ERROR_GROUP
+        assert str(status) in r.out and path in r.out, f"top group {status} {path} missing:\n{r.out}"
+        first_group_pos = r.out.find(str(status))
+        for s, _p in fx.ERROR_GROUPS:
+            if s != status and (opos := r.out.find(str(s))) >= 0:
+                assert first_group_pos <= opos, f"most-frequent group not first:\n{r.out}"
+    
+        r = loglens("errors", str(logfile), "--since", fx.WINDOW_SINCE, "--until", fx.WINDOW_UNTIL)
+>       assert r.rc == 0, f"windowed errors failed: {r.err[-500:]}"
+E       AssertionError: windowed errors failed: ens/loglens/cli.py", line 157, in cmd_errors
+E             error_entries = filter_errors(entries, since, until)
+E                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           File "/home/ken/src/ai-agents/harness-eval-runs/run_03/01-atv-starterkit/loglens/loglens/handlers.py", line 70, in filter_errors
+E             filtered = [entry for entry in filtered if entry.timestamp >= since]
+E                                                        ^^^^^^^^^^^^^^^^^^^^^^^^
+E         TypeError: can't compare offset-naive and offset-aware datetimes
+E         
+E       assert 1 == 0
+E        +  where 1 = <conftest.Result object at 0x721c785a46b0>.rc
+
+_eval/run_03/acceptance/test_core.py:66: AssertionError
+_________________________ test_h2_aware_window_filter __________________________
+
+loglens = <function loglens.<locals>.run at 0x721c785ca160>
+mixed_tz_log = PosixPath('/tmp/pytest-of-ken/pytest-359/fixture1/mixed_tz.log')
+
+    def test_h2_aware_window_filter(loglens, mixed_tz_log):
+        r = loglens("errors", str(mixed_tz_log),
+                    "--since", "2026-07-12T06:00:00+00:00",
+                    "--until", "2026-07-12T09:00:00+00:00")
+>       assert r.rc == 0, f"aware/naive datetime crash: {r.err[-800:]}"
+E       AssertionError: aware/naive datetime crash: module>
+E             sys.exit(main())
+E                      ^^^^^^
+E           File "/home/ken/src/ai-agents/harness-eval-runs/run_03/01-atv-starterkit/loglens/loglens/cli.py", line 253, in main
+E             return args.func(args)
+E                    ^^^^^^^^^^^^^^^
+E           File "/home/ken/src/ai-agents/harness-eval-runs/run_03/01-atv-starterkit/loglens/loglens/cli.py", line 157, in cmd_errors
+E             error_entries = filter_errors(entries, since, until)
+E                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           File "/home/ken/src/ai-agents/harness-eval-runs/run_03/01-atv-starterkit/loglens/loglens/handlers.py", line 70, in filter_errors
+E             filtered = [entry for entry in filtered if entry.timestamp >= since]
+E                                                        ^^^^^^^^^^^^^^^^^^^^^^^^
+E         TypeError: can't compare offset-naive and offset-aware datetimes
+E         
+E       assert 1 == 0
+E        +  where 1 = <conftest.Result object at 0x721c7858f860>.rc
+
+_eval/run_03/acceptance/test_hard.py:29: AssertionError
+_______________________________ test_h3_z_suffix _______________________________
+
+loglens = <function loglens.<locals>.run at 0x721c785ca160>
+mixed_tz_log = PosixPath('/tmp/pytest-of-ken/pytest-359/fixture1/mixed_tz.log')
+
+    def test_h3_z_suffix(loglens, mixed_tz_log):
+        r = loglens("errors", str(mixed_tz_log),
+                    "--since", "2026-07-12T06:00:00Z", "--until", "2026-07-12T09:00:00Z")
+>       assert r.rc == 0, f"Z-suffix ISO 8601 rejected/crashed: {r.err[-500:]}"
+E       AssertionError: Z-suffix ISO 8601 rejected/crashed: ens/loglens/cli.py", line 157, in cmd_errors
+E             error_entries = filter_errors(entries, since, until)
+E                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           File "/home/ken/src/ai-agents/harness-eval-runs/run_03/01-atv-starterkit/loglens/loglens/handlers.py", line 70, in filter_errors
+E             filtered = [entry for entry in filtered if entry.timestamp >= since]
+E                                                        ^^^^^^^^^^^^^^^^^^^^^^^^
+E         TypeError: can't compare offset-naive and offset-aware datetimes
+E         
+E       assert 1 == 0
+E        +  where 1 = <conftest.Result object at 0x721c785568d0>.rc
+
+_eval/run_03/acceptance/test_hard.py:39: AssertionError
+_________________________ test_h4_boundary_convention __________________________
+
+loglens = <function loglens.<locals>.run at 0x721c785ca160>
+boundary_log = PosixPath('/tmp/pytest-of-ken/pytest-359/fixture2/boundary.log')
+
+    def test_h4_boundary_convention(loglens, boundary_log):
+        r = loglens("errors", str(boundary_log),
+                    "--since", "2026-07-12T06:00:00+00:00",
+                    "--until", "2026-07-12T09:00:00+00:00")
+>       assert r.rc == 0, r.err[-500:]
+E       AssertionError: ens/loglens/cli.py", line 157, in cmd_errors
+E             error_entries = filter_errors(entries, since, until)
+E                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           File "/home/ken/src/ai-agents/harness-eval-runs/run_03/01-atv-starterkit/loglens/loglens/handlers.py", line 70, in filter_errors
+E             filtered = [entry for entry in filtered if entry.timestamp >= since]
+E                                                        ^^^^^^^^^^^^^^^^^^^^^^^^
+E         TypeError: can't compare offset-naive and offset-aware datetimes
+E         
+E       assert 1 == 0
+E        +  where 1 = <conftest.Result object at 0x721c78556d50>.rc
+
+_eval/run_03/acceptance/test_hard.py:50: AssertionError
+_____________________________ test_h6_empty_window _____________________________
+
+loglens = <function loglens.<locals>.run at 0x721c785ca160>
+logfile = PosixPath('/tmp/pytest-of-ken/pytest-359/fixture0/sealed.log')
+
+    def test_h6_empty_window(loglens, logfile):
+        r = loglens("errors", str(logfile),
+                    "--since", "1971-01-01T00:00:00+00:00",
+                    "--until", "1971-01-02T00:00:00+00:00")
+>       assert r.rc == 0, f"empty window must not error (rc={r.rc}): {r.err[-500:]}"
+E       AssertionError: empty window must not error (rc=1): ens/loglens/cli.py", line 157, in cmd_errors
+E             error_entries = filter_errors(entries, since, until)
+E                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           File "/home/ken/src/ai-agents/harness-eval-runs/run_03/01-atv-starterkit/loglens/loglens/handlers.py", line 70, in filter_errors
+E             filtered = [entry for entry in filtered if entry.timestamp >= since]
+E                                                        ^^^^^^^^^^^^^^^^^^^^^^^^
+E         TypeError: can't compare offset-naive and offset-aware datetimes
+E         
+E       assert 1 == 0
+E        +  where 1 = <conftest.Result object at 0x721c78384aa0>.rc
+
+_eval/run_03/acceptance/test_hard.py:80: AssertionError
+___________________________ test_h7_json_everywhere ____________________________
+
+loglens_json = <function loglens_json.<locals>.run at 0x721c785caca0>
+logfile = PosixPath('/tmp/pytest-of-ken/pytest-359/fixture0/sealed.log')
+
+    def test_h7_json_everywhere(loglens_json, logfile):
+        for args in (
+            ("errors", str(logfile), "--since", fx.WINDOW_SINCE, "--until", fx.WINDOW_UNTIL),
+            ("top", str(logfile), "--by", "status"),
+            ("hourly", str(logfile)),
+        ):
+            r = loglens_json(*args)
+>           assert r.rc == 0, f"{args[0]} json rc={r.rc}: {r.err[-300:]}"
+E           AssertionError: errors json rc=1: val-runs/run_03/01-atv-starterkit/loglens/loglens/handlers.py", line 70, in filter_errors
+E                 filtered = [entry for entry in filtered if entry.timestamp >= since]
+E                                                            ^^^^^^^^^^^^^^^^^^^^^^^^
+E             TypeError: can't compare offset-naive and offset-aware datetimes
+E             
+E           assert 1 == 0
+E            +  where 1 = <conftest.Result object at 0x721c78345130>.rc
+
+_eval/run_03/acceptance/test_hard.py:92: AssertionError
+=========================== short test summary info ============================
+FAILED _eval/run_03/acceptance/test_core.py::test_a5_errors_window - Assertio...
+FAILED _eval/run_03/acceptance/test_hard.py::test_h2_aware_window_filter - As...
+FAILED _eval/run_03/acceptance/test_hard.py::test_h3_z_suffix - AssertionErro...
+FAILED _eval/run_03/acceptance/test_hard.py::test_h4_boundary_convention - As...
+FAILED _eval/run_03/acceptance/test_hard.py::test_h6_empty_window - Assertion...
+FAILED _eval/run_03/acceptance/test_hard.py::test_h7_json_everywhere - Assert...
+========================= 6 failed, 15 passed in 1.99s =========================
+
+# exit code: 1
+# tier summary:
+#   core: 11/12
+#   hard: 4/9

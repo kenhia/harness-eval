@@ -1,0 +1,149 @@
+# acceptance: run_03 / 03-working-skill-repo
+# repo: /home/ken/src/ai-agents/harness-eval-runs/run_03/03-working-skill-repo @ d958fd5
+# date: 2026-07-23T04:39:50+00:00
+
+============================= test session starts ==============================
+platform linux -- Python 3.13.13, pytest-9.1.1, pluggy-1.6.0 -- /home/ken/.cache/uv/builds-v0/.tmpfyYxWp/bin/python
+rootdir: /home/ken/src/ai-agents/harness-eval/_eval/run_03/acceptance
+configfile: pytest.ini
+collecting ... collected 21 items
+
+_eval/run_03/acceptance/test_core.py::test_a1_entrypoint PASSED          [  4%]
+_eval/run_03/acceptance/test_core.py::test_a2_summary_text PASSED        [  9%]
+_eval/run_03/acceptance/test_core.py::test_a3_summary_json FAILED        [ 14%]
+_eval/run_03/acceptance/test_core.py::test_a4_top_tiebreak PASSED        [ 19%]
+_eval/run_03/acceptance/test_core.py::test_a5_errors_window PASSED       [ 23%]
+_eval/run_03/acceptance/test_core.py::test_a6_hourly PASSED              [ 28%]
+_eval/run_03/acceptance/test_core.py::test_a7_malformed_stderr FAILED    [ 33%]
+_eval/run_03/acceptance/test_core.py::test_a8_exit_codes PASSED          [ 38%]
+_eval/run_03/acceptance/test_core.py::test_a9_pytest PASSED              [ 42%]
+_eval/run_03/acceptance/test_core.py::test_a10_ruff PASSED               [ 47%]
+_eval/run_03/acceptance/test_core.py::test_a11_fixture_delivered PASSED  [ 52%]
+_eval/run_03/acceptance/test_core.py::test_a12_one_command_check PASSED  [ 57%]
+_eval/run_03/acceptance/test_hard.py::test_h1_mixed_offsets_summary PASSED [ 61%]
+_eval/run_03/acceptance/test_hard.py::test_h2_aware_window_filter PASSED [ 66%]
+_eval/run_03/acceptance/test_hard.py::test_h3_z_suffix PASSED            [ 71%]
+_eval/run_03/acceptance/test_hard.py::test_h4_boundary_convention PASSED [ 76%]
+_eval/run_03/acceptance/test_hard.py::test_h5_hourly_across_days PASSED  [ 80%]
+_eval/run_03/acceptance/test_hard.py::test_h6_empty_window PASSED        [ 85%]
+_eval/run_03/acceptance/test_hard.py::test_h7_json_everywhere FAILED     [ 90%]
+_eval/run_03/acceptance/test_hard.py::test_h8_dash_bytes FAILED          [ 95%]
+_eval/run_03/acceptance/test_hard.py::test_h9_naive_since FAILED         [100%]
+
+=================================== FAILURES ===================================
+_____________________________ test_a3_summary_json _____________________________
+
+loglens_json = <function loglens_json.<locals>.run at 0x7e2399b12ca0>
+logfile = PosixPath('/tmp/pytest-of-ken/pytest-364/fixture0/sealed.log')
+
+    def test_a3_summary_json(loglens_json, logfile):
+        r = loglens_json("summary", str(logfile))
+>       assert r.rc == 0, r.err[-500:]
+E       AssertionError: Usage: loglens summary [OPTIONS] LOGFILE
+E         Try 'loglens summary --help' for help.
+E         
+E         Error: No such option '--format'.
+E         
+E       assert 2 == 0
+E        +  where 2 = <conftest.Result object at 0x7e2399ac25d0>.rc
+
+_eval/run_03/acceptance/test_core.py:35: AssertionError
+___________________________ test_a7_malformed_stderr ___________________________
+
+loglens_json = <function loglens_json.<locals>.run at 0x7e2399b12ca0>
+logfile = PosixPath('/tmp/pytest-of-ken/pytest-364/fixture0/sealed.log')
+
+    def test_a7_malformed_stderr(loglens_json, logfile):
+        r = loglens_json("summary", str(logfile))
+>       assert r.rc == 0
+E       assert 2 == 0
+E        +  where 2 = <conftest.Result object at 0x7e2399aecaf0>.rc
+
+_eval/run_03/acceptance/test_core.py:84: AssertionError
+___________________________ test_h7_json_everywhere ____________________________
+
+loglens_json = <function loglens_json.<locals>.run at 0x7e2399b12ca0>
+logfile = PosixPath('/tmp/pytest-of-ken/pytest-364/fixture0/sealed.log')
+
+    def test_h7_json_everywhere(loglens_json, logfile):
+        for args in (
+            ("errors", str(logfile), "--since", fx.WINDOW_SINCE, "--until", fx.WINDOW_UNTIL),
+            ("top", str(logfile), "--by", "status"),
+            ("hourly", str(logfile)),
+        ):
+            r = loglens_json(*args)
+>           assert r.rc == 0, f"{args[0]} json rc={r.rc}: {r.err[-300:]}"
+E           AssertionError: errors json rc=2: Usage: loglens errors [OPTIONS] LOGFILE
+E             Try 'loglens errors --help' for help.
+E             
+E             Error: No such option '--format'.
+E             
+E           assert 2 == 0
+E            +  where 2 = <conftest.Result object at 0x7e2399994890>.rc
+
+_eval/run_03/acceptance/test_hard.py:92: AssertionError
+______________________________ test_h8_dash_bytes ______________________________
+
+loglens_json = <function loglens_json.<locals>.run at 0x7e2399b12ca0>
+tmp_path = PosixPath('/tmp/pytest-of-ken/pytest-364/test_h8_dash_bytes0')
+
+    def test_h8_dash_bytes(loglens_json, tmp_path):
+        f = tmp_path / "dash.log"
+        f.write_text(fx.DASH_BYTES + fx.clf_line("192.0.2.9", "/b", 200, 10, 7, 0) + "\n")
+        r = loglens_json("summary", str(f))
+>       assert r.rc == 0, f"dash-bytes line crashed summary: {r.err[-500:]}"
+E       AssertionError: dash-bytes line crashed summary: Usage: loglens summary [OPTIONS] LOGFILE
+E         Try 'loglens summary --help' for help.
+E         
+E         Error: No such option '--format'.
+E         
+E       assert 2 == 0
+E        +  where 2 = <conftest.Result object at 0x7e2399994b50>.rc
+
+_eval/run_03/acceptance/test_hard.py:102: AssertionError
+_____________________________ test_h9_naive_since ______________________________
+
+loglens = <function loglens.<locals>.run at 0x7e2399b12160>
+mixed_tz_log = PosixPath('/tmp/pytest-of-ken/pytest-364/fixture1/mixed_tz.log')
+
+    def test_h9_naive_since(loglens, mixed_tz_log):
+        r = loglens("errors", str(mixed_tz_log), "--since", "2026-07-12T06:00:00")
+>       assert "Traceback" not in r.err, (
+            f"naive --since crashed with a traceback:\n{r.err[-800:]}"
+        )
+E       AssertionError: naive --since crashed with a traceback:
+E         3/03-working-skill-repo/loglens/.venv/lib/python3.12/site-packages/click/decorators.py", line 34, in new_func
+E             return f(get_current_context(), *args, **kwargs)
+E                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           File "/home/ken/src/ai-agents/harness-eval-runs/run_03/03-working-skill-repo/loglens/loglens/cli.py", line 116, in errors
+E             data = errors_cmd(entries, since=since_dt, until=until_dt)
+E                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           File "/home/ken/src/ai-agents/harness-eval-runs/run_03/03-working-skill-repo/loglens/loglens/commands.py", line 61, in errors
+E             error_entries = [e for e in error_entries if e.timestamp >= since]
+E                                                          ^^^^^^^^^^^^^^^^^^^^
+E         TypeError: can't compare offset-naive and offset-aware datetimes
+E         
+E       assert 'Traceback' not in 'Traceback (... datetimes\n'
+E         
+E         'Traceback' is contained here:
+E           Traceback (most recent call last):
+E         ? +++++++++
+E             File "/home/ken/src/ai-agents/harness-eval-runs/run_03/03-working-skill-repo/loglens/.venv/bin/loglens", line 10, in <module>
+E               sys.exit(main())
+E                        ^^^^^^...
+E         
+E         ...Full output truncated (27 lines hidden), use '-vv' to show
+
+_eval/run_03/acceptance/test_hard.py:116: AssertionError
+=========================== short test summary info ============================
+FAILED _eval/run_03/acceptance/test_core.py::test_a3_summary_json - Assertion...
+FAILED _eval/run_03/acceptance/test_core.py::test_a7_malformed_stderr - asser...
+FAILED _eval/run_03/acceptance/test_hard.py::test_h7_json_everywhere - Assert...
+FAILED _eval/run_03/acceptance/test_hard.py::test_h8_dash_bytes - AssertionEr...
+FAILED _eval/run_03/acceptance/test_hard.py::test_h9_naive_since - AssertionE...
+========================= 5 failed, 16 passed in 1.17s =========================
+
+# exit code: 1
+# tier summary:
+#   core: 10/12
+#   hard: 6/9

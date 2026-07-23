@@ -36,15 +36,35 @@ def clean_env():
     return env
 
 
+def find_project_root(base: Path) -> tuple[Path, bool]:
+    """Locate the Python project. Agents may build at the repo root or
+    nest it one level (e.g. `loglens/pyproject.toml`) — the spec says
+    'in the current repository' and does not pin the level, so both are
+    accepted (defect S1). Returns (root, nested)."""
+    if (base / "pyproject.toml").is_file():
+        return base, False
+    candidates = sorted(
+        p.parent for p in base.glob("*/pyproject.toml")
+        if not p.parent.name.startswith(".")
+    )
+    assert candidates, f"no pyproject.toml at {base} or one level below"
+    assert len(candidates) == 1, f"ambiguous project roots: {candidates}"
+    return candidates[0], True
+
+
 @pytest.fixture(scope="session")
 def repo() -> Path:
     assert REPO.is_dir(), f"ACCEPTANCE_REPO not set or not a dir: {REPO!r}"
+    root, nested = find_project_root(REPO)
+    if nested:
+        print(f"\nNOTE: project nested at {root.relative_to(REPO)}/ "
+              f"(not repo root) — scoreable process observation, not a failure")
     proc = subprocess.run(
-        ["uv", "sync"], cwd=REPO, capture_output=True, text=True,
+        ["uv", "sync"], cwd=root, capture_output=True, text=True,
         timeout=SYNC_TIMEOUT, env=clean_env(),
     )
     assert proc.returncode == 0, f"uv sync failed:\n{proc.stderr[-2000:]}"
-    return REPO
+    return root
 
 
 @pytest.fixture(scope="session")
