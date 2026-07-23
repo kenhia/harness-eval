@@ -10,6 +10,16 @@ Unlike the graders you may read all grading material. Still **do not
 write grading content to klams/korg** — it indexes this repo and would
 seed future grader sessions with material they must not see.
 
+## Before you start — defect S2
+
+Cells **03 and 06** were re-graded after suite defect S2 (a `--format`
+fallback that only matched argparse's wording, failing click-based CLIs
+on JSON checks they pass; plus S2b, `Justfile` casing). Their sheets
+carry a `Re-scored after suite defect S2` marker and reflect corrected
+acceptance results; the other five cells' sheets are originals. Read
+`$EVAL/_eval/run_03/DEFECTS.md` for the full record, and note in
+`final.md` that 03/06 scores derive from the corrected suite.
+
 ## Inputs (you are the first session allowed to read all of it)
 
 - Both graders' sheets + summaries: `$EVAL/_eval/run_03/grades/*`
