@@ -23,19 +23,11 @@ open-weight scale.
 - Report the same cross-tier delta statistic; three rungs turn a
   two-point comparison into a trend.
 
-## Next — sprint 006: BYOK-kvllm-gemma tier
-
-Copilot CLI BYOK -> kvllm's vLLM endpoint serving Gemma on the 5090:
-same runner + harnesses, only the model swaps. Gate on a bare-control
-tool-loop shakedown; own controls, own scale, harness-minus-control
-delta is the cross-tier statistic; loglens scenario; free inference +
-ksandbox parallelism make this the N>=3 reps proving ground.
-
 ## Later — task-type matrix
 
 - **Task-type matrix, one cell per run group** (v2 design; run_02.1
   covered the bug-fix cell organically):
-  - run 03: **behavior-preserving refactor** on a messy repo, or
+  - next task-type run: **behavior-preserving refactor** on a messy repo, or
     **resume-from-handoff** (a deliberately half-finished run 02 repo) —
     lesson 27 argues for pressing the resume axis first;
   - lesson 25 task idea: a build where a load-bearing dependency
@@ -54,18 +46,11 @@ ksandbox parallelism make this the N>=3 reps proving ground.
   container (keyring-less login fallback + does /mcp add approval
   survive?) before that side. Containers, not VMs; needs egress (API,
   crates.io, tailnet MCP) so isolation ≠ hermeticity.
-- **Model-capability axis** (Mark's question, 2026-07-17): does harness
-  value grow as model capability drops — or is there a floor where
-  machinery hurts? Each tier = its own field with own controls, ranked
-  independently; cross-tier statistic = harness-minus-control DELTA;
-  executable acceptance tallies compare objectively across tiers.
-  Rung 1 (cheap, no infra): Haiku 4.5 tier on existing runners via
-  --model. Rung 2: local models via Copilot CLI BYOK -> kvllm's vLLM
-  endpoint (same runner + harnesses, only the model swaps); gate each
-  model on a bare-control tool-loop shakedown. Use run 1's loglens spec
-  for lower tiers (feedhub would zero them out) — port it an executable
-  acceptance suite. Synergy: free local inference + ksandbox
-  parallelism = the affordable place to pioneer N>=3 reps.
+- **Model-capability axis — rung 1 SHIPPED** (run_03, Haiku 4.5).
+  Remaining rungs: open-weight local models (sprint 006), and possibly
+  a mid-tier (Sonnet) to turn the ladder into a curve. Method settled:
+  each tier is its own field with own controls and own calibrated
+  scale; the cross-tier statistic is the harness-minus-control delta.
 
 - **N ≥ 3 reps per cell**; medians + spread, not single runs. Variance
   is now measured, not hypothetical: the run 02 control cell ran twice
