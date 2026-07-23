@@ -1,9 +1,14 @@
 # Consensus prompt — Fable(2): run_03 (Haiku tier) reconciliation
 
 Both graders (`fable1`, `sol`) have committed rubric sheets for all
-seven run_03 repos. You are the consensus session. `$EVAL` =
-`/home/ken/src/ai-agents/harness-eval` on kai (fish shell — use
-`ssh kai bash -s <<'EOF'` heredocs).
+seven run_03 repos. You are the consensus session, running as a **CLI
+session on kai** — everything is local, no ssh. `$EVAL` =
+`/home/ken/src/ai-agents/harness-eval`; repos at
+`~/src/ai-agents/harness-eval-runs/run_03/NN-<name>`.
+
+Unlike the graders you may read all grading material. Still **do not
+write grading content to klams/korg** — it indexes this repo and would
+seed future grader sessions with material they must not see.
 
 ## Inputs (you are the first session allowed to read all of it)
 

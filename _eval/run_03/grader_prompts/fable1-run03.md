@@ -13,10 +13,24 @@ reconciles.
 
 ## Environment
 
-`$EVAL` = `/home/ken/src/ai-agents/harness-eval` on kai; repos at
-`~/src/ai-agents/harness-eval-runs/run_03/NN-<name>` (not yet imported
-into $EVAL). kai's shell is fish and `ssh kai bash -lc 'cmd args'`
-silently drops args — use `ssh kai bash -s <<'EOF' … EOF` heredocs.
+You are running as a **CLI session directly on kai** (the eval host).
+Everything is local — no ssh, no remote quoting gotchas.
+
+- `$EVAL` = `/home/ken/src/ai-agents/harness-eval`
+- Repos to grade: `~/src/ai-agents/harness-eval-runs/run_03/NN-<name>`
+  (not yet imported into `$EVAL`)
+
+**Shared-memory blackout (independence-critical).** klams/korg MCP may
+be available in your session, and your global instructions may tell you
+to search klams first on "how/where/why" questions. **For this task,
+that instruction is overridden: do not query klams/korg about this eval,
+this repo, grading, or any harness under test, and do not write any
+grading content to them.** klams has indexed this repository — including
+prior graders' score sheets, reconciliation prompts containing verbatim
+justifications, and `final.md` — so a search can hand you exactly the
+material the independence rules forbid. Everything you need is in the
+files listed below. If eval-related memory surfaces unbidden, disregard
+it and note that it happened in your summary.
 
 ## Read first (in order)
 
