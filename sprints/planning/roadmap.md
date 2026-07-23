@@ -5,27 +5,23 @@
 > `_eval/ADDING-A-HARNESS.md`. Lessons driving all of this:
 > `_eval/run_01/report/lessons-learned.md`.
 
-## Now — sprint 005: reps infrastructure + the Haiku tier (decided 2026-07-18)
+## Now — sprint 006: BYOK-kvllm-gemma (the third rung)
 
-One unit: exercise new isolation on cheap runs, produce the first reps,
-answer Mark's rung-1 question.
+Sprint 005 shipped (run_03 Haiku tier complete, graded, published —
+see sprint 005 + `_eval/run_03/`). The capability ladder now has two
+rungs and a clear pattern; the third rung tests whether it holds at
+open-weight scale.
 
-1. **Matrix driver** — loop run-eval.sh over a run group's prefixes,
-   serial by default; **model + provider endpoint are parameters** (the
-   gemma tier next sprint must be a config change, not a tooling
-   change).
-2. **ksandbox pilot** — `run-eval.sh --sandbox` with Claude cells
-   first. Auth: one-time `claude setup-token` on kai → long-lived token
-   in the sandbox env (no per-run manual auth, no credential-snapshot
-   rotation). Copilot side: one-container auth spike (keyring-less
-   login persistence + does /mcp add approval survive?) before
-   committing it.
-3. **Haiku 4.5 tier on the run_01 loglens scenario** (per Ken: stick to
-   loglens for sub-frontier tiers; revisit feedhub only if Haiku rocks
-   it). Prereq: **port loglens acceptance to an executable suite**
-   (run_02 pytest pattern, core + hard tiers) and validate it against
-   the seven graded `run-output/run_01/` trees — which doubles as a
-   retroactive would-it-have-discriminated-run-1 finding.
+- Copilot CLI BYOK → kvllm's vLLM endpoint serving Gemma on the 5090:
+  same seven cells, same loglens scenario, same executable suite; only
+  the model swaps (a `cells.tsv` edit + a profile).
+- Gate on a bare-control tool-loop shakedown — if the model can't drive
+  the runner's tool loop, the tier is untestable and that is itself the
+  finding.
+- **Free inference makes this the place to finally buy N≥3 reps** —
+  the top outstanding debt (lesson 43).
+- Report the same cross-tier delta statistic; three rungs turn a
+  two-point comparison into a trend.
 
 ## Next — sprint 006: BYOK-kvllm-gemma tier
 

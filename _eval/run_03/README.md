@@ -1,4 +1,4 @@
-# run_03 — Haiku 4.5 tier, loglens scenario (STATUS: setup)
+# run_03 — Haiku 4.5 tier, loglens scenario (STATUS: COMPLETE — graded, published)
 
 First rung of the **model-capability axis** (Mark's question: does
 harness value grow as capability drops — or is there a floor where

@@ -1,0 +1,30 @@
+#!/usr/bin/env just --justfile
+
+set shell := ["bash", "-c"]
+
+default:
+    @just check
+
+# Run all checks: lint, test
+check:
+    @echo "Running linter..."
+    uv run ruff check loglens tests
+    @echo "Running tests..."
+    uv run pytest tests -v
+    @echo "All checks passed!"
+
+# Run linter only
+lint:
+    uv run ruff check loglens tests
+
+# Run tests only
+test:
+    uv run pytest tests -v
+
+# Run tests with coverage
+test-cov:
+    uv run pytest tests --cov=loglens --cov-report=term-missing
+
+# Format code with ruff (note: only if ruff format is available)
+fmt:
+    @echo "Note: This project uses ruff check only. Format manually or use: uv run ruff check --fix"

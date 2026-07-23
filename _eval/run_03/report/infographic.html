@@ -1,0 +1,372 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>harness-eval · run 03 — the model-capability axis</title>
+<style>
+  :root {
+    color-scheme: light;
+    --page:        #f9f9f7;
+    --surface:     #fcfcfb;
+    --ink:         #0b0b0b;
+    --ink-2:       #52514e;
+    --ink-muted:   #898781;
+    --grid:        #e1e0d9;
+    --baseline:    #c3c2b7;
+    --ring:        rgba(11,11,11,0.10);
+    --score:       #2a78d6;
+    --score-soft:  rgba(42,120,214,0.12);
+    --cost:        #1baf7a;
+    --good:        #006300;
+    --track:       #f0efec;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) {
+      color-scheme: dark;
+      --page:        #0d0d0d;
+      --surface:     #1a1a19;
+      --ink:         #ffffff;
+      --ink-2:       #c3c2b7;
+      --ink-muted:   #898781;
+      --grid:        #2c2c2a;
+      --baseline:    #383835;
+      --ring:        rgba(255,255,255,0.10);
+      --score:       #3987e5;
+      --score-soft:  rgba(57,135,229,0.16);
+      --cost:        #199e70;
+      --good:        #0ca30c;
+      --track:       #232322;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --page:        #0d0d0d;
+    --surface:     #1a1a19;
+    --ink:         #ffffff;
+    --ink-2:       #c3c2b7;
+    --ink-muted:   #898781;
+    --grid:        #2c2c2a;
+    --baseline:    #383835;
+    --ring:        rgba(255,255,255,0.10);
+    --score:       #3987e5;
+    --score-soft:  rgba(57,135,229,0.16);
+    --cost:        #199e70;
+    --good:        #0ca30c;
+    --track:       #232322;
+  }
+  :root[data-theme="light"] {
+    color-scheme: light;
+    --page:        #f9f9f7;
+    --surface:     #fcfcfb;
+    --ink:         #0b0b0b;
+    --ink-2:       #52514e;
+    --ink-muted:   #898781;
+    --grid:        #e1e0d9;
+    --baseline:    #c3c2b7;
+    --ring:        rgba(11,11,11,0.10);
+    --score:       #2a78d6;
+    --score-soft:  rgba(42,120,214,0.12);
+    --cost:        #1baf7a;
+    --good:        #006300;
+    --track:       #f0efec;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--page);
+    color: var(--ink);
+    font: 16px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 48px 24px 72px; display: flex; flex-direction: column; gap: 40px; }
+  .mono { font-family: ui-monospace, "Cascadia Code", "SF Mono", Consolas, monospace; }
+
+  header .eyebrow {
+    font-family: ui-monospace, "Cascadia Code", "SF Mono", Consolas, monospace;
+    font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--ink-muted); margin-bottom: 12px;
+  }
+  header h1 {
+    margin: 0 0 12px; font-size: clamp(26px, 4.5vw, 38px); line-height: 1.15;
+    font-weight: 750; letter-spacing: -0.015em; text-wrap: balance;
+  }
+  header .thesis { margin: 0; max-width: 62ch; color: var(--ink-2); font-size: 17px; }
+  header .thesis strong { color: var(--ink); }
+
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
+  .tile {
+    background: var(--surface); border: 1px solid var(--ring); border-radius: 8px;
+    padding: 16px 18px 14px;
+  }
+  .tile .k { font-size: 30px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.1; }
+  .tile .k small { font-size: 15px; font-weight: 600; color: var(--ink-2); }
+  .tile .l { margin-top: 6px; font-size: 13px; color: var(--ink-muted); line-height: 1.4; }
+
+  section h2 {
+    margin: 0 0 4px; font-size: 19px; font-weight: 700; letter-spacing: -0.01em;
+  }
+  section .sub { margin: 0 0 18px; font-size: 14px; color: var(--ink-muted); max-width: 68ch; }
+
+  .chart { background: var(--surface); border: 1px solid var(--ring); border-radius: 8px; padding: 20px 22px 14px; }
+  .chart + .chart { margin-top: 12px; }
+  .chart .chart-label {
+    font-family: ui-monospace, Consolas, monospace; font-size: 11.5px;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-muted);
+    margin: 0 0 8px;
+  }
+  .row {
+    display: grid; grid-template-columns: 168px 1fr 84px; align-items: center;
+    gap: 12px; padding: 7px 0;
+  }
+  .row + .row { border-top: 1px solid transparent; }
+  .row:hover { background: var(--score-soft); border-radius: 6px; }
+  .row .name { font-size: 14px; font-weight: 600; text-align: right; line-height: 1.25; }
+  .row .name .h { display: block; font-size: 11.5px; font-weight: 500; color: var(--ink-muted); }
+  .track { position: relative; height: 20px; background: var(--track); border-radius: 0 4px 4px 0; }
+  .fill {
+    position: absolute; inset: 0 auto 0 0; border-radius: 0 4px 4px 0;
+    background: var(--score); min-width: 2px;
+  }
+  .fill.cost { background: var(--cost); }
+  .fill.control {
+    background: transparent; border: 2px solid var(--score);
+  }
+  .fill.control.cost { border-color: var(--cost); }
+  .row .val {
+    font-family: ui-monospace, "Cascadia Code", "SF Mono", Consolas, monospace;
+    font-size: 13.5px; font-variant-numeric: tabular-nums; white-space: nowrap;
+  }
+  .row .val small { color: var(--ink-muted); font-size: 11.5px; }
+  .axis {
+    display: grid; grid-template-columns: 168px 1fr 84px; gap: 12px;
+    font-family: ui-monospace, Consolas, monospace; font-size: 11px; color: var(--ink-muted);
+    padding-top: 8px; margin-top: 4px; border-top: 1px solid var(--grid);
+  }
+  .axis .ticks { display: flex; justify-content: space-between; }
+  .chip {
+    display: inline-block; font-family: ui-monospace, Consolas, monospace;
+    font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase;
+    border: 1px solid var(--ring); border-radius: 999px; padding: 1px 8px;
+    color: var(--ink-muted); vertical-align: 1px;
+  }
+
+  .duo { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
+
+  .verdicts { display: flex; flex-direction: column; gap: 8px; }
+  .verdict {
+    display: grid; grid-template-columns: 44px 200px 1fr; gap: 14px; align-items: baseline;
+    background: var(--surface); border: 1px solid var(--ring); border-radius: 8px;
+    padding: 13px 18px;
+  }
+  .verdict .rank {
+    font-family: ui-monospace, Consolas, monospace; font-size: 20px; font-weight: 700;
+    color: var(--score); font-variant-numeric: tabular-nums;
+  }
+  .verdict .who { font-weight: 650; font-size: 14.5px; line-height: 1.3; }
+  .verdict .who .h { display: block; font-weight: 500; font-size: 12px; color: var(--ink-muted); }
+  .verdict .line { font-size: 14.5px; color: var(--ink-2); margin: 0; }
+
+  .callout {
+    background: var(--surface); border: 1px solid var(--ring); border-left: 3px solid var(--score);
+    border-radius: 8px; padding: 16px 20px; font-size: 15px; color: var(--ink-2); max-width: 100%;
+  }
+  .callout strong { color: var(--ink); }
+  .callout code {
+    font-family: ui-monospace, Consolas, monospace; font-size: 13px;
+    background: var(--track); border-radius: 4px; padding: 1px 5px;
+  }
+  .callout .delta {
+    font-family: ui-monospace, Consolas, monospace; font-size: 24px; font-weight: 700;
+    color: var(--ink); display: block; margin-bottom: 6px; font-variant-numeric: tabular-nums;
+  }
+
+  details { border: 1px solid var(--ring); border-radius: 8px; background: var(--surface); }
+  details summary {
+    cursor: pointer; padding: 12px 18px; font-size: 14px; font-weight: 600; color: var(--ink-2);
+  }
+  details[open] summary { border-bottom: 1px solid var(--grid); }
+  .tblwrap { overflow-x: auto; padding: 6px 12px 12px; }
+  table { border-collapse: collapse; font-size: 13.5px; width: 100%; min-width: 760px; }
+  th, td { padding: 7px 10px; text-align: right; font-variant-numeric: tabular-nums; }
+  th:first-child, td:first-child { text-align: left; }
+  thead th { color: var(--ink-muted); font-weight: 600; font-size: 12px; border-bottom: 1px solid var(--grid); }
+  tbody tr + tr td { border-top: 1px solid var(--grid); }
+  td.win { font-weight: 700; }
+
+  footer { font-size: 13px; color: var(--ink-muted); max-width: 72ch; line-height: 1.6; }
+  footer p { margin: 0 0 8px; }
+
+  /* ---- cross-tier dumbbell (palette validated: light #1baf7a/#c2410c on
+     #fcfcfb, dark #199e70/#e2683c on #1a1a19; light green carries a
+     contrast WARN so every dot is directly labelled) ---- */
+  :root { --gain: #1baf7a; --loss: #c2410c; --ref: #898781; }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) { --gain: #199e70; --loss: #e2683c; --ref: #898781; }
+  }
+  :root[data-theme="dark"] { --gain: #199e70; --loss: #e2683c; --ref: #898781; }
+  :root[data-theme="light"] { --gain: #1baf7a; --loss: #c2410c; --ref: #898781; }
+
+  .dumb { display: grid; grid-template-columns: 150px 1fr; gap: 12px; align-items: center; padding: 9px 0; }
+  .dumb .name { font-size: 13.5px; font-weight: 600; text-align: right; line-height: 1.25; }
+  .dumb .name .h { display: block; font-size: 11px; font-weight: 500; color: var(--ink-muted); }
+  .lane { position: relative; height: 30px; }
+  .zero { position: absolute; top: -4px; bottom: -4px; width: 1px; background: var(--baseline); }
+  .conn { position: absolute; top: 14px; height: 2px; background: var(--ref); opacity: .5; }
+  .dot { position: absolute; top: 8px; width: 14px; height: 14px; border-radius: 50%;
+         margin-left: -7px; box-shadow: 0 0 0 2px var(--surface); }
+  .dot.ref { background: var(--ref); }
+  .dot.now { background: var(--gain); }
+  .dot.now.neg { background: var(--loss); }
+  .dlab { position: absolute; top: 6px; font-family: ui-monospace, Consolas, monospace;
+          font-size: 12px; font-variant-numeric: tabular-nums; font-weight: 700; white-space: nowrap; }
+  .legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12.5px; color: var(--ink-2);
+            margin: 2px 0 14px; align-items: center; }
+  .legend i { display: inline-block; width: 11px; height: 11px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; }
+  .axlab { display: grid; grid-template-columns: 150px 1fr; gap: 12px;
+           font-family: ui-monospace, Consolas, monospace; font-size: 11px; color: var(--ink-muted); }
+</style>
+
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">harness-eval · run 03 · 2026-07-23 · kai · headless · Claude Haiku 4.5 · loglens scenario</div>
+    <h1>Harnesses matter more when the model is weaker — but only the light ones.</h1>
+    <p class="thesis">Runs 1 and 02 tested harnesses at the frontier and found mostly ceremony.
+    Run 03 changes <strong>one variable — the model</strong> — and the picture inverts, then splits:
+    convention-and-skill harnesses gained a lot, while heavy autonomous-process harnesses got
+    <em>worse</em>. Same spec, same harness versions, own-tier scale. Preliminary: N=1 per cell.</p>
+  </header>
+
+  <div class="tiles">
+    <div class="tile"><div class="k">+15.25</div><div class="l">working-skill-repo vs its control — up from <strong>0</strong> at the frontier</div></div>
+    <div class="tile"><div class="k">−12</div><div class="l">ATV-Phoenix vs the same control — down from −3 at the frontier</div></div>
+    <div class="tile"><div class="k">1 / 7</div><div class="l">repos passing all 12 core checks (the frontier field went 7 for 7)</div></div>
+    <div class="tile"><div class="k">0</div><div class="l">grader reconciliations — third consecutive round</div></div>
+  </div>
+
+  <section>
+    <h2>The cross-tier statistic — harness minus its own control</h2>
+    <p class="sub">Each harness scored against the <em>same-runner bare control</em>, at run 1's frontier
+    tier and at this Haiku tier. Raw totals aren't comparable across tiers; these deltas are.
+    Right of the line = the harness beat working without it.</p>
+    <div class="chart">
+      <div class="legend">
+        <span><i style="background:var(--ref)"></i>frontier tier (reference)</span>
+        <span><i style="background:var(--gain)"></i>Haiku — harness gained</span>
+        <span><i style="background:var(--loss)"></i>Haiku — harness lost</span>
+        <span style="color:var(--ink-muted)">│ vertical line = parity with control</span>
+      </div>
+      <div class="dumb">
+        <div class="name">working-skill-repo<span class="h">KB · Copilot</span></div>
+        <div class="lane">
+          <div class="zero" style="left:50.00%"></div>
+          <div class="conn" style="left:50.00%; width:47.66%"></div>
+          <div class="dot ref" style="left:50.00%" title="frontier delta +0"></div>
+          <div class="dot now" style="left:97.66%" title="Haiku delta +15.25"></div>
+          <div class="dlab" style="right:2.34%; margin-right:12px; color:var(--gain)">+15.25</div>
+        </div>
+      </div>
+      <div class="dumb">
+        <div class="name">kprojects<span class="h">Copilot</span></div>
+        <div class="lane">
+          <div class="zero" style="left:50.00%"></div>
+          <div class="conn" style="left:51.56%; width:22.66%"></div>
+          <div class="dot ref" style="left:51.56%" title="frontier delta +0.5"></div>
+          <div class="dot now" style="left:74.22%" title="Haiku delta +7.75"></div>
+          <div class="dlab" style="left:74.22%; margin-left:12px; color:var(--gain)">+7.75</div>
+        </div>
+      </div>
+      <div class="dumb">
+        <div class="name">ATV-StarterKit<span class="h">2.6.3 · Copilot</span></div>
+        <div class="lane">
+          <div class="zero" style="left:50.00%"></div>
+          <div class="conn" style="left:37.50%; width:3.91%"></div>
+          <div class="dot ref" style="left:37.50%" title="frontier delta -4"></div>
+          <div class="dot now neg" style="left:41.41%" title="Haiku delta -2.75"></div>
+          <div class="dlab" style="left:41.41%; margin-left:12px; color:var(--loss)">-2.75</div>
+        </div>
+      </div>
+      <div class="dumb">
+        <div class="name">gstack<span class="h">Claude Code</span></div>
+        <div class="lane">
+          <div class="zero" style="left:50.00%"></div>
+          <div class="conn" style="left:21.09%; width:3.91%"></div>
+          <div class="dot ref" style="left:25.00%" title="frontier delta -8"></div>
+          <div class="dot now neg" style="left:21.09%" title="Haiku delta -9.25"></div>
+          <div class="dlab" style="right:78.91%; margin-right:12px; color:var(--loss)">-9.25</div>
+        </div>
+      </div>
+      <div class="dumb">
+        <div class="name">ATV-Phoenix<span class="h">Copilot</span></div>
+        <div class="lane">
+          <div class="zero" style="left:50.00%"></div>
+          <div class="conn" style="left:12.50%; width:28.12%"></div>
+          <div class="dot ref" style="left:40.62%" title="frontier delta -3"></div>
+          <div class="dot now neg" style="left:12.50%" title="Haiku delta -12"></div>
+          <div class="dlab" style="right:87.50%; margin-right:12px; color:var(--loss)">-12</div>
+        </div>
+      </div>      <div class="axlab"><span></span><div class="ticks" style="display:flex; justify-content:space-between"><span>−16</span><span>−8</span><span>0</span><span>+8</span><span>+16</span></div></div>
+    </div>
+    <div class="callout" style="margin-top:12px">
+      <strong>Read it as two families, not one trend.</strong> The harnesses that <em>encode knowledge</em>
+      — conventions, skills, review habits — supply what a weaker model lacks, and their value grew
+      (KB <code>0 → +15.25</code>, kprojects <code>+0.5 → +7.75</code>, both at or below control cost).
+      The harnesses that <em>demand the model drive an autonomous process</em> need capability it doesn't
+      have, so the process becomes overhead it must service (Phoenix <code>−3 → −12</code>, gstack
+      <code>−8 → −9.25</code>). Actionable version: <strong>the weaker your model, the more you want
+      conventions and the less you want ceremony.</strong>
+    </div>
+  </section>
+
+  <section>
+    <h2>This tier's field</h2>
+    <p class="sub">Graded on its own scale against its own controls — not comparable point-for-point to
+    other runs. Outlined bars are the harness-free controls.</p>
+    <div class="chart">
+      <p class="chart-label">consensus score /100 · Haiku 4.5 tier</p>
+      <div class="row"><div class="name">working-skill-repo<span class="h">03 · 12/12 core</span></div><div class="track"><div class="fill" style="width:77.5%"></div></div><div class="val">77.5</div></div>
+      <div class="row"><div class="name">kprojects<span class="h">04 · 11/12 core</span></div><div class="track"><div class="fill" style="width:70%"></div></div><div class="val">70</div></div>
+      <div class="row"><div class="name">baseline (control)<span class="h">07 · Claude Code</span></div><div class="track"><div class="fill control" style="width:66%"></div></div><div class="val">66</div></div>
+      <div class="row"><div class="name">baseline (control)<span class="h">05 · Copilot</span></div><div class="track"><div class="fill control" style="width:62.25%"></div></div><div class="val">62.25</div></div>
+      <div class="row"><div class="name">ATV-StarterKit<span class="h">01 · 11/12 core</span></div><div class="track"><div class="fill" style="width:59.5%"></div></div><div class="val">59.5</div></div>
+      <div class="row"><div class="name">gstack<span class="h">06 · 9/12 core</span></div><div class="track"><div class="fill" style="width:56.75%"></div></div><div class="val">56.75</div></div>
+      <div class="row"><div class="name">ATV-Phoenix<span class="h">02 · 9/12 core</span></div><div class="track"><div class="fill" style="width:50.25%"></div></div><div class="val">50.25</div></div>
+      <div class="axis"><span></span><div class="ticks"><span>0</span><span>25</span><span>50</span><span>75</span><span>100</span></div><span></span></div>
+    </div>
+  </section>
+
+  <div class="callout">
+    <span class="delta">7 / 7</span>
+    <strong>The tier signature: everyone solved exactly half the timezone problem.</strong>
+    Both graders found it independently. The naive-parser repos (01, 02, 05, 07) crash on
+    timezone-<em>aware</em> <code>--since/--until</code>; the aware-parser repos (03, 04, 06) crash on a
+    <em>naive</em> <code>--since</code>. Complementary halves of one missed edge — and no repo's own test
+    suite covered the mix. At the frontier this was a scattered miss; here it organizes the whole field.
+  </div>
+
+  <details>
+    <summary>Acceptance detail — core /12, hard /9 (same suite semantics as the frontier retro-run, so these ARE cross-tier comparable)</summary>
+    <div class="tblwrap">
+      <table>
+        <thead><tr><th>repo</th><th>harness</th><th>core</th><th>hard</th><th>root cause of failures</th></tr></thead>
+        <tbody>
+          <tr><td>03</td><td>working-skill-repo</td><td class="win">12/12</td><td class="win">8/9</td><td>aware parser — naive <code>--since</code> crashes (H9)</td></tr>
+          <tr><td>04</td><td>kprojects</td><td>11/12</td><td class="win">8/9</td><td>hand-rolled CLI lacks <code>--help</code>; H9</td></tr>
+          <tr><td>01</td><td>ATV-StarterKit</td><td>11/12</td><td>4/9</td><td>naive parser — aware windows crash</td></tr>
+          <tr><td>07</td><td>none (control)</td><td>11/12</td><td>4/9</td><td>naive parser — aware windows crash</td></tr>
+          <tr><td>06</td><td>gstack</td><td>9/12</td><td class="win">8/9</td><td>stderr count suppressed in JSON mode; packaging breaks clean-env checks</td></tr>
+          <tr><td>05</td><td>none (control)</td><td>9/12</td><td>4/9</td><td>naive parser; dev tools in optional extras</td></tr>
+          <tr><td>02</td><td>ATV-Phoenix</td><td>9/12</td><td>4/9</td><td>naive parser; malformed count never on stderr; bare-python check</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </details>
+
+  <footer>
+    <p>Method: run 1's frozen loglens spec and prompts, harness versions held from run 02, headless
+    zero-intervention runs, hermetic executable acceptance (retro-validated against the seven graded
+    frontier repos), two independent LLM graders on a tier-calibrated scale, consensus with frozen
+    priors. Two suite defects (S1 project nesting, S2 argparse-only JSON fallback) were caught —
+    one by a grader mid-grading — adjudicated, and the affected cells re-run and re-graded.</p>
+    <p class="mono">method &amp; caveats: _eval/run_03/report/whitepaper.md · grades: _eval/run_03/grades/final.md · defects: _eval/run_03/DEFECTS.md</p>
+  </footer>
+
+</div>

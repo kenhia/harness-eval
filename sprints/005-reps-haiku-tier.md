@@ -50,13 +50,32 @@ run_02 (so the tier comparison isolates model capability). Haiku id
 confirmed from Copilot's bundled registry. Details in
 `_eval/run_03/README.md`.
 
+## Completed (2026-07-23)
+
+- **Haiku field executed** (7 cells, headless, zero interventions;
+  model verified Haiku in every session's metrics). Incidents handled:
+  **I1** (controller ssh death mid-cell 05 → voided + resumed),
+  **S1** (suite assumed repo-root project; two nested repos scored
+  0/12 → fixed, nesting reclassified as a process observation),
+  **S2** (JSON fallback matched argparse wording only, failing
+  click-based CLIs — *found by a grader mid-grading*, fixed, 03 moved
+  to a full pass, both affected cells delta re-graded).
+- **Graded + consensus**: zero reconciliations (third consecutive
+  round); field 50.25–77.5 on a tier-calibrated scale.
+- **The finding** (`report/whitepaper.md`): harness value grows as
+  capability drops **for light convention/skill harnesses** (KB 0 →
+  +15.25, kprojects +0.5 → +7.75) and *shrinks* for heavy
+  go-command harnesses (Phoenix −3 → −12, gstack −8 → −9.25).
+  Encoded knowledge substitutes for capability; an autonomous process
+  demands it.
+- **Tooling added**: `run-matrix.sh`, `vet-grades.py`, loglens
+  executable acceptance (retro-validated against run_01's seven graded
+  trees, where it also retroactively discriminates run 1's dead heat).
+- **Published**: whitepaper, infographic (validated diverging palette,
+  dumbbell cross-tier chart), lessons 34–44, README, `run-output/run_03`
+  + history/pre-run refs, secret scan clean.
+
 ## Remaining
 
-1. **Execute the Haiku field**: `run-matrix.sh run_03` (Ken — needs
-   Copilot profile logins per E1; serial, resumable). Model-mismatch
-   check on cell 1.
-2. **Grade** against tier-own controls; report the cross-tier
-   harness-minus-control delta vs run_01's frontier deltas (Mark's
-   question).
-3. (Own track) ksandbox Claude-side proof + Copilot-in-container auth
-   spike.
+- (Own track) ksandbox Claude-side proof + Copilot-in-container auth
+  spike — see `_eval/KSANDBOX.md`.
