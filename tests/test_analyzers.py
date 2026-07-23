@@ -156,15 +156,9 @@ def test_hourly_analyzer_distribution():
     """Test HourlyAnalyzer hourly distribution."""
     analyzer = HourlyAnalyzer()
 
-    analyzer.process(
-        create_entry(timestamp_str="2026-07-12T06:00:00+00:00")
-    )
-    analyzer.process(
-        create_entry(timestamp_str="2026-07-12T06:30:00+00:00")
-    )
-    analyzer.process(
-        create_entry(timestamp_str="2026-07-12T14:00:00+00:00")
-    )
+    analyzer.process(create_entry(timestamp_str="2026-07-12T06:00:00+00:00"))
+    analyzer.process(create_entry(timestamp_str="2026-07-12T06:30:00+00:00"))
+    analyzer.process(create_entry(timestamp_str="2026-07-12T14:00:00+00:00"))
 
     assert analyzer.hourly_counts[6] == 2
     assert analyzer.hourly_counts[14] == 1
@@ -176,9 +170,7 @@ def test_hourly_analyzer_histogram():
     analyzer = HourlyAnalyzer()
 
     for hour in [6, 6, 14, 14, 14]:
-        analyzer.process(
-            create_entry(timestamp_str=f"2026-07-12T{hour:02d}:00:00+00:00")
-        )
+        analyzer.process(create_entry(timestamp_str=f"2026-07-12T{hour:02d}:00:00+00:00"))
 
     histogram = analyzer.to_histogram()
     assert "06:00" in histogram

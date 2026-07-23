@@ -42,7 +42,7 @@ def test_parse_log_file_with_malformed(tmp_path):
     logfile = tmp_path / "test.log"
     logfile.write_text(
         '203.0.113.7 - - [12/Jul/2026:06:25:24 +0000] "GET /index.html HTTP/1.1" 200 5413 "https://example.com/" "Mozilla/5.0"\n'
-        'invalid line\n'
+        "invalid line\n"
         '198.51.100.22 - alice [12/Jul/2026:07:01:02 +0000] "POST /api/orders HTTP/1.1" 201 512 "-" "curl/8.5.0"\n'
     )
 

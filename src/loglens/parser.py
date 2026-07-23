@@ -33,13 +33,13 @@ class LogEntry:
 # Combined Log Format regex
 # Format: IP ident user [timestamp] "METHOD path HTTP/version" status bytes "referer" "user-agent"
 CLF_PATTERN = re.compile(
-    r'(?P<ip>[\d.]+) '
-    r'(?P<ident>\S+) '
-    r'(?P<user>\S+) '
-    r'\[(?P<timestamp>[^\]]+)\] '
+    r"(?P<ip>[\d.]+) "
+    r"(?P<ident>\S+) "
+    r"(?P<user>\S+) "
+    r"\[(?P<timestamp>[^\]]+)\] "
     r'"(?P<method>\w+) (?P<path>\S+) \S+" '
-    r'(?P<status>\d{3}) '
-    r'(?P<bytes>[-\d]+) '
+    r"(?P<status>\d{3}) "
+    r"(?P<bytes>[-\d]+) "
     r'"(?P<referer>[^"]*)" '
     r'"(?P<user_agent>[^"]*)"'
 )

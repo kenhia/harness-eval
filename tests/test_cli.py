@@ -23,7 +23,7 @@ def sample_log(tmp_path):
         '198.51.100.22 - alice [12/Jul/2026:07:01:02 +0000] "POST /api/orders HTTP/1.1" 201 512 "-" "curl/8.5.0"\n'
         '192.0.2.9 - - [12/Jul/2026:08:30:44 +0000] "GET /missing HTTP/1.1" 404 153 "-" "Mozilla/5.0"\n'
         '203.0.113.7 - - [12/Jul/2026:09:45:15 +0000] "GET /api/users HTTP/1.1" 500 2048 "https://example.com/" "Mozilla/5.0"\n'
-        'malformed line\n'
+        "malformed line\n"
     )
     return str(logfile)
 
@@ -56,18 +56,14 @@ def test_top_by_ip(runner, sample_log):
 
 def test_top_by_path(runner, sample_log):
     """Test top command ranking by path."""
-    result = runner.invoke(
-        main, ["--format", "text", "top", "--by", "path", "-n", "5", sample_log]
-    )
+    result = runner.invoke(main, ["--format", "text", "top", "--by", "path", "-n", "5", sample_log])
     assert result.exit_code == 0
     assert "/index.html" in result.output or "/api" in result.output
 
 
 def test_top_by_status(runner, sample_log):
     """Test top command ranking by status."""
-    result = runner.invoke(
-        main, ["--format", "text", "top", "--by", "status", sample_log]
-    )
+    result = runner.invoke(main, ["--format", "text", "top", "--by", "status", sample_log])
     assert result.exit_code == 0
     assert "200" in result.output
 
