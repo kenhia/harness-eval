@@ -33,8 +33,12 @@ global pieces, session logs, and stray writes (`~/.gstack`, `~/.cache`) all
 land in the profile, never in the real account. Both runners resolve `~`
 through `$HOME`, so one mechanism covers Copilot CLI (`.copilot/` in the
 profile) and Claude Code (`.claude/` + `.claude.json` at the profile root).
-Run 1 used symlink-swapping via `bin/use-profile.sh` (now deprecated); run
-02+ uses the HOME method for everything.
+Run 1 used symlink-swapping via `bin/use-profile.sh`; run 02+ uses the HOME
+method for everything. **That script was deleted in 2026-08** (korg #843): it
+had a `bootstrap` that moved the real `~/.copilot` into this repo and no
+`unbootstrap` to undo it, while its header claimed `use-profile.sh original`
+"restores day-to-day config" — which only re-pointed the symlink at where it
+already pointed. It left kais live Copilot auth and session history insidenthis working tree for 17 days, where a Removing .korg-sprint-proposal Removing .scratch/ Removing break-glass/kai-nic/recipes/ Removing incoming/ Removing recipes/claude-md/staged/ Removing recipes/claude-skills/staged/ Removing recipes/kaed-service/__pycache__/ Removing recipes/package-store/__pycache__/ would have deletednthem. Run 01s logs still name it; that is history, not a live path.
 
 Rules (earned the hard way — see run_01 lessons 1, 16, 17):
 
