@@ -33,7 +33,9 @@ undocumented global writes (Phoenix, gstack's `~/.gstack`).
   **fake HOMEs** (`env HOME=<profile> <runner> …` — run-eval.sh does this
   for you); both runners resolve `~` through `$HOME`:
   - Copilot CLI: profile contains `.copilot/` (config, auth, session
-    state). The run-1 symlink mechanism (`use-profile.sh`) is deprecated.
+    state). The run-1 symlink mechanism (`use-profile.sh`) is gone —
+    deleted in 2026-08, korg #843; never reintroduce a bootstrap that
+    moves the real `~/.copilot` into the repo.
   - Claude Code: `claude-clean` is the harness-free base (credentials +
     klams/korg MCP only, no skills); a harness with global pieces gets its
     own copy, `claude-<harness>` (e.g. `claude-gstack`), with the global
