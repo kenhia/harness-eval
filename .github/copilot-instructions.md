@@ -1,9 +1,9 @@
-<!-- kproject:begin — managed by kprojects/install.sh; do not edit inside this block -->
+<!-- kproject:begin — managed by kprojects; do not edit inside this block -->
 ## kproject conventions
 
 This project uses the kproject minimal harness
-(`~/src/ai-agents/kprojects`). Keep context small; prefer doing over
-ceremony.
+(<https://github.com/kenhia/kprojects>). Keep context small; prefer doing
+over ceremony.
 
 ### Layout
 
@@ -15,6 +15,9 @@ ceremony.
     `###-<short-name>/` directory of files for larger/more formal ones
   - a sprint record is one informal narrative: goal, decisions, what
     shipped, follow-ups — written during the sprint, not after
+  - projects that deploy end the record with a `## Deployed` section:
+    what shipped, where, when, and what was verified live — appended
+    after the deploy, not predicted before it
 - `docs/` — project documentation, architecture, usage
 - `.scratch/` — git-ignored scratch space for user or agent ephemera;
   use it instead of /tmp
@@ -26,14 +29,24 @@ ceremony.
 
 - One sprint ≈ one PR. Sprint proposals and work items are managed in
   `korg`; durable cross-project knowledge goes in `klams`.
+- Mark each work item resolved as its work completes — don't batch the
+  resolutions into sprint-ship. A proposal's progress should be readable
+  while the sprint is running, which is the only time it is useful.
 - If the korg or klams MCP tools are unavailable in your session, say so
   up front — don't silently work around missing infrastructure.
 - TDD preferred: write the failing test first when practical.
 
 ### Tooling preferences
 
-- Python managed by `uv`; lint/format with `ruff`; typecheck with `ty`
-  (astral toolchain)
+- No stack the harness could name, so `just check` is yours to write. Ask
+  what this repo can actually get wrong — a documents repo's failure mode is
+  a stale cross-reference, not a type error
+- Add no dependency to make a gate: a stdlib script or a shell one-liner
+  keeps a repo that had no dependencies still having none
+- Skip what isn't yours to verify — external URLs, machine-local paths
+- **Negative-test it.** Plant the error the gate exists to catch and watch it
+  exit 1. A gate never seen to fail is not a gate, and the seeded placeholder
+  fails on purpose until you replace it
 - License is MIT unless specifically directed otherwise
 <!-- kproject:end -->
 
